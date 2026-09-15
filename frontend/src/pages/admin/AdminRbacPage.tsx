@@ -29,54 +29,44 @@ import {
   ChevronDown,
   ChevronUp,
 } from 'lucide-react';
-import { rbacService } from '@/services/billingServices';
-import { AdminUserResponse, RoleResponse, PermissionResponse } from '@/types/api';
+import { useAuthStore } from '@/stores';
 import { formatDate } from '@/lib/utils';
 
 export const AdminRbacPage: React.FC = () => {
   const { addToast } = useToast();
-  const [users, setUsers] = useState<AdminUserResponse[]>([]);
-  const [roles, setRoles] = useState<RoleResponse[]>([]);
-  const [permissions, setPermissions] = useState<PermissionResponse[]>([]);
-  const [loading, setLoading] = useState(false);
+  const {
+    users,
+    roles,
+    permissions,
+    usersLoading: loading,
+    fetchUsers,
+    fetchRoles,
+    fetchPermissions,
+    createRole,
+    updateRole,
+    deleteRole,
+    assignRole,
+    removeRole,
+    grantPermission,
+  } = useAuthStore();
   const [activeTab, setActiveTab] = useState('users');
   const [searchTerm, setSearchTerm] = useState('');
 
   // Role dialog
   const [showRoleDialog, setShowRoleDialog] = useState(false);
-  const [editingRole, setEditingRole] = useState<RoleResponse | null>(null);
+  const [editingRole, setEditingRole] = useState<{ id: string; name: string; description?: string; permissionIds: string[]; isSystem: boolean } | null>(null);
   const [roleForm, setRoleForm] = useState({ name: '', description: '', permissionIds: [] as string[] });
 
   // Assign role dialog
-  const [showAssignDialog, setShowAssignDialog] = useState<AdminUserResponse | null>(null);
+  const [showAssignDialog, setShowAssignDialog] = useState<{ email: string } | null>(null);
   const [selectedRoleId, setSelectedRoleId] = useState('');
 
   // Permission override dialog
-  const [showPermDialog, setShowPermDialog] = useState<AdminUserResponse | null>(null);
+  const [showPermDialog, setShowPermDialog] = useState<{ email: string } | null>(null);
   const [selectedPermId, setSelectedPermId] = useState('');
 
   const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [usersRes, rolesRes, permsRes] = await Promise.allSettled([
-        rbacService.getUsers(),
-        rbacService.getRoles(),
-        rbacService.getPermissions(),
-      ]);
-      if (usersRes.status === 'fulfilled' && usersRes.value.data.success) {
-        setUsers(usersRes.value.data.data || []);
-      }
-      if (rolesRes.status === 'fulfilled' && rolesRes.value.data.success) {
-        setRoles(rolesRes.value.data.data?.items || []);
-      }
-      if (permsRes.status === 'fulfilled' && permsRes.value.data.success) {
-        setPermissions(permsRes.value.data.data || []);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    await Promise.allSettled([fetchUsers(), fetchRoles(), fetchPermissions()]);
   }, []);
 
   useEffect(() => {
@@ -108,34 +98,26 @@ export const AdminRbacPage: React.FC = () => {
   const handleSaveRole = async () => {
     try {
       if (editingRole) {
-        const res = await rbacService.updateRole(editingRole.id, roleForm);
-        if (res.data.success) {
-          addToast({ variant: 'success', message: 'Cập nhật role thành công!' });
-        }
+        await updateRole(editingRole.id, roleForm);
+        addToast({ variant: 'success', message: 'Cập nhật role thành công!' });
       } else {
-        const res = await rbacService.createRole(roleForm);
-        if (res.data.success) {
-          addToast({ variant: 'success', message: 'Tạo role mới thành công!' });
-        }
+        await createRole(roleForm);
+        addToast({ variant: 'success', message: 'Tạo role mới thành công!' });
       }
       setShowRoleDialog(false);
-      fetchData();
     } catch (err: any) {
       addToast({ variant: 'destructive', message: err.response?.data?.message || 'Lỗi thao tác role.' });
     }
   };
 
-  const handleDeleteRole = async (role: RoleResponse) => {
+  const handleDeleteRole = async (role: { id: string; name: string; isSystem: boolean }) => {
     if (role.isSystem) {
       addToast({ variant: 'destructive', message: 'Không thể xóa role hệ thống.' });
       return;
     }
     try {
-      const res = await rbacService.deleteRole(role.id);
-      if (res.data.success) {
-        addToast({ variant: 'success', message: `Đã xóa role "${role.name}".` });
-        fetchData();
-      }
+      await deleteRole(role.id);
+      addToast({ variant: 'success', message: `Đã xóa role "${role.name}".` });
     } catch (err: any) {
       addToast({ variant: 'destructive', message: err.response?.data?.message || 'Lỗi xóa role.' });
     }
@@ -155,12 +137,10 @@ export const AdminRbacPage: React.FC = () => {
   const handleAssignRole = async () => {
     if (!showAssignDialog || !selectedRoleId) return;
     try {
-      const res = await rbacService.assignRole(showAssignDialog.email, selectedRoleId);
-      if (res.data.success) {
-        addToast({ variant: 'success', message: `Đã gán role cho ${showAssignDialog.email}` });
-        setShowAssignDialog(null);
-        fetchData();
-      }
+      await assignRole(showAssignDialog.email, selectedRoleId);
+      addToast({ variant: 'success', message: `Đã gán role cho ${showAssignDialog.email}` });
+      setShowAssignDialog(null);
+      fetchUsers();
     } catch (err: any) {
       addToast({ variant: 'destructive', message: err.response?.data?.message || 'Lỗi gán role.' });
     }
@@ -168,11 +148,9 @@ export const AdminRbacPage: React.FC = () => {
 
   const handleRemoveRole = async (email: string) => {
     try {
-      const res = await rbacService.removeRole(email);
-      if (res.data.success) {
-        addToast({ variant: 'success', message: `Đã gỡ role của ${email}` });
-        fetchData();
-      }
+      await removeRole(email);
+      addToast({ variant: 'success', message: `Đã gỡ role của ${email}` });
+      fetchUsers();
     } catch (err: any) {
       addToast({ variant: 'destructive', message: err.response?.data?.message || 'Lỗi gỡ role.' });
     }
@@ -183,23 +161,21 @@ export const AdminRbacPage: React.FC = () => {
   const handleGrantPermission = async () => {
     if (!showPermDialog || !selectedPermId) return;
     try {
-      const res = await rbacService.grantPermission(showPermDialog.email, selectedPermId);
-      if (res.data.success) {
-        addToast({ variant: 'success', message: 'Đã cấp quyền thêm.' });
-        setShowPermDialog(null);
-        fetchData();
-      }
+      await grantPermission(showPermDialog.email, selectedPermId);
+      addToast({ variant: 'success', message: 'Đã cấp quyền thêm.' });
+      setShowPermDialog(null);
+      fetchUsers();
     } catch (err: any) {
       addToast({ variant: 'destructive', message: err.response?.data?.message || 'Lỗi cấp quyền.' });
     }
   };
 
   // Group permissions by module
-  const groupedPerms = permissions.reduce((acc, p) => {
+  const groupedPerms = permissions.reduce((acc, p: { module: string; id: string; name: string; description?: string }) => {
     if (!acc[p.module]) acc[p.module] = [];
     acc[p.module].push(p);
     return acc;
-  }, {} as Record<string, PermissionResponse[]>);
+  }, {} as Record<string, typeof permissions>);
 
   return (
     <div className="space-y-6">

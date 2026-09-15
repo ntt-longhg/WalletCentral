@@ -4,8 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { embedService } from '@/services/billingServices';
-import { WalletResponse, PricingPlanResponse } from '@/types/api';
+import { useEmbedStore } from '@/stores';
+import { PricingPlanResponse } from '@/types/api';
 import { formatCurrency } from '@/lib/utils';
 import { Wallet, ArrowUpRight, Zap, RefreshCw, CreditCard, Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -13,44 +13,33 @@ import { useAuth } from '@/context/AuthContext';
 export const EmbedWalletPage: React.FC = () => {
   const { token } = useAuth();
   const { addToast } = useToast();
-  const [wallet, setWallet] = useState<WalletResponse | null>(null);
-  const [plans, setPlans] = useState<PricingPlanResponse[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    wallet,
+    pricingPlans: plans,
+    walletLoading: loading,
+    walletError: error,
+    fetchWallet,
+    fetchPricingPlans,
+    createWalletPlan,
+  } = useEmbedStore();
+
   const [selectedPlan, setSelectedPlan] = useState<PricingPlanResponse | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const fetchWalletData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
     try {
-      const [walletRes, plansRes] = await Promise.allSettled([
-        embedService.getWallet(),
-        embedService.getPricingPlans(),
-      ]);
-
-      if (walletRes.status === 'fulfilled' && walletRes.value.data.data) {
-        setWallet(walletRes.value.data.data);
-      } else {
-        setError('Không thể tải thông tin ví. Vui lòng kiểm tra API Key.');
-      }
-      if (plansRes.status === 'fulfilled' && plansRes.value.data.data) {
-        setPlans(plansRes.value.data.data);
-      }
-    } catch (err) {
-      console.error(err);
-      setError('Lỗi kết nối đến server.');
-    } finally {
-      setLoading(false);
+      await Promise.all([fetchWallet(), fetchPricingPlans()]);
+    } catch {
+      // Handled by store
     }
-  }, []);
+  }, [fetchWallet, fetchPricingPlans]);
 
   useEffect(() => {
     if (token) {
       fetchWalletData();
     }
-  }, [token]);
+  }, [token, fetchWalletData]);
 
   const handleSelectPlan = (plan: PricingPlanResponse) => {
     setSelectedPlan(plan);
@@ -61,16 +50,12 @@ export const EmbedWalletPage: React.FC = () => {
     if (!selectedPlan) return;
     setSubmitting(true);
     try {
-      const res = await embedService.createWalletPlan(selectedPlan.id);
-      if (res.data.success) {
-        addToast({ variant: 'success', message: `Đã gửi yêu cầu mua gói "${selectedPlan.name}". Vui lòng chờ admin duyệt.` });
-        setConfirmOpen(false);
-        fetchWalletData();
-      } else {
-        addToast({ variant: 'destructive', message: res.data.message || 'Mua gói thất bại.' });
-      }
+      await createWalletPlan(selectedPlan.id);
+      addToast({ variant: 'success', message: `Đã gửi yêu cầu mua gói "${selectedPlan.name}". Vui lòng chờ admin duyệt.` });
+      setConfirmOpen(false);
+      fetchWalletData();
     } catch (err: any) {
-      addToast({ variant: 'destructive', message: err.response?.data?.message || 'Lỗi kết nối đến server.' });
+      addToast({ variant: 'destructive', message: err.response?.data?.message || 'Mua gói thất bại.' });
     } finally {
       setSubmitting(false);
     }

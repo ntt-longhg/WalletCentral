@@ -16,18 +16,28 @@ import {
 import { useToast } from '@/components/ui/toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Boxes, Plus, DollarSign, Layers } from 'lucide-react';
-import { serviceCatalogService } from '@/services/billingServices';
-import { ServiceResponse, ServicePriceResponse, PriceTierResponse } from '@/types/api';
-import { formatDate, formatCurrency, getStatusConfig } from '@/lib/utils';
+import { useServiceStore } from '@/stores';
+import { ServiceResponse, ServicePriceResponse } from '@/types/api';
+import { formatCurrency } from '@/lib/utils';
 
 export const ServiceCatalogPage: React.FC = () => {
   const { addToast } = useToast();
-  const [services, setServices] = useState<ServiceResponse[]>([]);
-  const [loading, setLoading] = useState(false);
+  const {
+    services,
+    servicesLoading: loading,
+    prices: pricesMap,
+    tiers: tiersMap,
+    fetchServices,
+    createService,
+    fetchPrices,
+    createPrice,
+    activatePrice,
+    fetchTiers,
+    addTier,
+  } = useServiceStore();
+
   const [selectedService, setSelectedService] = useState<ServiceResponse | null>(null);
-  const [prices, setPrices] = useState<ServicePriceResponse[]>([]);
   const [selectedPrice, setSelectedPrice] = useState<ServicePriceResponse | null>(null);
-  const [tiers, setTiers] = useState<PriceTierResponse[]>([]);
 
   // Dialog states
   const [showCreateService, setShowCreateService] = useState(false);
@@ -49,64 +59,39 @@ export const ServiceCatalogPage: React.FC = () => {
     extendedFee: 0,
   });
 
-  const fetchServices = async () => {
-    setLoading(true);
-    try {
-      const res = await serviceCatalogService.getAll();
-      if (res.data.success && res.data?.data?.items) {
-        setServices(res.data?.data?.items);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
     fetchServices();
-  }, []);
+  }, [fetchServices]);
+
+  const prices = selectedService ? (pricesMap[selectedService.id] ?? []) : [];
+  const tiers = selectedPrice ? (tiersMap[selectedPrice.id] ?? []) : [];
 
   const handleSelectService = async (service: ServiceResponse) => {
     setSelectedService(service);
     setSelectedPrice(null);
-    setTiers([]);
     try {
-      const res = await serviceCatalogService.getPrices(service.id);
-      if (res.data.success && res.data?.data?.items) {
-        setPrices(res.data?.data?.items);
-      } else {
-        setPrices([]);
-      }
+      await fetchPrices(service.id);
     } catch {
-      setPrices([]);
+      // Handled by store
     }
   };
 
   const handleSelectPrice = async (price: ServicePriceResponse) => {
     setSelectedPrice(price);
     try {
-      const res = await serviceCatalogService.getPriceTiers(price.id);
-      if (res.data.success && res.data?.data) {
-        setTiers(res.data?.data);
-      } else {
-        setTiers([]);
-      }
+      await fetchTiers(price.id);
     } catch {
-      setTiers([]);
+      // Handled by store
     }
   };
 
   const handleCreateService = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await serviceCatalogService.create(newService);
-      if (res.data.success) {
-        addToast({ variant: 'success', message: 'Tạo dịch vụ thành công!' });
-        setShowCreateService(false);
-        setNewService({ code: '', name: '', description: '' });
-        fetchServices();
-      }
+      await createService(newService);
+      addToast({ variant: 'success', message: 'Tạo dịch vụ thành công!' });
+      setShowCreateService(false);
+      setNewService({ code: '', name: '', description: '' });
     } catch (err: any) {
       addToast({ variant: 'destructive', message: err.response?.data?.message || 'Tạo dịch vụ thất bại.' });
     }
@@ -116,12 +101,10 @@ export const ServiceCatalogPage: React.FC = () => {
     e.preventDefault();
     if (!selectedService) return;
     try {
-      const res = await serviceCatalogService.createPrice(selectedService.id, newPrice);
-      if (res.data.success) {
-        addToast({ variant: 'success', message: 'Tạo thiết lập giá thành công!' });
-        setShowCreatePrice(false);
-        handleSelectService(selectedService);
-      }
+      await createPrice(selectedService.id, newPrice);
+      addToast({ variant: 'success', message: 'Tạo thiết lập giá thành công!' });
+      setShowCreatePrice(false);
+      handleSelectService(selectedService);
     } catch (err: any) {
       addToast({ variant: 'destructive', message: err.response?.data?.message || 'Tạo giá thất bại.' });
     }
@@ -129,8 +112,8 @@ export const ServiceCatalogPage: React.FC = () => {
 
   const handleActivatePrice = async (priceId: string) => {
     try {
-      const res = await serviceCatalogService.activatePrice(priceId);
-      if (res.data.success && selectedService) {
+      await activatePrice(priceId);
+      if (selectedService) {
         addToast({ variant: 'success', message: 'Kích hoạt mức giá thành công!' });
         handleSelectService(selectedService);
       }
@@ -143,12 +126,10 @@ export const ServiceCatalogPage: React.FC = () => {
     e.preventDefault();
     if (!selectedPrice) return;
     try {
-      const res = await serviceCatalogService.addPriceTier(selectedPrice.id, newTier);
-      if (res.data.success) {
-        addToast({ variant: 'success', message: 'Thêm bậc giá thành công!' });
-        setShowCreateTier(false);
-        handleSelectPrice(selectedPrice);
-      }
+      await addTier(selectedPrice.id, newTier);
+      addToast({ variant: 'success', message: 'Thêm bậc giá thành công!' });
+      setShowCreateTier(false);
+      handleSelectPrice(selectedPrice);
     } catch (err: any) {
       addToast({ variant: 'destructive', message: err.response?.data?.message || 'Lỗi thêm bậc giá.' });
     }

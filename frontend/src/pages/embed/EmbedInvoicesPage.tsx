@@ -4,57 +4,38 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { embedService } from '@/services/billingServices';
-import { InvoiceResponse } from '@/types/api';
+import { useEmbedStore } from '@/stores';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { FileText, CreditCard, RefreshCw, Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { api } from '@/api/api';
 
 export const EmbedInvoicesPage: React.FC = () => {
   const { token } = useAuth();
   const { addToast } = useToast();
-  const [invoices, setInvoices] = useState<InvoiceResponse[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchInvoices = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await embedService.getInvoices();
-      if (res.data.success && res.data?.data?.items) {
-        setInvoices(res.data?.data?.items);
-      } else {
-        setError('Không thể tải danh sách hóa đơn.');
-      }
-    } catch (err) {
-      console.error(err);
-      setError('Lỗi kết nối đến server.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const {
+    invoices,
+    invoicesLoading: loading,
+    invoicesError: error,
+    fetchInvoices,
+    payInvoice,
+  } = useEmbedStore();
 
   useEffect(() => {
     if (token) {
       fetchInvoices();
     }
-  }, [token]);
+  }, [token, fetchInvoices]);
 
   useEffect(() => {
     if (error) {
       addToast({ variant: 'destructive', message: error });
     }
-  }, [error]);
+  }, [error, addToast]);
 
   const handlePay = async (invoiceId: string) => {
     try {
-      const res = await api.patch(`/invoices/${invoiceId}/pay`, { updatedBy: 'client' });
-      if (res.data.success) {
-        addToast({ variant: 'success', message: 'Thanh toán hóa đơn thành công!' });
-        fetchInvoices();
-      }
+      await payInvoice(invoiceId);
+      addToast({ variant: 'success', message: 'Thanh toán hóa đơn thành công!' });
     } catch (err: any) {
       addToast({ variant: 'destructive', message: err.response?.data?.message || 'Thanh toán thất bại.' });
     }

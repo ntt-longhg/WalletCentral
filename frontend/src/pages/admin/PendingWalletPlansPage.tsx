@@ -5,40 +5,21 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Clock, CheckCircle2, XCircle, RefreshCw } from 'lucide-react';
-import { walletPlanService } from '@/services/billingServices';
-import { WalletPlanResponse } from '@/types/api';
 import { formatCurrency, formatDate, getStatusConfig } from '@/lib/utils';
+import { useBillingStore } from '@/stores';
 
 export const PendingWalletPlansPage: React.FC = () => {
   const { addToast } = useToast();
-  const [pendingPlans, setPendingPlans] = useState<WalletPlanResponse[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  const fetchPendingPlans = async () => {
-    setLoading(true);
-    try {
-      const res = await walletPlanService.getPending();
-      if (res.data.success && res.data?.data?.items) {
-        setPendingPlans(res.data?.data?.items);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { pendingPlans, plansLoading: loading, fetchPendingWalletPlans, approveWalletPlan, rejectWalletPlan } = useBillingStore();
 
   useEffect(() => {
-    fetchPendingPlans();
+    fetchPendingWalletPlans();
   }, []);
 
   const handleApprove = async (id: string) => {
     try {
-      const res = await walletPlanService.approve(id, { approvedBy: 'admin' });
-      if (res.data.success) {
-        addToast({ variant: 'success', message: 'Đã phê duyệt gói cước thành công!' });
-        fetchPendingPlans();
-      }
+      await approveWalletPlan(id, { approvedBy: 'admin' });
+      addToast({ variant: 'success', message: 'Đã phê duyệt gói cước thành công!' });
     } catch (err: any) {
       addToast({ variant: 'destructive', message: err.response?.data?.message || 'Không thể duyệt gói cước.' });
     }
@@ -46,11 +27,8 @@ export const PendingWalletPlansPage: React.FC = () => {
 
   const handleReject = async (id: string) => {
     try {
-      const res = await walletPlanService.reject(id, { approvedBy: 'admin' });
-      if (res.data.success) {
-        addToast({ variant: 'success', message: 'Đã từ chối đăng ký gói cước.' });
-        fetchPendingPlans();
-      }
+      await rejectWalletPlan(id, { approvedBy: 'admin' });
+      addToast({ variant: 'success', message: 'Đã từ chối đăng ký gói cước.' });
     } catch (err: any) {
       addToast({ variant: 'destructive', message: err.response?.data?.message || 'Không thể từ chối gói cước.' });
     }
@@ -68,7 +46,7 @@ export const PendingWalletPlansPage: React.FC = () => {
             Phê duyệt hoặc từ chối các yêu cầu nạp tiền / mua gói trả trước từ các Tenant trong hệ thống.
           </p>
         </div>
-        <Button variant="outline" onClick={fetchPendingPlans} disabled={loading} className="gap-2 self-start sm:self-auto">
+        <Button variant="outline" onClick={() => fetchPendingWalletPlans()} disabled={loading} className="gap-2 self-start sm:self-auto">
           <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           Làm mới
         </Button>

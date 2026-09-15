@@ -4,8 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/components/ui/toast';
-import { embedService } from '@/services/billingServices';
-import { TransactionResponse } from '@/types/api';
+import { useEmbedStore } from '@/stores';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { ArrowDownLeft, ArrowUpRight, History, RefreshCw, Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -13,34 +12,20 @@ import { useAuth } from '@/context/AuthContext';
 export const EmbedTransactionsPage: React.FC = () => {
   const { token } = useAuth();
   const { addToast } = useToast();
-  const [transactions, setTransactions] = useState<TransactionResponse[]>([]);
-  const [filterType, setFilterType] = useState<string>('ALL');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    transactions,
+    transactionsLoading: loading,
+    transactionsError: error,
+    fetchTransactions,
+  } = useEmbedStore();
 
-  const fetchTransactions = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await embedService.getTransactions();
-      if (res.data.success && res.data?.data?.items) {
-        setTransactions(res.data?.data?.items);
-      } else {
-        setError('Không thể tải lịch sử giao dịch.');
-      }
-    } catch (err) {
-      console.error(err);
-      setError('Lỗi kết nối đến server.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const [filterType, setFilterType] = useState<string>('ALL');
 
   useEffect(() => {
     if (token) {
       fetchTransactions();
     }
-  }, [token]);
+  }, [token, fetchTransactions]);
 
   useEffect(() => {
     if (error) {

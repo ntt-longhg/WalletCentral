@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,61 +18,30 @@ import {
   LayoutDashboard,
   ArrowDownLeft,
 } from 'lucide-react';
-import {
-  tenantService,
-  serviceCatalogService,
-  walletPlanService,
-  transactionService,
-  walletService,
-} from '@/services/billingServices';
-import { TransactionResponse } from '@/types/api';
+import { useBillingStore, useServiceStore, useTransactionStore } from '@/stores';
 
 export const AdminDashboard: React.FC = () => {
-  const [stats, setStats] = useState({
-    totalTenants: 0,
-    activeServices: 0,
-    pendingPlans: 0,
-    totalTransactions: 0,
-    totalWallets: 0,
-  });
-  const [recentTransactions, setRecentTransactions] = useState<TransactionResponse[]>([]);
-  const [loading, setLoading] = useState(false);
+  const { tenants, wallets, pendingPlans, fetchTenants, fetchWallets, fetchPendingWalletPlans, tenantsLoading } = useBillingStore();
+  const { services, fetchServices } = useServiceStore();
+  const { transactions, fetchTransactions, transactionsLoading } = useTransactionStore();
+
+  const loading = tenantsLoading || transactionsLoading;
 
   const fetchDashboardData = async () => {
-    setLoading(true);
-    try {
-      const [tenantsRes, servicesRes, pendingRes, txnsRes, walletsRes] = await Promise.allSettled([
-        tenantService.getAll(),
-        serviceCatalogService.getAll(),
-        walletPlanService.getPending(),
-        transactionService.getAll(),
-        walletService.getAll(),
-      ]);
-      const tenants = tenantsRes.status === 'fulfilled' ? tenantsRes.value.data?.data?.items || [] : [];
-      const services = servicesRes.status === 'fulfilled' ? servicesRes.value.data?.data?.items || [] : [];
-      const pending = pendingRes.status === 'fulfilled' ? pendingRes.value.data?.data?.items || [] : [];
-      const txns = txnsRes.status === 'fulfilled' ? txnsRes.value.data?.data?.items || [] : [];
-      const wallets = walletsRes.status === 'fulfilled' ? walletsRes.value.data?.data?.items || [] : [];
-
-      setStats({
-        totalTenants: tenants.length,
-        activeServices: services.length,
-        pendingPlans: pending.length,
-        totalTransactions: txns.length,
-        totalWallets: wallets.length,
-      });
-
-      setRecentTransactions(txns.slice(0, 5));
-    } catch (err) {
-      console.error('Error fetching dashboard data:', err);
-    } finally {
-      setLoading(false);
-    }
+    await Promise.allSettled([
+      fetchTenants(),
+      fetchServices(),
+      fetchPendingWalletPlans(),
+      fetchTransactions(),
+      fetchWallets(),
+    ]);
   };
 
   useEffect(() => {
     fetchDashboardData();
   }, []);
+
+  const recentTransactions = transactions.slice(0, 5);
 
   return (
     <div className="space-y-6">
@@ -108,7 +77,7 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-900">{stats.totalTenants}</div>
+            <div className="text-2xl font-bold text-slate-900">{tenants.length}</div>
             <p className="text-xs text-slate-500 mt-1">Đối tác đang kết nối</p>
           </CardContent>
         </Card>
@@ -121,7 +90,7 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-900">{stats.activeServices}</div>
+            <div className="text-2xl font-bold text-slate-900">{services.length}</div>
             <p className="text-xs text-slate-500 mt-1">Dịch vụ đang hoạt động</p>
           </CardContent>
         </Card>
@@ -134,7 +103,7 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-900">{stats.totalWallets}</div>
+            <div className="text-2xl font-bold text-slate-900">{wallets.length}</div>
             <p className="text-xs text-slate-500 mt-1">Ví trả trước & trả sau</p>
           </CardContent>
         </Card>
@@ -147,9 +116,9 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-amber-600">{stats.pendingPlans}</div>
+            <div className="text-2xl font-bold text-amber-600">{pendingPlans.length}</div>
             <p className="text-xs text-slate-500 mt-1">
-              {stats.pendingPlans > 0 ? (
+              {pendingPlans.length > 0 ? (
                 <span className="text-amber-600 font-medium">Cần xử lý</span>
               ) : (
                 'Không có yêu cầu chờ'
@@ -166,7 +135,7 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-900">{stats.totalTransactions}</div>
+            <div className="text-2xl font-bold text-slate-900">{transactions.length}</div>
             <p className="text-xs text-slate-500 mt-1">Ghi nhận từ hệ thống</p>
           </CardContent>
         </Card>

@@ -15,14 +15,13 @@ import {
 import { useToast } from '@/components/ui/toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Building2, Plus, RefreshCw, Trash2, ToggleLeft, ToggleRight, Search } from 'lucide-react';
-import { tenantService } from '@/services/billingServices';
 import { TenantResponse } from '@/types/api';
 import { formatDate, getStatusConfig } from '@/lib/utils';
+import { useBillingStore } from '@/stores';
 
 export const TenantManagementPage: React.FC = () => {
   const { addToast } = useToast();
-  const [tenants, setTenants] = useState<TenantResponse[]>([]);
-  const [loading, setLoading] = useState(false);
+  const { tenants, tenantsLoading: loading, fetchTenants, createTenant, updateTenantStatus, deleteTenant } = useBillingStore();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<TenantResponse | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -33,20 +32,6 @@ export const TenantManagementPage: React.FC = () => {
     clientSecret: '',
     allowedDomains: '',
   });
-
-  const fetchTenants = async () => {
-    setLoading(true);
-    try {
-      const res = await tenantService.getAll();
-      if (res.data.success && res.data?.data?.items) {
-        setTenants(res.data?.data?.items);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
     fetchTenants();
@@ -65,13 +50,10 @@ export const TenantManagementPage: React.FC = () => {
   const handleCreateTenant = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await tenantService.create(formData);
-      if (res.data.success) {
-        addToast({ variant: 'success', message: 'Tạo Tenant thành công!' });
-        setShowCreateModal(false);
-        setFormData({ name: '', clientId: '', clientSecret: '', allowedDomains: '' });
-        fetchTenants();
-      }
+      await createTenant(formData);
+      addToast({ variant: 'success', message: 'Tạo Tenant thành công!' });
+      setShowCreateModal(false);
+      setFormData({ name: '', clientId: '', clientSecret: '', allowedDomains: '' });
     } catch (err: any) {
       addToast({ variant: 'destructive', message: err.response?.data?.message || 'Không thể tạo Tenant.' });
     }
@@ -80,11 +62,8 @@ export const TenantManagementPage: React.FC = () => {
   const handleToggleStatus = async (tenant: TenantResponse) => {
     const nextStatus = tenant.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
     try {
-      const res = await tenantService.updateStatus(tenant.id, { status: nextStatus });
-      if (res.data.success) {
-        addToast({ variant: 'success', message: `Đã chuyển trạng thái Tenant thành ${nextStatus}` });
-        fetchTenants();
-      }
+      await updateTenantStatus(tenant.id, { status: nextStatus });
+      addToast({ variant: 'success', message: `Đã chuyển trạng thái Tenant thành ${nextStatus}` });
     } catch (err: any) {
       addToast({ variant: 'destructive', message: 'Lỗi cập nhật trạng thái Tenant.' });
     }
@@ -93,12 +72,9 @@ export const TenantManagementPage: React.FC = () => {
   const handleDelete = async () => {
     if (!showDeleteConfirm) return;
     try {
-      const res = await tenantService.delete(showDeleteConfirm.id);
-      if (res.data.success) {
-        addToast({ variant: 'success', message: 'Đã xóa Tenant thành công.' });
-        setShowDeleteConfirm(null);
-        fetchTenants();
-      }
+      await deleteTenant(showDeleteConfirm.id);
+      addToast({ variant: 'success', message: 'Đã xóa Tenant thành công.' });
+      setShowDeleteConfirm(null);
     } catch (err: any) {
       addToast({ variant: 'destructive', message: err.response?.data?.message || 'Không thể xóa Tenant.' });
     }
@@ -117,7 +93,7 @@ export const TenantManagementPage: React.FC = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={fetchTenants} disabled={loading} className="gap-1.5">
+          <Button variant="outline" onClick={() => fetchTenants()} disabled={loading} className="gap-1.5">
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           </Button>
           <Button onClick={() => setShowCreateModal(true)} className="gap-2 bg-blue-600 hover:bg-blue-700">

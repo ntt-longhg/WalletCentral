@@ -28,20 +28,17 @@ import {
   CheckCircle,
   XCircle,
 } from 'lucide-react';
-import { invoiceService, tenantService, walletService } from '@/services/billingServices';
-import { InvoiceResponse, TenantResponse, WalletResponse } from '@/types/api';
+import { useBillingStore, useTransactionStore } from '@/stores';
 import { formatCurrency, formatDate, getStatusConfig } from '@/lib/utils';
 
 export const AdminInvoicePage: React.FC = () => {
   const { addToast } = useToast();
-  const [invoices, setInvoices] = useState<InvoiceResponse[]>([]);
-  const [tenants, setTenants] = useState<TenantResponse[]>([]);
-  const [wallets, setWallets] = useState<WalletResponse[]>([]);
-  const [loading, setLoading] = useState(false);
+  const { tenants, wallets, fetchTenants, fetchWallets } = useBillingStore();
+  const { invoices, invoicesLoading: loading, fetchInvoices, payInvoice, generateAllInvoices } = useTransactionStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [showGenerateDialog, setShowGenerateDialog] = useState(false);
-  const [showDetailDialog, setShowDetailDialog] = useState<InvoiceResponse | null>(null);
+  const [showDetailDialog, setShowDetailDialog] = useState<{ id: string; billingPeriod: string; status: string; totalAmount: number; dueDate?: string; tenantId: string; createdAt: string } | null>(null);
   const [generating, setGenerating] = useState(false);
 
   const [generateForm, setGenerateForm] = useState({
@@ -50,32 +47,12 @@ export const AdminInvoicePage: React.FC = () => {
     updatedBy: 'admin',
   });
 
-  const fetchInvoices = async () => {
-    setLoading(true);
-    try {
-      const [invoicesRes, tenantsRes, walletsRes] = await Promise.allSettled([
-        invoiceService.getAll(),
-        tenantService.getAll(),
-        walletService.getAll(),
-      ]);
-      if (invoicesRes.status === 'fulfilled' && invoicesRes.value.data.success) {
-        setInvoices(invoicesRes.value.data.data?.items || []);
-      }
-      if (tenantsRes.status === 'fulfilled' && tenantsRes.value.data.success) {
-        setTenants(tenantsRes.value.data.data?.items || []);
-      }
-      if (walletsRes.status === 'fulfilled' && walletsRes.value.data.success) {
-        setWallets(walletsRes.value.data.data?.items || []);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+  const fetchAllData = async () => {
+    await Promise.allSettled([fetchInvoices(), fetchTenants(), fetchWallets()]);
   };
 
   useEffect(() => {
-    fetchInvoices();
+    fetchAllData();
   }, []);
 
   const filteredInvoices = invoices.filter((inv) => {
@@ -90,15 +67,13 @@ export const AdminInvoicePage: React.FC = () => {
   const handleGenerateAll = async () => {
     setGenerating(true);
     try {
-      const res = await invoiceService.generateAll(generateForm.billingPeriod || undefined, generateForm.updatedBy);
-      if (res.data.success) {
-        addToast({
-          variant: 'success',
-          message: `Đã tạo ${res.data.data?.generatedCount || 0} hóa đơn cho kỳ ${res.data.data?.billingPeriod}`,
-        });
-        setShowGenerateDialog(false);
-        fetchInvoices();
-      }
+      const result = await generateAllInvoices(generateForm.billingPeriod || undefined, generateForm.updatedBy);
+      addToast({
+        variant: 'success',
+        message: `Đã tạo ${result.generatedCount || 0} hóa đơn cho kỳ ${result.billingPeriod}`,
+      });
+      setShowGenerateDialog(false);
+      fetchInvoices();
     } catch (err: any) {
       addToast({ variant: 'destructive', message: err.response?.data?.message || 'Không thể tạo hóa đơn.' });
     } finally {
@@ -106,13 +81,10 @@ export const AdminInvoicePage: React.FC = () => {
     }
   };
 
-  const handleMarkAsPaid = async (invoice: InvoiceResponse) => {
+  const handleMarkAsPaid = async (invoice: { id: string; billingPeriod: string }) => {
     try {
-      const res = await invoiceService.pay(invoice.id, { updatedBy: 'admin' });
-      if (res.data.success) {
-        addToast({ variant: 'success', message: `Hóa đơn ${invoice.billingPeriod} đã được đánh dấu thanh toán.` });
-        fetchInvoices();
-      }
+      await payInvoice(invoice.id, { updatedBy: 'admin' });
+      addToast({ variant: 'success', message: `Hóa đơn ${invoice.billingPeriod} đã được đánh dấu thanh toán.` });
     } catch (err: any) {
       addToast({ variant: 'destructive', message: err.response?.data?.message || 'Không thể cập nhật.' });
     }

@@ -16,9 +16,8 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/components/ui/toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { walletService, tenantService, pricingPlanService, walletPlanService } from '@/services/billingServices';
-import { WalletResponse, TenantResponse, PricingPlanResponse } from '@/types/api';
 import { formatCurrency, formatDate, getStatusConfig, walletTypeConfig } from '@/lib/utils';
+import { useBillingStore, useServiceStore } from '@/stores';
 import {
   Wallet,
   Plus,
@@ -35,10 +34,21 @@ import {
 
 export const WalletManagementPage: React.FC = () => {
   const { addToast } = useToast();
-  const [wallets, setWallets] = useState<WalletResponse[]>([]);
-  const [tenants, setTenants] = useState<TenantResponse[]>([]);
-  const [plans, setPlans] = useState<PricingPlanResponse[]>([]);
-  const [loading, setLoading] = useState(false);
+  const {
+    wallets,
+    tenants,
+    walletsLoading,
+    tenantsLoading,
+    fetchWallets,
+    fetchTenants,
+    createWallet,
+    updateWalletStatus,
+    createWalletPlan,
+  } = useBillingStore();
+  const { pricingPlans, fetchPricingPlans } = useServiceStore();
+
+  const loading = walletsLoading || tenantsLoading;
+  const plans = pricingPlans.filter((p) => p.status === 'ACTIVE');
   const [searchTerm, setSearchTerm] = useState('');
 
   // Create wallet dialog
@@ -59,37 +69,16 @@ export const WalletManagementPage: React.FC = () => {
   // Switch type dialog
   const [showSwitchDialog, setShowSwitchDialog] = useState(false);
   const [switchData, setSwitchData] = useState<{
-    wallet: WalletResponse;
+    wallet: { id: string; tenantId: string; type: string; tenantName: string; balance: number; creditLimit: number; availableBalance: number; status: string; createdAt: string };
     newType: 'PREPAID' | 'POSTPAID';
   } | null>(null);
 
-  const fetchWallets = async () => {
-    setLoading(true);
-    try {
-      const [walletsRes, tenantsRes, plansRes] = await Promise.allSettled([
-        walletService.getAll(),
-        tenantService.getAll(),
-        pricingPlanService.getAll(),
-      ]);
-
-      if (walletsRes.status === 'fulfilled' && walletsRes.value.data.data?.items) {
-        setWallets(walletsRes.value.data.data.items);
-      }
-      if (tenantsRes.status === 'fulfilled' && tenantsRes.value.data.data?.items) {
-        setTenants(tenantsRes.value.data.data.items);
-      }
-      if (plansRes.status === 'fulfilled' && plansRes.value.data.data?.items) {
-        setPlans(plansRes.value.data.data.items.filter((p) => p.status === 'ACTIVE'));
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+  const fetchAllData = async () => {
+    await Promise.allSettled([fetchWallets(), fetchTenants(), fetchPricingPlans()]);
   };
 
   useEffect(() => {
-    fetchWallets();
+    fetchAllData();
   }, []);
 
   const filteredWallets = wallets.filter((w) => {
@@ -113,13 +102,10 @@ export const WalletManagementPage: React.FC = () => {
   const handleCreateWallet = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await walletService.create(createData);
-      if (res.data.success) {
-        addToast({ variant: 'success', message: 'Tạo ví thành công!' });
-        setShowCreateDialog(false);
-        setCreateData({ tenantId: '', type: 'PREPAID', creditLimit: 0 });
-        fetchWallets();
-      }
+      await createWallet(createData);
+      addToast({ variant: 'success', message: 'Tạo ví thành công!' });
+      setShowCreateDialog(false);
+      setCreateData({ tenantId: '', type: 'PREPAID', creditLimit: 0 });
     } catch (err: any) {
       addToast({ variant: 'destructive', message: err.response?.data?.message || 'Không thể tạo ví.' });
     }
@@ -131,16 +117,14 @@ export const WalletManagementPage: React.FC = () => {
     if (!wallet) return;
 
     try {
-      const res = await walletPlanService.create({
+      await createWalletPlan({
         tenantId: wallet.tenantId,
         pricingPlanId: addPlanData.pricingPlanId,
         createdBy: 'admin',
       });
-      if (res.data.success) {
-        addToast({ variant: 'success', message: 'Đã thêm gói vào ví! Yêu cầu đang chờ duyệt.' });
-        setShowAddPlanDialog(false);
-        setAddPlanData({ walletId: '', pricingPlanId: '' });
-      }
+      addToast({ variant: 'success', message: 'Đã thêm gói vào ví! Yêu cầu đang chờ duyệt.' });
+      setShowAddPlanDialog(false);
+      setAddPlanData({ walletId: '', pricingPlanId: '' });
     } catch (err: any) {
       addToast({ variant: 'destructive', message: err.response?.data?.message || 'Không thể thêm gói.' });
     }
@@ -148,16 +132,14 @@ export const WalletManagementPage: React.FC = () => {
 
   const handleSwitchType = async () => {
     if (!switchData) return;
-
     const { wallet, newType } = switchData;
     const oldType = wallet.type;
 
     if (oldType === 'POSTPAID' && newType === 'PREPAID') {
       try {
-        // Create invoice and adjust credit limit to 0
         const filteredPlans = getFilteredPlansForWallet('PREPAID');
         if (filteredPlans.length > 0) {
-          await walletPlanService.create({
+          await createWalletPlan({
             tenantId: wallet.tenantId,
             pricingPlanId: filteredPlans[0].id,
             createdBy: 'admin',
@@ -177,17 +159,14 @@ export const WalletManagementPage: React.FC = () => {
     fetchWallets();
   };
 
-  const handleToggleStatus = async (wallet: WalletResponse) => {
+  const handleToggleStatus = async (wallet: { id: string; status: string }) => {
     const nextStatus = wallet.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE';
     try {
-      const res = await walletService.updateStatus(wallet.id, { status: nextStatus });
-      if (res.data.success) {
-        addToast({
-          variant: 'success',
-          message: `Đã ${nextStatus === 'ACTIVE' ? 'kích hoạt' : 'đình chỉ'} ví thành công.`,
-        });
-        fetchWallets();
-      }
+      await updateWalletStatus(wallet.id, { status: nextStatus });
+      addToast({
+        variant: 'success',
+        message: `Đã ${nextStatus === 'ACTIVE' ? 'kích hoạt' : 'đình chỉ'} ví thành công.`,
+      });
     } catch (err: any) {
       addToast({ variant: 'destructive', message: err.response?.data?.message || 'Lỗi cập nhật trạng thái.' });
     }
@@ -207,7 +186,7 @@ export const WalletManagementPage: React.FC = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={fetchWallets} disabled={loading} className="gap-1.5">
+          <Button variant="outline" onClick={() => fetchAllData()} disabled={loading} className="gap-1.5">
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           </Button>
           <Button onClick={() => setShowAddPlanDialog(true)} variant="outline" className="gap-2">

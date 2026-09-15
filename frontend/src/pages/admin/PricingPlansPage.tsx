@@ -16,14 +16,12 @@ import {
 import { useToast } from '@/components/ui/toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { FileSpreadsheet, Plus, RefreshCw } from 'lucide-react';
-import { pricingPlanService } from '@/services/billingServices';
-import { PricingPlanResponse } from '@/types/api';
+import { useServiceStore } from '@/stores';
 import { formatCurrency, getStatusConfig } from '@/lib/utils';
 
 export const PricingPlansPage: React.FC = () => {
   const { addToast } = useToast();
-  const [plans, setPlans] = useState<PricingPlanResponse[]>([]);
-  const [loading, setLoading] = useState(false);
+  const { pricingPlans: plans, plansLoading: loading, fetchPricingPlans, createPricingPlan, updatePricingPlanStatus } = useServiceStore();
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -38,46 +36,26 @@ export const PricingPlansPage: React.FC = () => {
     creditLimitValue: 0,
   });
 
-  const fetchPlans = async () => {
-    setLoading(true);
-    try {
-      const res = await pricingPlanService.getAll();
-      if (res.data.success && res.data?.data?.items) {
-        setPlans(res.data?.data?.items);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchPlans();
+    fetchPricingPlans();
   }, []);
 
   const handleCreatePlan = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await pricingPlanService.create(formData);
-      if (res.data.success) {
-        addToast({ variant: 'success', message: 'Tạo bảng giá Tenant thành công!' });
-        setShowCreateModal(false);
-        fetchPlans();
-      }
+      await createPricingPlan(formData);
+      addToast({ variant: 'success', message: 'Tạo bảng giá Tenant thành công!' });
+      setShowCreateModal(false);
     } catch (err: any) {
       addToast({ variant: 'destructive', message: err.response?.data?.message || 'Không thể tạo bảng giá.' });
     }
   };
 
-  const handleToggleStatus = async (plan: PricingPlanResponse) => {
+  const handleToggleStatus = async (plan: { id: string; status: string }) => {
     const nextStatus = plan.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
     try {
-      const res = await pricingPlanService.updateStatus(plan.id, { status: nextStatus });
-      if (res.data.success) {
-        addToast({ variant: 'success', message: `Đã chuyển trạng thái bảng giá thành ${nextStatus}` });
-        fetchPlans();
-      }
+      await updatePricingPlanStatus(plan.id, { status: nextStatus });
+      addToast({ variant: 'success', message: `Đã chuyển trạng thái bảng giá thành ${nextStatus}` });
     } catch (err: any) {
       addToast({ variant: 'destructive', message: 'Lỗi cập nhật trạng thái bảng giá.' });
     }
@@ -96,7 +74,7 @@ export const PricingPlansPage: React.FC = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={fetchPlans} disabled={loading} className="gap-1.5">
+          <Button variant="outline" onClick={() => fetchPricingPlans()} disabled={loading} className="gap-1.5">
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           </Button>
           <Button onClick={() => setShowCreateModal(true)} className="gap-2 bg-blue-600 hover:bg-blue-700">

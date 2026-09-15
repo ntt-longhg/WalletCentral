@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { systemConfigService } from '@/services/billingServices';
+import { useConfigStore } from '@/stores';
 import { SystemConfigResponse } from '@/types/api';
 import { Settings, Mail, Key, ShieldCheck, Save, Loader2 } from 'lucide-react';
 
@@ -23,35 +23,32 @@ const GROUP_LABELS: Record<string, string> = {
 
 export const AdminSettingsPage: React.FC = () => {
   const { addToast } = useToast();
-  const [configs, setConfigs] = useState<SystemConfigResponse[]>([]);
+  const { configs, configsLoading: loading, fetchConfigs, updateConfigs } = useConfigStore();
   const [editedValues, setEditedValues] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('SMTP');
 
-  const fetchConfigs = useCallback(async () => {
-    setLoading(true);
+  const loadData = useCallback(async () => {
     try {
-      const res = await systemConfigService.getAll();
-      if (res.data.success && res.data.data) {
-        setConfigs(res.data.data);
-        const values: Record<string, string> = {};
-        res.data.data.forEach((c) => {
-          values[c.key] = c.value;
-        });
-        setEditedValues(values);
-      }
-    } catch (err) {
-      console.error(err);
+      await fetchConfigs();
+    } catch {
       addToast({ variant: 'destructive', message: 'Không thể tải cấu hình hệ thống.' });
-    } finally {
-      setLoading(false);
     }
-  }, []);
+  }, [fetchConfigs, addToast]);
 
   useEffect(() => {
-    fetchConfigs();
-  }, [fetchConfigs]);
+    loadData();
+  }, [loadData]);
+
+  useEffect(() => {
+    if (configs.length > 0) {
+      const values: Record<string, string> = {};
+      configs.forEach((c) => {
+        values[c.key] = c.value;
+      });
+      setEditedValues(values);
+    }
+  }, [configs]);
 
   const handleChange = (key: string, value: string) => {
     setEditedValues((prev) => ({ ...prev, [key]: value }));
@@ -61,13 +58,8 @@ export const AdminSettingsPage: React.FC = () => {
     setSaving(true);
     try {
       const updates = Object.entries(editedValues).map(([key, value]) => ({ key, value }));
-      const res = await systemConfigService.update(updates);
-      if (res.data.success) {
-        addToast({ variant: 'success', message: 'Cấu hình đã được lưu thành công!' });
-        await fetchConfigs();
-      } else {
-        addToast({ variant: 'destructive', message: res.data.message || 'Lưu cấu hình thất bại.' });
-      }
+      await updateConfigs(updates);
+      addToast({ variant: 'success', message: 'Cấu hình đã được lưu thành công!' });
     } catch (err: any) {
       addToast({ variant: 'destructive', message: err.response?.data?.message || 'Lưu cấu hình thất bại.' });
     } finally {

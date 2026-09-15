@@ -4,8 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { embedService } from '@/services/billingServices';
-import { UsageLogResponse, CreditAdjustmentResponse, PaginatedResponse } from '@/types/api';
+import { useEmbedStore } from '@/stores';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { BarChart3, Activity, ShieldCheck, RefreshCw, Layers, Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -13,57 +12,38 @@ import { useAuth } from '@/context/AuthContext';
 export const EmbedReportsPage: React.FC = () => {
   const { token } = useAuth();
   const { addToast } = useToast();
-  const [usageLogs, setUsageLogs] = useState<UsageLogResponse[]>([]);
-  const [adjustments, setAdjustments] = useState<CreditAdjustmentResponse[]>([]);
-  const [loading, setLoading] = useState(false);
+  const {
+    usageLogs,
+    creditAdjustments: adjustments,
+    usageLogsLoading,
+    creditAdjustmentsLoading,
+    fetchUsageLogs,
+    fetchCreditAdjustments,
+  } = useEmbedStore();
+
+  const loading = usageLogsLoading || creditAdjustmentsLoading;
   const [error, setError] = useState<string | null>(null);
 
   const fetchReportsData = useCallback(async () => {
-    setLoading(true);
     setError(null);
     try {
-      const [logsRes, adjRes] = await Promise.allSettled([
-        embedService.getUsageLogs(),
-        embedService.getCreditAdjustments(),
-      ]);
-
-      if (logsRes.status === 'fulfilled' && logsRes.value.data.data) {
-        const data = logsRes.value.data.data;
-        if (Array.isArray(data)) {
-          setUsageLogs(data);
-        } else if (data && 'items' in data) {
-          setUsageLogs((data as PaginatedResponse<UsageLogResponse>).items || []);
-        }
-      } else {
-        setError('Không thể tải dữ liệu tiêu dùng.');
-      }
-      if (adjRes.status === 'fulfilled' && adjRes.value.data.data) {
-        const data = adjRes.value.data.data;
-        if (Array.isArray(data)) {
-          setAdjustments(data);
-        } else if (data && 'items' in data) {
-          setAdjustments((data as PaginatedResponse<CreditAdjustmentResponse>).items || []);
-        }
-      }
-    } catch (err) {
-      console.error(err);
+      await Promise.all([fetchUsageLogs(), fetchCreditAdjustments()]);
+    } catch (err: any) {
       setError('Lỗi kết nối đến server.');
-    } finally {
-      setLoading(false);
     }
-  }, []);
+  }, [fetchUsageLogs, fetchCreditAdjustments]);
 
   useEffect(() => {
     if (token) {
       fetchReportsData();
     }
-  }, [token]);
+  }, [token, fetchReportsData]);
 
   useEffect(() => {
     if (error) {
       addToast({ variant: 'destructive', message: error });
     }
-  }, [error]);
+  }, [error, addToast]);
 
   const totalUsageUnits = usageLogs.reduce((acc, curr) => acc + (curr.totalUsage || 0), 0);
   const totalChargedAmount = usageLogs.reduce((acc, curr) => acc + (curr.totalCharged || 0), 0);
