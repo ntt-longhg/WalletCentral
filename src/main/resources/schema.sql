@@ -1,5 +1,5 @@
 -- =============================================
--- BillingGateway Schema Initialization Script
+-- WalletCentral Schema Initialization Script
 -- Generated: 2026-09-10
 -- Order: Parent tables first, then child tables
 -- =============================================

@@ -11,7 +11,7 @@ spring:
 
   # 2. Cấu hình kết nối Cơ sở dữ liệu dung chung
   datasource:
-    url: jdbc:mariadb://172.16.10.188:3306/billing_gateway
+    url: jdbc:mariadb://172.16.10.188:3306/walletcentral
     username: root
     password: akuo-kfo
     driver-class-name: org.mariadb.jdbc.Driver
