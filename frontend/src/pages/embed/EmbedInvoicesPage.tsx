@@ -8,6 +8,7 @@ import { useEmbedStore } from '@/stores';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { FileText, CreditCard, RefreshCw, Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { EmbedAccessDeniedPage } from './EmbedAccessDeniedPage';
 
 export const EmbedInvoicesPage: React.FC = () => {
   const { token } = useAuth();
@@ -41,16 +42,22 @@ export const EmbedInvoicesPage: React.FC = () => {
     }
   };
 
-  if (!token) {
+  if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-6 w-6 text-blue-600 animate-spin" />
+      <div className="min-h-[400px] flex items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
       </div>
     );
   }
 
+  if (error) {
+    return (
+      <EmbedAccessDeniedPage />
+    )
+  }
+
   return (
-    <div className="space-y-4">
+    <div className="p-4 space-y-4">
       <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
         <div className="flex items-center gap-2.5">
           <div className="h-9 w-9 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">

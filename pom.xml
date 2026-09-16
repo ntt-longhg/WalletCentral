@@ -11,8 +11,8 @@
     <groupId>com.gateway</groupId>
     <artifactId>walletcentral</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>BillingGateway</name>
-    <description>BillingGateway</description>
+    <name>WalletCentral</name>
+    <description>WalletCentral Gateway Platform</description>
     <url/>
     <licenses>
         <license/>

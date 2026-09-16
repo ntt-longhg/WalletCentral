@@ -36,7 +36,7 @@ const EmbedContent: React.FC = () => {
     <EmbedNotificationProvider>
       <div
         id="embed-root-container"
-        className="w-full min-h-screen m-0 p-4 box-border bg-transparent font-sans text-slate-900"
+        className="w-full min-h-screen m-0 box-border bg-transparent font-sans text-slate-900"
       >
         <Outlet />
       </div>

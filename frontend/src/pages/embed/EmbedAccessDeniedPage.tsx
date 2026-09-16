@@ -9,7 +9,7 @@ export const EmbedAccessDeniedPage: React.FC = () => {
   const { token } = useAuth();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50">
       <Card className="w-full max-w-md border-red-200 shadow-lg">
         <CardHeader className="text-center pb-4">
           <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mx-auto mb-4">

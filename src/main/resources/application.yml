@@ -2,7 +2,7 @@ spring:
   jackson:
     time-zone: Asia/Ho_Chi_Minh
   application:
-    name: BillingGateway
+    name: WalletCentral
 
   # 1. Kích hoạt Virtual Threads cho Tomcat & Async Task
   threads:
@@ -61,7 +61,7 @@ spring:
       operations-sorter: alpha
     api-docs:
       path: /v3/api-docs
-    packages-to-scan: com.gateway.billing.modules.*.controller
+    packages-to-scan: com.gateway.walletcentral.modules.*.controller
 
 # Application custom config
 app:

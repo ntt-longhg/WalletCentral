@@ -8,6 +8,7 @@ import { useEmbedStore } from '@/stores';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { BarChart3, Activity, ShieldCheck, RefreshCw, Layers, Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { EmbedAccessDeniedPage } from './EmbedAccessDeniedPage';
 
 export const EmbedReportsPage: React.FC = () => {
   const { token } = useAuth();
@@ -17,19 +18,20 @@ export const EmbedReportsPage: React.FC = () => {
     creditAdjustments: adjustments,
     usageLogsLoading,
     creditAdjustmentsLoading,
+    usageLogsError,
+    creditAdjustmentsError,
     fetchUsageLogs,
     fetchCreditAdjustments,
   } = useEmbedStore();
 
   const loading = usageLogsLoading || creditAdjustmentsLoading;
-  const [error, setError] = useState<string | null>(null);
+  const error = usageLogsError || creditAdjustmentsError;
 
   const fetchReportsData = useCallback(async () => {
-    setError(null);
     try {
       await Promise.all([fetchUsageLogs(), fetchCreditAdjustments()]);
     } catch (err: any) {
-      setError('Lỗi kết nối đến server.');
+      // Handle by store
     }
   }, [fetchUsageLogs, fetchCreditAdjustments]);
 
@@ -48,16 +50,22 @@ export const EmbedReportsPage: React.FC = () => {
   const totalUsageUnits = usageLogs.reduce((acc, curr) => acc + (curr.totalUsage || 0), 0);
   const totalChargedAmount = usageLogs.reduce((acc, curr) => acc + (curr.totalCharged || 0), 0);
 
-  if (!token) {
+  if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-6 w-6 text-blue-600 animate-spin" />
+      <div className="min-h-[400px] flex items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
       </div>
     );
   }
 
+  if (error) {
+    return (
+      <EmbedAccessDeniedPage />
+    )
+  }
+
   return (
-    <div className="space-y-5">
+    <div className="p-4 space-y-4">
       <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
         <div className="flex items-center gap-2.5">
           <div className="h-9 w-9 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">

@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { MonthPicker } from '@/components/ui/month-picker';
 import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
@@ -257,15 +258,14 @@ export const AdminInvoicePage: React.FC = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Tạo Hóa đơn Hàng loạt</DialogTitle>
-            <DialogDescription>Tạo hóa đơn cho tất cả tenant có usage logs trong kỳ</DialogDescription>
+            <DialogDescription>Tạo hóa đơn cho các tenant sử dụng trả sau (POSTPAID) trong kỳ</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Kỳ hóa đơn (YYYY-MM)</Label>
-              <Input
-                type="month"
+              <Label>Kỳ hóa đơn</Label>
+              <MonthPicker
                 value={generateForm.billingPeriod}
-                onChange={(e) => setGenerateForm({ ...generateForm, billingPeriod: e.target.value })}
+                onChange={(val) => setGenerateForm({ ...generateForm, billingPeriod: val })}
                 placeholder="Để trống = kỳ hiện tại"
               />
             </div>

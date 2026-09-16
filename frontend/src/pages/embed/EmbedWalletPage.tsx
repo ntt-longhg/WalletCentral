@@ -9,6 +9,7 @@ import { PricingPlanResponse } from '@/types/api';
 import { formatCurrency } from '@/lib/utils';
 import { Wallet, ArrowUpRight, Zap, RefreshCw, CreditCard, Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { EmbedAccessDeniedPage } from './EmbedAccessDeniedPage';
 
 export const EmbedWalletPage: React.FC = () => {
   const { token } = useAuth();
@@ -61,23 +62,22 @@ export const EmbedWalletPage: React.FC = () => {
     }
   };
 
-  if (error) {
+  if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-center">
-        <div className="h-16 w-16 rounded-full bg-red-100 flex items-center justify-center mb-4">
-          <Wallet className="h-8 w-8 text-red-500" />
-        </div>
-        <h3 className="text-lg font-semibold text-slate-900 mb-2">Lỗi tải dữ liệu</h3>
-        <p className="text-sm text-slate-500 max-w-md">{error}</p>
-        <Button onClick={fetchWalletData} variant="outline" className="mt-4 gap-1.5">
-          <RefreshCw className="h-4 w-4" /> Thử lại
-        </Button>
+      <div className="min-h-[400px] flex items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
       </div>
     );
   }
 
+  if (error) {
+    return (
+      <EmbedAccessDeniedPage />
+    )
+  }
+
   return (
-    <div className="space-y-5">
+    <div className="p-4 space-y-4">
       {/* Top Banner Card */}
       <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-slate-900 rounded-2xl p-6 text-white shadow-md relative overflow-hidden">
         <div className="absolute right-0 top-0 translate-x-4 -translate-y-4 opacity-10 pointer-events-none">

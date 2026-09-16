@@ -35,4 +35,7 @@ public interface WalletRepository extends JpaRepository<Wallet, UUID> {
                                 @Param("type") WalletType type,
                                 @Param("status") WalletStatus status,
                                 org.springframework.data.domain.Pageable pageable);
+
+    @Query("SELECT w.tenant.id FROM Wallet w WHERE w.type = :type AND w.deletedAt IS NULL")
+    List<UUID> findTenantIdsByType(@Param("type") WalletType type);
 }

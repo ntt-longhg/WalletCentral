@@ -154,7 +154,7 @@ public class InvoiceService {
         } else {
             // Create new invoice
             YearMonth yearMonth = YearMonth.parse(billingPeriod);
-            OffsetDateTime dueDate = yearMonth.plusMonths(1).atDay(10).atStartOfDay(OffsetDateTime.now().getOffset());
+            OffsetDateTime dueDate = yearMonth.plusMonths(1).atDay(10).atStartOfDay().atOffset(OffsetDateTime.now().getOffset());
 
             Invoice invoice = Invoice.builder()
                     .tenant(tenant)
@@ -175,25 +175,24 @@ public class InvoiceService {
 
     /**
      * Generate invoices for all active tenants for a given billing period.
+     * Only generates invoices for tenants that have POSTPAID wallets (trả sau).
      * Used by scheduler (runs on 1st of each month).
      */
     public int generateAllInvoicesForPeriod(String billingPeriod, String updatedBy) {
-        List<Tenant> activeTenants = tenantRepository.findAll().stream()
-                .filter(t -> t.getStatus() == com.gateway.walletcentral.modules.tenant.model.TenantStatus.ACTIVE)
-                .toList();
+        List<UUID> postpaidTenantIds = walletRepository.findTenantIdsByType(WalletType.POSTPAID);
 
         int count = 0;
-        for (Tenant tenant : activeTenants) {
+        for (UUID tenantId : postpaidTenantIds) {
             try {
-                generateInvoice(tenant.getId(), billingPeriod, updatedBy);
+                generateInvoice(tenantId, billingPeriod, updatedBy);
                 count++;
             } catch (Exception e) {
                 log.error("Failed to generate invoice for tenant={} period={}: {}",
-                        tenant.getId(), billingPeriod, e.getMessage());
+                        tenantId, billingPeriod, e.getMessage());
             }
         }
 
-        log.info("Generated {} invoices for period {}", count, billingPeriod);
+        log.info("Generated {} invoices for period {} (postpaid tenants only)", count, billingPeriod);
         return count;
     }
 

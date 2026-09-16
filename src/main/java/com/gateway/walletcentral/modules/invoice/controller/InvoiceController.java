@@ -81,12 +81,21 @@ public class InvoiceController {
 
     @PostMapping("/generate-all")
     @RequirePermission("INVOICE_GENERATE")
-    @Operation(summary = "Generate invoices for all active tenants for a billing period")
+    @Operation(summary = "Generate invoices for all tenants for a billing period")
     public ResponseEntity<ApiResponse<Map<String, Object>>> generateAll(
             @RequestParam(required = false) String billingPeriod,
             @RequestParam(defaultValue = "admin") String updatedBy) {
         String period = billingPeriod != null ? billingPeriod :
                 java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM"));
+
+        // Validate: reject future months
+        java.time.YearMonth selected = java.time.YearMonth.parse(period);
+        java.time.YearMonth current = java.time.YearMonth.now();
+        if (selected.isAfter(current)) {
+            throw new com.gateway.walletcentral.core.exception.BusinessException(
+                    "INVALID_BILLING_PERIOD", "Không thể tạo hóa đơn cho tháng tương lai");
+        }
+
         int count = invoiceService.generateAllInvoicesForPeriod(period, updatedBy);
         return ResponseEntity.ok(ApiResponse.ok(
                 Map.of("generatedCount", count, "billingPeriod", period),

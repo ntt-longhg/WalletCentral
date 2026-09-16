@@ -38,6 +38,7 @@ import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @Transactional
@@ -273,28 +274,34 @@ public class WalletPlanService {
         walletPlan.setApprovedBy(request.getApprovedBy());
 
         var saved = walletPlanRepository.save(walletPlan);
+        log.info("Wallet plan DB updates completed for id: {}", id);
 
-        // Publish event
-        Map<String, Object> event = new HashMap<>();
-        event.put("walletPlanId", saved.getId().toString());
-        event.put("tenantId", walletPlan.getTenant().getId().toString());
-        event.put("walletId", wallet.getId().toString());
-        event.put("creditedAmount", creditedAmount);
-        event.put("newBalance", wallet.getBalance());
-        event.put("newCreditLimit", wallet.getCreditLimit());
-        messageProducer.publishWalletPlanApproved(event);
+        CompletableFuture.runAsync(() -> {
+           try {
+               // Publish event
+               Map<String, Object> event = new HashMap<>();
+               event.put("walletPlanId", saved.getId().toString());
+               event.put("tenantId", walletPlan.getTenant().getId().toString());
+               event.put("walletId", wallet.getId().toString());
+               event.put("creditedAmount", creditedAmount);
+               event.put("newBalance", wallet.getBalance());
+               event.put("newCreditLimit", wallet.getCreditLimit());
+               messageProducer.publishWalletPlanApproved(event);
 
-        // Notification event
-        Map<String, Object> notifEvent = new HashMap<>();
-        notifEvent.put("tenantId", walletPlan.getTenant().getId().toString());
-        notifEvent.put("type", "WALLET_PLAN");
-        notifEvent.put("title", "Wallet Plan Approved");
-        notifEvent.put("message", String.format("Wallet plan %s approved successfully", plan.getName()));
-        notifEvent.put("referenceType", "WALLET_PLAN");
-        notifEvent.put("referenceId", id.toString());
-        messageProducer.publishNotificationCreated(notifEvent);
-
-        log.info("Wallet plan approved: {} - transaction={}, usageLog={}", id, transaction.getId(), usageLog.getId());
+               // Notification event
+               Map<String, Object> notifEvent = new HashMap<>();
+               notifEvent.put("tenantId", walletPlan.getTenant().getId().toString());
+               notifEvent.put("type", "WALLET_PLAN");
+               notifEvent.put("title", "Wallet Plan Approved");
+               notifEvent.put("message", String.format("Wallet plan %s approved successfully", plan.getName()));
+               notifEvent.put("referenceType", "WALLET_PLAN");
+               notifEvent.put("referenceId", id.toString());
+               messageProducer.publishNotificationCreated(notifEvent);
+               log.info("Wallet plan approved: {} - transaction={}, usageLog={}", id, transaction.getId(), usageLog.getId());
+           } catch (Exception e) {
+               log.error("Failed to publish events for wallet plan: {}", id, e);
+           }
+        });
         return toResponse(saved);
     }
 

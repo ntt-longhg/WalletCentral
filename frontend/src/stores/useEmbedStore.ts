@@ -30,14 +30,17 @@ interface EmbedState {
   // Usage Logs
   usageLogs: UsageLogResponse[];
   usageLogsLoading: boolean;
+  usageLogsError: string | null;
 
   // Credit Adjustments
   creditAdjustments: CreditAdjustmentResponse[];
   creditAdjustmentsLoading: boolean;
+  creditAdjustmentsError: string | null;
 
   // Pricing Plans
   pricingPlans: PricingPlanResponse[];
   pricingPlansLoading: boolean;
+  pricingPlansError: string | null;
 
   // Actions
   fetchWallet: () => Promise<void>;
@@ -66,12 +69,15 @@ export const useEmbedStore = create<EmbedState>((set) => ({
 
   usageLogs: [],
   usageLogsLoading: false,
+  usageLogsError: null,
 
   creditAdjustments: [],
   creditAdjustmentsLoading: false,
+  creditAdjustmentsError: null,
 
   pricingPlans: [],
   pricingPlansLoading: false,
+  pricingPlansError: null,
 
   // ─── Actions ──────────────────────────────────────────────────────────────────
 
@@ -134,6 +140,8 @@ export const useEmbedStore = create<EmbedState>((set) => ({
           : (data as PaginatedResponse<UsageLogResponse>).items ?? [];
         set({ usageLogs: items });
       }
+    } catch (err: any) {
+      set({ usageLogsError: err.response?.data?.message ?? 'Lỗi kết nối đến server.' });
     } finally {
       set({ usageLogsLoading: false });
     }
@@ -150,6 +158,8 @@ export const useEmbedStore = create<EmbedState>((set) => ({
           : (data as PaginatedResponse<CreditAdjustmentResponse>).items ?? [];
         set({ creditAdjustments: items });
       }
+    } catch (err: any) {
+      set({ creditAdjustmentsError: err.response?.data?.message ?? 'Lỗi kết nối đến server.' });
     } finally {
       set({ creditAdjustmentsLoading: false });
     }
@@ -162,6 +172,8 @@ export const useEmbedStore = create<EmbedState>((set) => ({
       if (res.data.success && res.data.data) {
         set({ pricingPlans: res.data.data });
       }
+    } catch (err: any) {
+      set({ pricingPlansError: err.response?.data?.message ?? 'Lỗi kết nối đến server.' });
     } finally {
       set({ pricingPlansLoading: false });
     }
