@@ -234,7 +234,6 @@ export interface WalletResponse {
 export interface WalletCreateRequest {
   tenantId: string;       // Required, UUID
   type: 'PREPAID' | 'POSTPAID'; // Required
-  creditLimit?: number;   // Optional, zero or positive (>= 0)
 }
 
 export interface WalletStatusRequest {

@@ -14,18 +14,13 @@ import java.util.UUID;
  * Available balance = balance + credit_limit.
  */
 @Entity
-@Table(
-    name = "wallets",
-    comment = "Manages financial wallet for each tenant. Tracks balance and credit limit. Available balance = balance + credit_limit.",
-    uniqueConstraints = {
+@Table(name = "wallets", comment = "Manages financial wallet for each tenant. Tracks balance and credit limit. Available balance = balance + credit_limit.", uniqueConstraints = {
         @UniqueConstraint(name = "uk_wallets_tenant_id", columnNames = "tenant_id")
-    },
-    indexes = {
+}, indexes = {
         @Index(name = "idx_wallets_tenant_id", columnList = "tenant_id"),
         @Index(name = "idx_wallets_status", columnList = "status"),
         @Index(name = "idx_wallets_type", columnList = "type")
-    }
-)
+})
 @Getter
 @Setter
 @NoArgsConstructor

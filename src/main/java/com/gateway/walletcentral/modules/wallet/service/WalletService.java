@@ -43,6 +43,7 @@ public class WalletService {
                 .tenant(tenant)
                 .type(request.getType())
                 .balance(java.math.BigDecimal.ZERO)
+                .creditLimit(java.math.BigDecimal.ZERO)
                 .status(WalletStatus.ACTIVE)
                 .createdAt(OffsetDateTime.now())
                 .build();

@@ -55,8 +55,7 @@ export const WalletManagementPage: React.FC = () => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [createData, setCreateData] = useState({
     tenantId: '',
-    type: 'PREPAID' as 'PREPAID' | 'POSTPAID',
-    creditLimit: 0,
+    type: 'PREPAID' as 'PREPAID' | 'POSTPAID'
   });
 
   // Add plan to wallet dialog
@@ -105,7 +104,7 @@ export const WalletManagementPage: React.FC = () => {
       await createWallet(createData);
       addToast({ variant: 'success', message: 'Tạo ví thành công!' });
       setShowCreateDialog(false);
-      setCreateData({ tenantId: '', type: 'PREPAID', creditLimit: 0 });
+      setCreateData({ tenantId: '', type: 'PREPAID' });
     } catch (err: any) {
       addToast({ variant: 'destructive', message: err.response?.data?.message || 'Không thể tạo ví.' });
     }
@@ -408,7 +407,7 @@ export const WalletManagementPage: React.FC = () => {
               </Select>
             </div>
 
-            {createData.type === 'POSTPAID' && (
+            {/* {createData.type === 'POSTPAID' && (
               <div className="space-y-2">
                 <Label>Hạn mức Tín dụng (Credit Limit)</Label>
                 <Input
@@ -418,7 +417,7 @@ export const WalletManagementPage: React.FC = () => {
                   onChange={(e) => setCreateData({ ...createData, creditLimit: Number(e.target.value) })}
                 />
               </div>
-            )}
+            )} */}
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowCreateDialog(false)}>
