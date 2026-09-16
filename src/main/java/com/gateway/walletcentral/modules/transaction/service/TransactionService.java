@@ -86,7 +86,7 @@ public class TransactionService {
         event.put("type", request.getType().name());
         event.put("amount", request.getAmount());
         event.put("balanceAfter", balanceAfter);
-        messageProducer.publishTransactionCreated(event);
+        messageProducer.publishTransaction(event);
 
         return toResponse(saved);
     }

@@ -158,7 +158,7 @@ public class BillingService {
                 txnEvent.put("type", TransactionType.CHARGE.name());
                 txnEvent.put("amount", totalFee);
                 txnEvent.put("balanceAfter", newBalance);
-                messageProducer.publishTransactionCreated(txnEvent);
+                messageProducer.publishTransaction(txnEvent);
 
                 // 9. Create UsageLog
                 FeeBreakdownStructure feeBreakdownStructure = buildFeeBreakdown(servicePrice, request.getUsageUnits(),
@@ -183,7 +183,7 @@ public class BillingService {
                 usageEvent.put("usageLogId", usageLog.getId().toString());
                 usageEvent.put("tenantId", tenant.getId().toString());
                 usageEvent.put("serviceId", service.getId().toString());
-                messageProducer.publishUsageLogRecorded(usageEvent);
+                messageProducer.publishUsageLog(usageEvent);
 
                 // 10. Build response
                 BillingWebhookResponse.FeeBreakdownDto feeBreakdownDto = BillingWebhookResponse.FeeBreakdownDto
@@ -221,7 +221,7 @@ public class BillingService {
                 event.put("webhookUrl", request.getWebhookUrl());
                 event.put("webhookAuth", request.getWebhookAuth());
                 event.put("response", response);
-                messageProducer.publishBillingCompleted(event);
+                messageProducer.publishBilling(event);
 
                 // // 12. Publish notification event
                 // Map<String, Object> notifEvent = new HashMap<>();

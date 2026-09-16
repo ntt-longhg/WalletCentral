@@ -18,48 +18,43 @@ public class MessageProducer {
         this.rabbitTemplate = rabbitTemplate;
     }
 
-    public void publishTransactionCreated(Map<String, Object> payload) {
-        log.info("Publishing transaction.created event: {}", payload);
+    public void publishTransaction(Map<String, Object> payload) {
+        log.info("Publishing transaction event: {}", payload);
         rabbitTemplate.convertAndSend(
                 RabbitMQConfig.EXCHANGE_TRANSACTION,
-                RabbitMQConfig.RK_TRANSACTION_CREATED,
-                payload
-        );
+                RabbitMQConfig.RK_TRANSACTION_BINDING,
+                payload);
     }
 
-    public void publishWalletPlanApproved(Map<String, Object> payload) {
-        log.info("Publishing wallet.plan.approved event: {}", payload);
+    public void publishWalletPlan(Map<String, Object> payload) {
+        log.info("Publishing wallet plan event: {}", payload);
         rabbitTemplate.convertAndSend(
                 RabbitMQConfig.EXCHANGE_WALLET,
-                RabbitMQConfig.RK_WALLET_PLAN_APPROVED,
-                payload
-        );
+                RabbitMQConfig.RK_WALLET_PLAN_BINDING,
+                payload);
     }
 
-    public void publishUsageLogRecorded(Map<String, Object> payload) {
-        log.info("Publishing usage.log.recorded event: {}", payload);
+    public void publishUsageLog(Map<String, Object> payload) {
+        log.info("Publishing usage log event: {}", payload);
         rabbitTemplate.convertAndSend(
                 RabbitMQConfig.EXCHANGE_USAGE,
-                RabbitMQConfig.RK_USAGE_LOG_RECORDED,
-                payload
-        );
+                RabbitMQConfig.RK_USAGE_BINDING,
+                payload);
     }
 
-    public void publishBillingCompleted(Map<String, Object> payload) {
-        log.info("Publishing billing.completed event: transactionId={}", payload.get("transactionId"));
+    public void publishBilling(Map<String, Object> payload) {
+        log.info("Publishing billing event: {}", payload);
         rabbitTemplate.convertAndSend(
                 RabbitMQConfig.EXCHANGE_BILLING,
-                RabbitMQConfig.RK_BILLING_COMPLETED,
-                payload
-        );
+                RabbitMQConfig.RK_BILLING_BINDING,
+                payload);
     }
 
-    public void publishNotificationCreated(Map<String, Object> payload) {
-        log.info("Publishing notification.created event: tenantId={} type={}", payload.get("tenantId"), payload.get("type"));
+    public void publishNotification(Map<String, Object> payload) {
+        log.info("Publishing notification event: {}", payload);
         rabbitTemplate.convertAndSend(
                 RabbitMQConfig.EXCHANGE_NOTIFICATION,
-                RabbitMQConfig.RK_NOTIFICATION_CREATED,
-                payload
-        );
+                RabbitMQConfig.RK_NOTIFICATION_BINDING,
+                payload);
     }
 }

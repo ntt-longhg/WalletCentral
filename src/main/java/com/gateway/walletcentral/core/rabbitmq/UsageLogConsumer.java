@@ -2,6 +2,7 @@ package com.gateway.walletcentral.core.rabbitmq;
 
 import com.gateway.walletcentral.modules.usagelog.model.UsageLog;
 import com.gateway.walletcentral.modules.usagelog.repository.UsageLogRepository;
+import com.gateway.walletcentral.config.RabbitMQConfig;
 import com.gateway.walletcentral.modules.notification.service.NotificationService;
 import com.rabbitmq.client.Channel;
 import org.slf4j.Logger;
@@ -30,13 +31,10 @@ public class UsageLogConsumer {
         this.notificationService = notificationService;
     }
 
-    @RabbitListener(
-            queues = "billing.usagelog.record",
-            executor = "virtualThreadExecutor"
-    )
+    @RabbitListener(queues = RabbitMQConfig.QUEUE_USAGE, executor = "virtualThreadExecutor")
     public void handleUsageLogRecorded(Map<String, Object> message,
-                                        @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag,
-                                        Channel channel) throws IOException {
+            @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag,
+            Channel channel) throws IOException {
         String usageLogId = (String) message.get("usageLogId");
         String tenantId = (String) message.get("tenantId");
         String serviceId = (String) message.get("serviceId");
@@ -56,7 +54,8 @@ public class UsageLogConsumer {
             String tenantName = usageLog.getTenant() != null ? usageLog.getTenant().getName() : "unknown";
 
             // Audit log
-            auditLog.info("USAGE_ID={} | TENANT={} | SERVICE={} | USAGE_UNITS={} | CHARGED={} | WALLET_TYPE={} | BALANCE_SNAPSHOT={}",
+            auditLog.info(
+                    "USAGE_ID={} | TENANT={} | SERVICE={} | USAGE_UNITS={} | CHARGED={} | WALLET_TYPE={} | BALANCE_SNAPSHOT={}",
                     usageLog.getId(), tenantName, serviceName,
                     usageLog.getTotalUsage(), usageLog.getTotalCharged(),
                     usageLog.getWalletTypeSnapshot(), usageLog.getAvailableBalanceSnapshot());
@@ -81,8 +80,7 @@ public class UsageLogConsumer {
                             String.format("Service %s: %d units used, charged %s VND",
                                     serviceName, usageLog.getTotalUsage(), usageLog.getTotalCharged()),
                             "USAGE_LOG",
-                            usageLogId
-                    );
+                            usageLogId);
                 } catch (Exception e) {
                     log.error("Failed to send high usage notification", e);
                 }
@@ -100,8 +98,7 @@ public class UsageLogConsumer {
                             String.format("Service %s: charged %s VND",
                                     serviceName, usageLog.getTotalCharged()),
                             "USAGE_LOG",
-                            usageLogId
-                    );
+                            usageLogId);
                 } catch (Exception e) {
                     log.error("Failed to send high charge notification", e);
                 }

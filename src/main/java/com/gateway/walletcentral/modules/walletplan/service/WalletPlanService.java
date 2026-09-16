@@ -117,7 +117,7 @@ public class WalletPlanService {
         notifEvent.put("message", String.format("Wallet plan %s created successfully", pricingPlan.getName()));
         notifEvent.put("referenceType", "WALLET_PLAN");
         notifEvent.put("referenceId", saved.getId().toString());
-        messageProducer.publishNotificationCreated(notifEvent);
+        messageProducer.publishNotification(notifEvent);
         return toResponse(saved);
     }
 
@@ -277,30 +277,31 @@ public class WalletPlanService {
         log.info("Wallet plan DB updates completed for id: {}", id);
 
         CompletableFuture.runAsync(() -> {
-           try {
-               // Publish event
-               Map<String, Object> event = new HashMap<>();
-               event.put("walletPlanId", saved.getId().toString());
-               event.put("tenantId", walletPlan.getTenant().getId().toString());
-               event.put("walletId", wallet.getId().toString());
-               event.put("creditedAmount", creditedAmount);
-               event.put("newBalance", wallet.getBalance());
-               event.put("newCreditLimit", wallet.getCreditLimit());
-               messageProducer.publishWalletPlanApproved(event);
+            try {
+                // Publish event
+                Map<String, Object> event = new HashMap<>();
+                event.put("walletPlanId", saved.getId().toString());
+                event.put("tenantId", walletPlan.getTenant().getId().toString());
+                event.put("walletId", wallet.getId().toString());
+                event.put("creditedAmount", creditedAmount);
+                event.put("newBalance", wallet.getBalance());
+                event.put("newCreditLimit", wallet.getCreditLimit());
+                messageProducer.publishWalletPlan(event);
 
-               // Notification event
-               Map<String, Object> notifEvent = new HashMap<>();
-               notifEvent.put("tenantId", walletPlan.getTenant().getId().toString());
-               notifEvent.put("type", "WALLET_PLAN");
-               notifEvent.put("title", "Wallet Plan Approved");
-               notifEvent.put("message", String.format("Wallet plan %s approved successfully", plan.getName()));
-               notifEvent.put("referenceType", "WALLET_PLAN");
-               notifEvent.put("referenceId", id.toString());
-               messageProducer.publishNotificationCreated(notifEvent);
-               log.info("Wallet plan approved: {} - transaction={}, usageLog={}", id, transaction.getId(), usageLog.getId());
-           } catch (Exception e) {
-               log.error("Failed to publish events for wallet plan: {}", id, e);
-           }
+                // Notification event
+                Map<String, Object> notifEvent = new HashMap<>();
+                notifEvent.put("tenantId", walletPlan.getTenant().getId().toString());
+                notifEvent.put("type", "WALLET_PLAN");
+                notifEvent.put("title", "Wallet Plan Approved");
+                notifEvent.put("message", String.format("Wallet plan %s approved successfully", plan.getName()));
+                notifEvent.put("referenceType", "WALLET_PLAN");
+                notifEvent.put("referenceId", id.toString());
+                messageProducer.publishNotification(notifEvent);
+                log.info("Wallet plan approved: {} - transaction={}, usageLog={}", id, transaction.getId(),
+                        usageLog.getId());
+            } catch (Exception e) {
+                log.error("Failed to publish events for wallet plan: {}", id, e);
+            }
         });
         return toResponse(saved);
     }
@@ -329,7 +330,7 @@ public class WalletPlanService {
         notifEvent.put("message", String.format("Wallet plan %s reject successfully", plan.getName()));
         notifEvent.put("referenceType", "WALLET_PLAN");
         notifEvent.put("referenceId", saved.getId().toString());
-        messageProducer.publishNotificationCreated(notifEvent);
+        messageProducer.publishNotification(notifEvent);
 
         return toResponse(saved);
     }

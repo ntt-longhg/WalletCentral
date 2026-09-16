@@ -1,5 +1,6 @@
 package com.gateway.walletcentral.core.rabbitmq;
 
+import com.gateway.walletcentral.config.RabbitMQConfig;
 import com.gateway.walletcentral.modules.billing.dto.BillingWebhookResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
@@ -33,7 +34,7 @@ public class BillingConsumer {
         this.restTemplate = restTemplate;
     }
 
-    @RabbitListener(queues = "billing.completed.process", executor = "virtualThreadExecutor")
+    @RabbitListener(queues = RabbitMQConfig.QUEUE_BILLING, executor = "virtualThreadExecutor")
     public void handleBillingCompleted(Map<String, Object> message,
             @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag,
             Channel channel) throws IOException {

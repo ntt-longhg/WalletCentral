@@ -76,7 +76,7 @@ public class UsageLogService {
                 event.put("serviceId", request.getServiceId().toString());
                 event.put("totalUsage", request.getTotalUsage());
                 event.put("walletId", wallet.getId().toString());
-                messageProducer.publishUsageLogRecorded(event);
+                messageProducer.publishUsageLog(event);
 
                 return toResponse(saved);
         }

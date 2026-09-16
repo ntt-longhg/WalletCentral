@@ -5,6 +5,7 @@ import com.gateway.walletcentral.modules.transaction.model.TransactionStatus;
 import com.gateway.walletcentral.modules.transaction.repository.TransactionRepository;
 import com.gateway.walletcentral.modules.wallet.model.Wallet;
 import com.gateway.walletcentral.modules.wallet.repository.WalletRepository;
+import com.gateway.walletcentral.config.RabbitMQConfig;
 import com.gateway.walletcentral.modules.notification.service.NotificationService;
 import com.rabbitmq.client.Channel;
 import org.slf4j.Logger;
@@ -31,20 +32,17 @@ public class TransactionConsumer {
     private final NotificationService notificationService;
 
     public TransactionConsumer(TransactionRepository transactionRepository,
-                               WalletRepository walletRepository,
-                               NotificationService notificationService) {
+            WalletRepository walletRepository,
+            NotificationService notificationService) {
         this.transactionRepository = transactionRepository;
         this.walletRepository = walletRepository;
         this.notificationService = notificationService;
     }
 
-    @RabbitListener(
-            queues = "billing.transaction.process",
-            executor = "virtualThreadExecutor"
-    )
+    @RabbitListener(queues = RabbitMQConfig.QUEUE_TRANSACTION, executor = "virtualThreadExecutor")
     public void handleTransactionCreated(Map<String, Object> message,
-                                         @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag,
-                                         Channel channel) throws IOException {
+            @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag,
+            Channel channel) throws IOException {
         String transactionId = (String) message.get("transactionId");
         String walletId = (String) message.get("walletId");
         String type = (String) message.get("type");
@@ -76,7 +74,8 @@ public class TransactionConsumer {
             }
 
             // Audit log
-            auditLog.info("TXN_ID={} | WALLET_ID={} | TYPE={} | AMOUNT={} | BALANCE_BEFORE={} | BALANCE_AFTER={} | STATUS={} | REF={} | REF_ID={}",
+            auditLog.info(
+                    "TXN_ID={} | WALLET_ID={} | TYPE={} | AMOUNT={} | BALANCE_BEFORE={} | BALANCE_AFTER={} | STATUS={} | REF={} | REF_ID={}",
                     transaction.getId(), wallet.getId(), transaction.getType(),
                     transaction.getAmount(), transaction.getBalanceBefore(), transaction.getBalanceAfter(),
                     transaction.getStatus(), transaction.getReferenceFrom(), transaction.getReferenceId());
@@ -94,8 +93,7 @@ public class TransactionConsumer {
                             String.format("Transaction %s: %s VND on wallet %s",
                                     transaction.getId(), transaction.getAmount(), wallet.getId()),
                             "TRANSACTION",
-                            transaction.getId().toString()
-                    );
+                            transaction.getId().toString());
                 } catch (Exception e) {
                     log.error("Failed to send large transaction notification", e);
                 }
@@ -103,7 +101,8 @@ public class TransactionConsumer {
 
             // Transaction status verification
             if (transaction.getStatus() != TransactionStatus.SUCCESS) {
-                log.warn("Non-success transaction detected: id={} status={}", transaction.getId(), transaction.getStatus());
+                log.warn("Non-success transaction detected: id={} status={}", transaction.getId(),
+                        transaction.getStatus());
             }
 
             log.info("========== TRANSACTION CONSUMER END ========== SUCCESS transaction={}", transactionId);

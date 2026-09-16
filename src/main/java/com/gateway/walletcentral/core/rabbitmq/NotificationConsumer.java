@@ -1,5 +1,6 @@
 package com.gateway.walletcentral.core.rabbitmq;
 
+import com.gateway.walletcentral.config.RabbitMQConfig;
 import com.gateway.walletcentral.modules.notification.service.NotificationService;
 import com.rabbitmq.client.Channel;
 import org.slf4j.Logger;
@@ -24,13 +25,10 @@ public class NotificationConsumer {
         this.notificationService = notificationService;
     }
 
-    @RabbitListener(
-            queues = "billing.notification.push",
-            executor = "virtualThreadExecutor"
-    )
+    @RabbitListener(queues = RabbitMQConfig.QUEUE_NOTIFICATION, executor = "virtualThreadExecutor")
     public void handleNotificationCreated(Map<String, Object> message,
-                                          @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag,
-                                          Channel channel) throws IOException {
+            @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag,
+            Channel channel) throws IOException {
         String tenantId = (String) message.get("tenantId");
         String type = (String) message.get("type");
         String title = (String) message.get("title");
@@ -48,8 +46,7 @@ public class NotificationConsumer {
                     title,
                     msg,
                     referenceType,
-                    referenceId
-            );
+                    referenceId);
 
             log.info("========== NOTIFICATION CONSUMER END ========== SUCCESS tenant={}", tenantId);
             channel.basicAck(deliveryTag, false);

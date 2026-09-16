@@ -1,5 +1,6 @@
 package com.gateway.walletcentral.core.rabbitmq;
 
+import com.gateway.walletcentral.config.RabbitMQConfig;
 import com.gateway.walletcentral.modules.creditadjustment.model.CreditAdjustment;
 import com.gateway.walletcentral.modules.creditadjustment.model.CreditAdjustmentType;
 import com.gateway.walletcentral.modules.creditadjustment.repository.CreditAdjustmentRepository;
@@ -20,6 +21,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.support.AmqpHeaders;
 import org.springframework.messaging.handler.annotation.Header;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -33,7 +36,8 @@ import java.util.UUID;
 public class WalletPlanConsumer {
 
     private static final Logger log = LoggerFactory.getLogger(WalletPlanConsumer.class);
-    private static final Logger auditLog = LoggerFactory.getLogger("AUDIT.WALLETPLAN");
+    // private static final Logger auditLog =
+    // LoggerFactory.getLogger("AUDIT.WALLETPLAN");
 
     private final WalletPlanRepository walletPlanRepository;
     private final WalletRepository walletRepository;
@@ -42,10 +46,10 @@ public class WalletPlanConsumer {
     private final UsageLogRepository usageLogRepository;
 
     public WalletPlanConsumer(WalletPlanRepository walletPlanRepository,
-                              WalletRepository walletRepository,
-                              TransactionRepository transactionRepository,
-                              CreditAdjustmentRepository creditAdjustmentRepository,
-                              UsageLogRepository usageLogRepository) {
+            WalletRepository walletRepository,
+            TransactionRepository transactionRepository,
+            CreditAdjustmentRepository creditAdjustmentRepository,
+            UsageLogRepository usageLogRepository) {
         this.walletPlanRepository = walletPlanRepository;
         this.walletRepository = walletRepository;
         this.transactionRepository = transactionRepository;
@@ -53,13 +57,47 @@ public class WalletPlanConsumer {
         this.usageLogRepository = usageLogRepository;
     }
 
-    @RabbitListener(
-            queues = "billing.wallet.plan.approve",
-            executor = "virtualThreadExecutor"
-    )
+    @RabbitListener(queues = RabbitMQConfig.QUEUE_WALLET_PLAN, executor = "virtualThreadExecutor")
+    public void handleWalletPlanEvent(Map<String, Object> message,
+            @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag,
+            Channel channel) throws IOException {
+        try {
+            String event = (String) message.get("event");
+            Map<String, Object> data = (Map<String, Object>) message.get("data");
+            log.info("Received wallet plan event: {}", event);
+            switch (event) {
+                case "APPROVED":
+                    testAsync();
+                    channel.basicAck(deliveryTag, false);
+                    // handleWalletPlanApproved(message, deliveryTag, channel);
+                    break;
+                default:
+                    log.warn("Unknown wallet plan event: {}", event);
+                    channel.basicAck(deliveryTag, false);
+                    break;
+            }
+        } catch (Exception e) {
+            log.error("Error processing wallet plan event", e);
+            channel.basicNack(deliveryTag, false, false);
+        }
+
+    }
+
+    @Async("virtualThreadExecutor")
+    public void testAsync() {
+        try {
+            Thread.sleep(10000);
+            log.info("testAsync completed");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // @RabbitListener(queues = RabbitMQConfig.QUEUE_WALLET_PLAN, executor =
+    // "virtualThreadExecutor")
     public void handleWalletPlanApproved(Map<String, Object> message,
-                                          @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag,
-                                          Channel channel) throws IOException {
+            @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag,
+            Channel channel) throws IOException {
         String walletPlanId = (String) message.get("walletPlanId");
         String tenantId = (String) message.get("tenantId");
         String walletId = (String) message.get("walletId");
@@ -69,7 +107,8 @@ public class WalletPlanConsumer {
         log.info("WalletPlanId: {} | TenantId: {} | WalletId: {}", walletPlanId, tenantId, walletId);
 
         try {
-            WalletPlan walletPlan = walletPlanRepository.findByIdWithRelations(UUID.fromString(walletPlanId)).orElse(null);
+            WalletPlan walletPlan = walletPlanRepository.findByIdWithRelations(UUID.fromString(walletPlanId))
+                    .orElse(null);
             if (walletPlan == null) {
                 log.error("WalletPlan not found: {} - possible data inconsistency", walletPlanId);
                 channel.basicAck(deliveryTag, false);
@@ -111,8 +150,8 @@ public class WalletPlanConsumer {
                         .referenceId(walletPlanId)
                         .createdAt(OffsetDateTime.now())
                         .build();
-                    transactionRepository.save(transaction);
-                    log.info("Created DEPOSIT transaction via consumer: {} amount={}", transaction.getId(), creditedAmount);
+                transactionRepository.save(transaction);
+                log.info("Created DEPOSIT transaction via consumer: {} amount={}", transaction.getId(), creditedAmount);
             }
 
             // Create CreditAdjustment if credit limit changed
@@ -122,7 +161,8 @@ public class WalletPlanConsumer {
                         wallet.getId(), walletPlanId);
                 if (!exists) {
                     CreditAdjustmentType adjustmentType = creditDiff.compareTo(BigDecimal.ZERO) > 0
-                            ? CreditAdjustmentType.INCREASE : CreditAdjustmentType.DECREASE;
+                            ? CreditAdjustmentType.INCREASE
+                            : CreditAdjustmentType.DECREASE;
                     CreditAdjustment adjustment = CreditAdjustment.builder()
                             .wallet(wallet)
                             .creditLimitBefore(walletPlan.getCreditLimitBefore())
@@ -175,7 +215,7 @@ public class WalletPlanConsumer {
 
             // Audit log
             auditLog.info("PLAN_ID={} | TENANT={} | PLAN={} | PRICE={} | BONUS={} | CREDITED={} | " +
-                            "BALANCE_BEFORE={} | BALANCE_AFTER={} | CREDIT_BEFORE={} | CREDIT_AFTER={} | APPROVED_BY={}",
+                    "BALANCE_BEFORE={} | BALANCE_AFTER={} | CREDIT_BEFORE={} | CREDIT_AFTER={} | APPROVED_BY={}",
                     walletPlan.getId(), walletPlan.getTenant().getName(),
                     walletPlan.getPricingPlan().getName(), walletPlan.getPrice(),
                     walletPlan.getBonusAmount(), walletPlan.getCreditedAmount(),

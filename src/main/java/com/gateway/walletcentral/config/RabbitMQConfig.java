@@ -11,25 +11,28 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
 
-    public static final String EXCHANGE_TRANSACTION = "billing.transaction.exchange";
-    public static final String EXCHANGE_WALLET = "billing.wallet.exchange";
-    public static final String EXCHANGE_USAGE = "billing.usage.exchange";
-    public static final String EXCHANGE_BILLING = "billing.billing.exchange";
-    public static final String EXCHANGE_NOTIFICATION = "billing.notification.exchange";
+    public static final String EXCHANGE_TRANSACTION = "walletcentral.transaction.exchange";
+    public static final String EXCHANGE_WALLET = "walletcentral.wallet.exchange";
+    public static final String EXCHANGE_WALLET_PLAN = "walletcentral.wallet.plan.exchange";
+    public static final String EXCHANGE_USAGE = "walletcentral.usage.exchange";
+    public static final String EXCHANGE_BILLING = "walletcentral.billing.exchange";
+    public static final String EXCHANGE_NOTIFICATION = "walletcentral.notification.exchange";
 
-    public static final String QUEUE_TRANSACTION_PROCESS = "billing.transaction.process";
-    public static final String QUEUE_WALLET_PLAN_APPROVE = "billing.wallet.plan.approve";
-    public static final String QUEUE_USAGE_LOG_RECORD = "billing.usagelog.record";
-    public static final String QUEUE_BILLING_COMPLETED = "billing.completed.process";
-    public static final String QUEUE_NOTIFICATION_PUSH = "billing.notification.push";
+    public static final String QUEUE_TRANSACTION = "walletcentral.transaction.queue";
+    public static final String QUEUE_WALLET = "walletcentral.wallet.queue";
+    public static final String QUEUE_WALLET_PLAN = "walletcentral.wallet.plan.queue";
+    public static final String QUEUE_USAGE = "walletcentral.usage.queue";
+    public static final String QUEUE_BILLING = "walletcentral.billing.queue";
+    public static final String QUEUE_NOTIFICATION = "walletcentral.notification.queue";
 
-    public static final String RK_TRANSACTION_CREATED = "transaction.created";
-    public static final String RK_WALLET_PLAN_APPROVED = "wallet.plan.approved";
-    public static final String RK_USAGE_LOG_RECORDED = "usage.log.recorded";
-    public static final String RK_BILLING_COMPLETED = "billing.completed";
-    public static final String RK_NOTIFICATION_CREATED = "notification.created";
+    public static final String RK_TRANSACTION_BINDING = "transaction.binding";
+    public static final String RK_WALLET_BINDING = "wallet.binding";
+    public static final String RK_WALLET_PLAN_BINDING = "wallet.plan.binding";
+    public static final String RK_USAGE_BINDING = "usage.binding";
+    public static final String RK_BILLING_BINDING = "billing.binding";
+    public static final String RK_NOTIFICATION_BINDING = "notification.binding";
 
-    public static final String QUEUE_DLQ = "billing.dlx";
+    public static final String QUEUE_DLQ = "walletcentral.dlx";
 
     // ========== Exchanges ==========
 
@@ -62,7 +65,7 @@ public class RabbitMQConfig {
 
     @Bean
     public Queue transactionProcessQueue() {
-        return QueueBuilder.durable(QUEUE_TRANSACTION_PROCESS)
+        return QueueBuilder.durable(QUEUE_TRANSACTION)
                 .withArgument("x-dead-letter-exchange", "")
                 .withArgument("x-dead-letter-routing-key", QUEUE_DLQ)
                 .build();
@@ -70,7 +73,7 @@ public class RabbitMQConfig {
 
     @Bean
     public Queue walletPlanApproveQueue() {
-        return QueueBuilder.durable(QUEUE_WALLET_PLAN_APPROVE)
+        return QueueBuilder.durable(QUEUE_WALLET_PLAN)
                 .withArgument("x-dead-letter-exchange", "")
                 .withArgument("x-dead-letter-routing-key", QUEUE_DLQ)
                 .build();
@@ -78,7 +81,7 @@ public class RabbitMQConfig {
 
     @Bean
     public Queue usageLogRecordQueue() {
-        return QueueBuilder.durable(QUEUE_USAGE_LOG_RECORD)
+        return QueueBuilder.durable(QUEUE_USAGE)
                 .withArgument("x-dead-letter-exchange", "")
                 .withArgument("x-dead-letter-routing-key", QUEUE_DLQ)
                 .build();
@@ -91,7 +94,7 @@ public class RabbitMQConfig {
 
     @Bean
     public Queue billingCompletedQueue() {
-        return QueueBuilder.durable(QUEUE_BILLING_COMPLETED)
+        return QueueBuilder.durable(QUEUE_BILLING)
                 .withArgument("x-dead-letter-exchange", "")
                 .withArgument("x-dead-letter-routing-key", QUEUE_DLQ)
                 .build();
@@ -99,7 +102,7 @@ public class RabbitMQConfig {
 
     @Bean
     public Queue notificationPushQueue() {
-        return QueueBuilder.durable(QUEUE_NOTIFICATION_PUSH)
+        return QueueBuilder.durable(QUEUE_NOTIFICATION)
                 .withArgument("x-dead-letter-exchange", "")
                 .withArgument("x-dead-letter-routing-key", QUEUE_DLQ)
                 .build();
@@ -111,35 +114,35 @@ public class RabbitMQConfig {
     public Binding transactionBinding() {
         return BindingBuilder.bind(transactionProcessQueue())
                 .to(transactionExchange())
-                .with(RK_TRANSACTION_CREATED);
+                .with(RK_TRANSACTION_BINDING);
     }
 
     @Bean
     public Binding walletPlanBinding() {
         return BindingBuilder.bind(walletPlanApproveQueue())
                 .to(walletExchange())
-                .with(RK_WALLET_PLAN_APPROVED);
+                .with(RK_WALLET_PLAN_BINDING);
     }
 
     @Bean
     public Binding usageLogBinding() {
         return BindingBuilder.bind(usageLogRecordQueue())
                 .to(usageExchange())
-                .with(RK_USAGE_LOG_RECORDED);
+                .with(RK_USAGE_BINDING);
     }
 
     @Bean
     public Binding billingBinding() {
         return BindingBuilder.bind(billingCompletedQueue())
                 .to(billingExchange())
-                .with(RK_BILLING_COMPLETED);
+                .with(RK_BILLING_BINDING);
     }
 
     @Bean
     public Binding notificationBinding() {
         return BindingBuilder.bind(notificationPushQueue())
                 .to(notificationExchange())
-                .with(RK_NOTIFICATION_CREATED);
+                .with(RK_NOTIFICATION_BINDING);
     }
 
     // ========== Message Converter ==========
