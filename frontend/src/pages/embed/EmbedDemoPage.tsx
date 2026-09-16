@@ -80,7 +80,7 @@ export const EmbedDemoPage: React.FC = () => {
 
     try {
       const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
-      await axios.get(`${baseURL}/tenants`, {
+      await axios.get(`${baseURL}/embed/tenant-info`, {
         headers: { 'X-API-Key': key },
         timeout: 10000,
       });

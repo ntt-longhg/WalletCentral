@@ -105,6 +105,7 @@ export const EmbedTransactionsPage: React.FC = () => {
                   <TableHead>Loại Giao Dịch</TableHead>
                   <TableHead>Số Tiền</TableHead>
                   <TableHead>Dư Trước &rarr; Sau</TableHead>
+                  <TableHead>Khả dụng trước &rarr; sau</TableHead>
                   <TableHead>Trạng Thái</TableHead>
                   <TableHead>Nguồn / Reference</TableHead>
                   <TableHead>Thời Gian</TableHead>
@@ -139,6 +140,10 @@ export const EmbedTransactionsPage: React.FC = () => {
                     <TableCell className="text-xs text-slate-500">
                       {formatCurrency(txn.balanceBefore)} &rarr;{' '}
                       <span className="font-medium text-slate-800">{formatCurrency(txn.balanceAfter)}</span>
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {formatCurrency(txn.availableBalanceBefore)} &rarr;{' '}
+                      <span className="font-semibold text-slate-800">{formatCurrency(txn.availableBalanceAfter)}</span>
                     </TableCell>
                     <TableCell>
                       <Badge variant={txn.status === 'SUCCESS' ? 'success' : 'destructive'} className="text-[11px]">

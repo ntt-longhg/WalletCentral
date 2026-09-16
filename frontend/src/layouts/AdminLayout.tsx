@@ -46,7 +46,7 @@ export const AdminLayout: React.FC = () => {
   const toolItems = [
     { path: '/admin/docs/embed', label: 'Hướng dẫn nhúng', icon: Code },
     { path: '/admin/demo', label: 'Thử nghiệm nhúng', icon: Play },
-    { path: '/admin/settings', label: 'Cấu hình hệ thống', icon: Settings },
+    { path: '/admin/settings', label: 'Cấu hình hệ thống', icon: Settings }
   ];
 
   const handleLogout = () => {
