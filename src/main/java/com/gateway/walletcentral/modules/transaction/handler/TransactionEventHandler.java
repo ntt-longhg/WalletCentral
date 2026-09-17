@@ -1,54 +1,48 @@
-package com.gateway.walletcentral.core.rabbitmq;
+package com.gateway.walletcentral.modules.transaction.handler;
 
+import com.gateway.walletcentral.core.rabbitmq.MessageProducer;
 import com.gateway.walletcentral.modules.transaction.model.Transaction;
 import com.gateway.walletcentral.modules.transaction.model.TransactionStatus;
 import com.gateway.walletcentral.modules.transaction.repository.TransactionRepository;
 import com.gateway.walletcentral.modules.wallet.model.Wallet;
 import com.gateway.walletcentral.modules.wallet.repository.WalletRepository;
-import com.gateway.walletcentral.config.RabbitMQConfig;
-import com.gateway.walletcentral.modules.notification.service.NotificationService;
 import com.rabbitmq.client.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.amqp.support.AmqpHeaders;
-import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 @Component
-public class TransactionConsumer {
+public class TransactionEventHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(TransactionConsumer.class);
+    private static final Logger log = LoggerFactory.getLogger(TransactionEventHandler.class);
     private static final Logger auditLog = LoggerFactory.getLogger("AUDIT.TRANSACTION");
+
+    private static final BigDecimal LARGE_TRANSACTION_THRESHOLD = new BigDecimal("1000000");
 
     private final TransactionRepository transactionRepository;
     private final WalletRepository walletRepository;
-    private final NotificationService notificationService;
+    private final MessageProducer messageProducer;
 
-    public TransactionConsumer(TransactionRepository transactionRepository,
+    public TransactionEventHandler(TransactionRepository transactionRepository,
             WalletRepository walletRepository,
-            NotificationService notificationService) {
+            MessageProducer messageProducer) {
         this.transactionRepository = transactionRepository;
         this.walletRepository = walletRepository;
-        this.notificationService = notificationService;
+        this.messageProducer = messageProducer;
     }
 
-    @RabbitListener(queues = RabbitMQConfig.QUEUE_TRANSACTION, executor = "virtualThreadExecutor")
-    public void handleTransactionCreated(Map<String, Object> message,
-            @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag,
-            Channel channel) throws IOException {
-        String transactionId = (String) message.get("transactionId");
-        String walletId = (String) message.get("walletId");
-        String type = (String) message.get("type");
-
-        log.info("========== TRANSACTION CONSUMER START ==========");
-        log.info("TransactionId: {} | WalletId: {} | Type: {}", transactionId, walletId, type);
+    public void handleTransactionCreated(Map<String, Object> payload, Channel channel, long deliveryTag)
+            throws IOException {
+        String transactionId = (String) payload.get("transactionId");
+        String walletId = (String) payload.get("walletId");
+        log.info("Transaction handler - transactionId: {} | walletId: {} | thread: {}", transactionId, walletId,
+                Thread.currentThread());
 
         try {
             Transaction transaction = transactionRepository.findById(UUID.fromString(transactionId)).orElse(null);
@@ -70,7 +64,8 @@ public class TransactionConsumer {
                 walletRepository.save(wallet);
                 log.info("Auto-rebalanced wallet {} to {}", wallet.getId(), expectedBalance);
             } else {
-                log.info("Balance verified OK: {} == {} for wallet={}", expectedBalance, actualBalance, wallet.getId());
+                log.info("Balance verified OK: {} == {} for wallet={}", expectedBalance, actualBalance,
+                        wallet.getId());
             }
 
             // Audit log
@@ -80,23 +75,20 @@ public class TransactionConsumer {
                     transaction.getAmount(), transaction.getBalanceBefore(), transaction.getBalanceAfter(),
                     transaction.getStatus(), transaction.getReferenceFrom(), transaction.getReferenceId());
 
-            // Large transaction alert → notification
-            if (transaction.getAmount().compareTo(new BigDecimal("1000000")) > 0) {
+            // Large transaction alert
+            if (transaction.getAmount().compareTo(LARGE_TRANSACTION_THRESHOLD) > 0) {
                 log.warn("LARGE TRANSACTION ALERT: id={} amount={} wallet={} tenant={}",
                         transaction.getId(), transaction.getAmount(),
                         wallet.getId(), wallet.getTenant().getName());
-                try {
-                    notificationService.saveAndPush(
-                            wallet.getTenant().getId(),
-                            "TRANSACTION",
-                            "Large Transaction Alert",
-                            String.format("Transaction %s: %s VND on wallet %s",
-                                    transaction.getId(), transaction.getAmount(), wallet.getId()),
-                            "TRANSACTION",
-                            transaction.getId().toString());
-                } catch (Exception e) {
-                    log.error("Failed to send large transaction notification", e);
-                }
+                Map<String, Object> notificationEvent = new HashMap<>();
+                notificationEvent.put("tenantId", wallet.getTenant().getId().toString());
+                notificationEvent.put("type", "TRANSACTION");
+                notificationEvent.put("title", "Cảnh báo giao dịch lớn");
+                notificationEvent.put("message", String.format("Giao dịch %s với số tiền %s VND trên ví %s",
+                        transaction.getId(), transaction.getAmount(), wallet.getId()));
+                notificationEvent.put("referenceType", "TRANSACTION");
+                notificationEvent.put("referenceId", transaction.getId().toString());
+                messageProducer.publishNotification(notificationEvent);
             }
 
             // Transaction status verification
@@ -105,10 +97,9 @@ public class TransactionConsumer {
                         transaction.getStatus());
             }
 
-            log.info("========== TRANSACTION CONSUMER END ========== SUCCESS transaction={}", transactionId);
             channel.basicAck(deliveryTag, false);
         } catch (Exception e) {
-            log.error("========== TRANSACTION CONSUMER END ========== FAILED transaction={}", transactionId, e);
+            log.error("Transaction handler error: transactionId={}", transactionId, e);
             channel.basicNack(deliveryTag, false, false);
         }
     }

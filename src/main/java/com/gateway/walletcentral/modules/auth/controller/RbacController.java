@@ -1,5 +1,6 @@
 package com.gateway.walletcentral.modules.auth.controller;
 
+import com.gateway.walletcentral.config.SecurityConfig;
 import com.gateway.walletcentral.core.annotation.RequirePermission;
 import com.gateway.walletcentral.core.cursor.CursorParams;
 import com.gateway.walletcentral.core.cursor.CursorPage;
@@ -8,6 +9,7 @@ import com.gateway.walletcentral.modules.auth.dto.*;
 import com.gateway.walletcentral.modules.auth.service.RbacService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,8 +34,9 @@ public class RbacController {
     @GetMapping("/users")
     @RequirePermission("RBAC_VIEW")
     @Operation(summary = "List all admin users with roles")
-    public ResponseEntity<ApiResponse<List<AdminUserResponse>>> listUsers() {
-        List<AdminUserResponse> response = rbacService.listUsers();
+    public ResponseEntity<ApiResponse<List<AdminUserResponse>>> listUsers(HttpServletRequest request) {
+        String email = (String) request.getAttribute(SecurityConfig.REQUEST_ATTR_EMAIL);
+        List<AdminUserResponse> response = rbacService.listUsers(email);
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
@@ -126,7 +129,8 @@ public class RbacController {
         return ResponseEntity.ok(ApiResponse.ok(null, "Role removed successfully"));
     }
 
-    // ====================== USER PERMISSION OVERRIDES (by email) ======================
+    // ====================== USER PERMISSION OVERRIDES (by email)
+    // ======================
 
     @PostMapping("/users/{email}/permissions")
     @RequirePermission("RBAC_MANAGE_USER_PERMISSIONS")

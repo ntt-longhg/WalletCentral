@@ -112,6 +112,7 @@ CREATE TABLE IF NOT EXISTS price_tiers (
     extended_size INT NOT NULL,
     extended_fee DECIMAL(15,2) NOT NULL DEFAULT 0.00,
     PRIMARY KEY (id),
+    UNIQUE KEY uk_price_tiers_service_price_id_tier (service_price_id, tier),
     CONSTRAINT fk_price_tiers_service_price FOREIGN KEY (service_price_id) REFERENCES service_prices(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -172,10 +173,6 @@ CREATE TABLE IF NOT EXISTS wallet_plans (
     price DECIMAL(15,2) NOT NULL DEFAULT 0.00,
     bonus_amount DECIMAL(15,2) NOT NULL DEFAULT 0.00,
     credited_amount DECIMAL(15,2) NOT NULL DEFAULT 0.00,
-    balance_before DECIMAL(15,2) NOT NULL DEFAULT 0.00,
-    balance_after DECIMAL(15,2) NOT NULL DEFAULT 0.00,
-    credit_limit_before DECIMAL(15,2) NOT NULL DEFAULT 0.00,
-    credit_limit_after DECIMAL(15,2) NOT NULL DEFAULT 0.00,
     status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
     approved_at TIMESTAMP NULL DEFAULT NULL,
     approved_by VARCHAR(100) NULL DEFAULT NULL,

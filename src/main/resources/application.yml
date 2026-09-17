@@ -1,6 +1,7 @@
 spring:
   jackson:
     time-zone: Asia/Ho_Chi_Minh
+    locale: vi_VN
   application:
     name: WalletCentral
 
@@ -68,3 +69,23 @@ app:
   mail:
     host: smtp.gmail.com
     port: 587
+
+# ============================================================
+# Encryption - Master password for ENC() values
+# Priority: JVM arg (-D) > Env var > Property below
+# Dev: có thể hardcode tại đây (KHÔNG commit password thật lên git)
+# Production: dùng -Dencryption.master-password=xxx hoặc env var
+# ============================================================
+encryption:
+  master-password: ${ENCRYPTION_MASTER_PASSWORD:dev-only-master-key}
+
+# ============================================================
+# Encrypted values example - dùng cho production
+# Bỏ comment và chạy: java -cp walletcentral.jar
+#   com.gateway.walletcentral.config.encryption.EncryptCLI encrypt
+# ============================================================
+#spring:
+#  datasource:
+#    password: ENC(encrypted_password_here)
+#  rabbitmq:
+#    password: ENC(encrypted_password_here)

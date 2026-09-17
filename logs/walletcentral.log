@@ -1,0 +1,1301 @@
+2026-09-17 13:45:03.540 [main] INFO  c.g.w.WalletCentralGatewayApplication - Starting WalletCentralGatewayApplication using Java 21.0.12.1 with PID 430211 (/media/longhg/DATA/JAVA/WalletCentral/target/classes started by longhg in /media/longhg/DATA/JAVA/WalletCentral)
+2026-09-17 13:45:03.545 [main] INFO  c.g.w.WalletCentralGatewayApplication - No active profile set, falling back to 1 default profile: "default"
+2026-09-17 13:45:06.416 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+2026-09-17 13:45:06.419 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2026-09-17 13:45:06.419 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/11.0.24]
+2026-09-17 13:45:07.164 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-09-17 13:45:07.274 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.mariadb.jdbc.Connection@35277c6c
+2026-09-17 13:45:07.276 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2026-09-17 13:45:12.338 [main] WARN  o.s.b.s.a.UserDetailsServiceAutoConfiguration - 
+
+Using generated security password: 9979a546-12ac-4060-a56e-bbd5c3e4619c
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-09-17 13:45:13.289 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+2026-09-17 13:45:13.622 [main] INFO  c.g.w.WalletCentralGatewayApplication - Started WalletCentralGatewayApplication in 10.902 seconds (process running for 11.503)
+2026-09-17 13:45:13.841 [tomcat-handler-0] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-09-17 13:51:07.724 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2026-09-17 13:51:07.735 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2026-09-17 13:51:09.419 [main] INFO  c.g.w.WalletCentralGatewayApplication - Starting WalletCentralGatewayApplication using Java 21.0.12.1 with PID 432453 (/media/longhg/DATA/JAVA/WalletCentral/target/classes started by longhg in /media/longhg/DATA/JAVA/WalletCentral)
+2026-09-17 13:51:09.426 [main] INFO  c.g.w.WalletCentralGatewayApplication - No active profile set, falling back to 1 default profile: "default"
+2026-09-17 13:51:12.118 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+2026-09-17 13:51:12.121 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2026-09-17 13:51:12.121 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/11.0.24]
+2026-09-17 13:51:12.871 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-09-17 13:51:12.978 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.mariadb.jdbc.Connection@23ffc910
+2026-09-17 13:51:12.980 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2026-09-17 13:51:18.334 [main] WARN  o.s.b.s.a.UserDetailsServiceAutoConfiguration - 
+
+Using generated security password: 77cfa914-4bce-409f-bbdf-499140fdbe91
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-09-17 13:51:19.382 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+2026-09-17 13:51:19.629 [main] INFO  c.g.w.WalletCentralGatewayApplication - Started WalletCentralGatewayApplication in 10.921 seconds (process running for 11.493)
+2026-09-17 13:51:19.850 [tomcat-handler-0] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-09-17 13:51:46.782 [tomcat-handler-19] WARN  o.m.jdbc.message.server.ErrorPacket - Error: 1062-23000: Duplicate entry '01a0ad3a-c254-79ce-bb33-88047401bf79-TIER_1' for key 'uk_price_tiers_service_price_id_tier'
+2026-09-17 13:51:46.787 [tomcat-handler-19] WARN  org.hibernate.orm.jdbc.error - HHH000247: ErrorCode: 1062, SQLState: 23000
+2026-09-17 13:51:46.787 [tomcat-handler-19] WARN  org.hibernate.orm.jdbc.error - (conn=4707) Duplicate entry '01a0ad3a-c254-79ce-bb33-88047401bf79-TIER_1' for key 'uk_price_tiers_service_price_id_tier'
+2026-09-17 13:51:46.795 [tomcat-handler-19] ERROR c.g.w.c.e.GlobalExceptionHandler - Data integrity violation
+org.springframework.dao.DataIntegrityViolationException: could not execute statement [(conn=4707) Duplicate entry '01a0ad3a-c254-79ce-bb33-88047401bf79-TIER_1' for key 'uk_price_tiers_service_price_id_tier'] [insert into price_tiers (basic_fee,extended_fee,extended_size,service_price_id,tier,id) values (?,?,?,?,?,?)]; SQL [insert into price_tiers (basic_fee,extended_fee,extended_size,service_price_id,tier,id) values (?,?,?,?,?,?)]; constraint [uk_price_tiers_service_price_id_tier]
+	at org.springframework.orm.jpa.hibernate.HibernateExceptionTranslator.convertHibernateAccessException(HibernateExceptionTranslator.java:169)
+	at org.springframework.orm.jpa.hibernate.HibernateExceptionTranslator.convertHibernateAccessException(HibernateExceptionTranslator.java:131)
+	at org.springframework.orm.jpa.hibernate.HibernateExceptionTranslator.translateExceptionIfPossible(HibernateExceptionTranslator.java:105)
+	at org.springframework.orm.jpa.vendor.HibernateJpaDialect.translateExceptionIfPossible(HibernateJpaDialect.java:223)
+	at org.springframework.orm.jpa.JpaTransactionManager.doCommit(JpaTransactionManager.java:556)
+	at org.springframework.transaction.support.AbstractPlatformTransactionManager.processCommit(AbstractPlatformTransactionManager.java:794)
+	at org.springframework.transaction.support.AbstractPlatformTransactionManager.commit(AbstractPlatformTransactionManager.java:757)
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.commitTransactionAfterReturning(TransactionAspectSupport.java:687)
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:408)
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:130)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:719)
+	at com.gateway.walletcentral.modules.servicecatalog.service.ServiceService$$SpringCGLIB$$0.createTier(<generated>)
+	at com.gateway.walletcentral.modules.servicecatalog.controller.ServiceController.createTier(ServiceController.java:123)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:252)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:184)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:117)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:934)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:853)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:86)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:963)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:866)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1000)
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:903)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:649)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:874)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:710)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:132)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:59)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:111)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:110)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:111)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:108)
+	at org.springframework.security.web.FilterChainProxy.lambda$doFilterInternal$2(FilterChainProxy.java:235)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:376)
+	at org.springframework.security.web.access.intercept.AuthorizationFilter.doFilter(AuthorizationFilter.java:101)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:126)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:120)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:132)
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:86)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:100)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:181)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at com.gateway.walletcentral.config.SecurityConfig$1.doFilterInternal(SecurityConfig.java:114)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:110)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:96)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90)
+	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:237)
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:195)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.ServletRequestPathFilter.doFilter(ServletRequestPathFilter.java:52)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74)
+	at org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebSecurityConfiguration.java:317)
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:355)
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:272)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:111)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:111)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:111)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:199)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:111)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:165)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:77)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:535)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:86)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:71)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:347)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:406)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:71)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:1307)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:2036)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:74)
+	at java.base/java.lang.VirtualThread.run(VirtualThread.java:329)
+Caused by: org.hibernate.exception.ConstraintViolationException: could not execute statement [(conn=4707) Duplicate entry '01a0ad3a-c254-79ce-bb33-88047401bf79-TIER_1' for key 'uk_price_tiers_service_price_id_tier'] [insert into price_tiers (basic_fee,extended_fee,extended_size,service_price_id,tier,id) values (?,?,?,?,?,?)]
+	at org.hibernate.dialect.MariaDBDialect.lambda$buildSQLExceptionConversionDelegate$0(MariaDBDialect.java:378)
+	at org.hibernate.exception.internal.StandardSQLExceptionConverter.convert(StandardSQLExceptionConverter.java:34)
+	at org.hibernate.engine.jdbc.spi.SqlExceptionHelper.convert(SqlExceptionHelper.java:115)
+	at org.hibernate.engine.jdbc.internal.ResultSetReturnImpl.executeUpdate(ResultSetReturnImpl.java:189)
+	at org.hibernate.engine.jdbc.mutation.internal.AbstractMutationExecutor.performNonBatchedMutation(AbstractMutationExecutor.java:145)
+	at org.hibernate.engine.jdbc.mutation.internal.MutationExecutorSingleNonBatched.performNonBatchedOperations(MutationExecutorSingleNonBatched.java:53)
+	at org.hibernate.engine.jdbc.mutation.internal.AbstractMutationExecutor.execute(AbstractMutationExecutor.java:65)
+	at org.hibernate.engine.jdbc.mutation.internal.AbstractMutationExecutor.execute(AbstractMutationExecutor.java:54)
+	at org.hibernate.persister.entity.mutation.InsertCoordinatorStandard.doStaticInserts(InsertCoordinatorStandard.java:183)
+	at org.hibernate.persister.entity.mutation.InsertCoordinatorStandard.coordinateInsert(InsertCoordinatorStandard.java:123)
+	at org.hibernate.persister.entity.mutation.InsertCoordinatorStandard.insert(InsertCoordinatorStandard.java:96)
+	at org.hibernate.action.internal.EntityInsertAction.execute(EntityInsertAction.java:108)
+	at org.hibernate.engine.spi.ActionQueue.executeActions(ActionQueue.java:634)
+	at org.hibernate.engine.spi.ActionQueue.executeActions(ActionQueue.java:505)
+	at org.hibernate.event.internal.AbstractFlushingEventListener.performExecutions(AbstractFlushingEventListener.java:386)
+	at org.hibernate.event.internal.DefaultFlushEventListener.onFlush(DefaultFlushEventListener.java:40)
+	at org.hibernate.event.service.internal.EventListenerGroupImpl.fireEventOnEachListener(EventListenerGroupImpl.java:138)
+	at org.hibernate.internal.SessionImpl.fireFlush(SessionImpl.java:1472)
+	at org.hibernate.internal.SessionImpl.managedFlush(SessionImpl.java:498)
+	at org.hibernate.internal.SessionImpl.flushBeforeTransactionCompletion(SessionImpl.java:2100)
+	at org.hibernate.internal.SessionImpl.beforeTransactionCompletion(SessionImpl.java:2021)
+	at org.hibernate.engine.jdbc.internal.JdbcCoordinatorImpl.beforeTransactionCompletion(JdbcCoordinatorImpl.java:426)
+	at org.hibernate.resource.transaction.backend.jdbc.internal.JdbcResourceLocalTransactionCoordinatorImpl.beforeCompletionCallback(JdbcResourceLocalTransactionCoordinatorImpl.java:167)
+	at org.hibernate.resource.transaction.backend.jdbc.internal.JdbcResourceLocalTransactionCoordinatorImpl$TransactionDriverControlImpl.commitNoRollbackOnly(JdbcResourceLocalTransactionCoordinatorImpl.java:252)
+	at org.hibernate.resource.transaction.backend.jdbc.internal.JdbcResourceLocalTransactionCoordinatorImpl$TransactionDriverControlImpl.commit(JdbcResourceLocalTransactionCoordinatorImpl.java:242)
+	at org.hibernate.engine.transaction.internal.TransactionImpl.commit(TransactionImpl.java:89)
+	at org.springframework.orm.jpa.JpaTransactionManager.doCommit(JpaTransactionManager.java:552)
+	... 100 common frames omitted
+Caused by: java.sql.SQLIntegrityConstraintViolationException: (conn=4707) Duplicate entry '01a0ad3a-c254-79ce-bb33-88047401bf79-TIER_1' for key 'uk_price_tiers_service_price_id_tier'
+	at org.mariadb.jdbc.export.ExceptionFactory.createException(ExceptionFactory.java:317)
+	at org.mariadb.jdbc.export.ExceptionFactory.create(ExceptionFactory.java:402)
+	at org.mariadb.jdbc.message.ClientMessage.readPacket(ClientMessage.java:196)
+	at org.mariadb.jdbc.client.impl.StandardClient.readPacket(StandardClient.java:1524)
+	at org.mariadb.jdbc.client.impl.StandardClient.readResults(StandardClient.java:1463)
+	at org.mariadb.jdbc.client.impl.StandardClient.readResponse(StandardClient.java:1382)
+	at org.mariadb.jdbc.client.impl.StandardClient.execute(StandardClient.java:1306)
+	at org.mariadb.jdbc.ClientPreparedStatement.executeInternal(ClientPreparedStatement.java:91)
+	at org.mariadb.jdbc.ClientPreparedStatement.executeLargeUpdate(ClientPreparedStatement.java:345)
+	at org.mariadb.jdbc.ClientPreparedStatement.executeUpdate(ClientPreparedStatement.java:322)
+	at com.zaxxer.hikari.pool.ProxyPreparedStatement.executeUpdate(ProxyPreparedStatement.java:61)
+	at com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeUpdate(HikariProxyPreparedStatement.java)
+	at org.hibernate.engine.jdbc.internal.ResultSetReturnImpl.executeUpdate(ResultSetReturnImpl.java:185)
+	... 123 common frames omitted
+2026-09-17 13:53:43.423 [tomcat-handler-21] WARN  o.m.jdbc.message.server.ErrorPacket - Error: 1062-23000: Duplicate entry '01a0ad3a-c254-79ce-bb33-88047401bf79-TIER_1' for key 'uk_price_tiers_service_price_id_tier'
+2026-09-17 13:53:43.424 [tomcat-handler-21] WARN  org.hibernate.orm.jdbc.error - HHH000247: ErrorCode: 1062, SQLState: 23000
+2026-09-17 13:53:43.424 [tomcat-handler-21] WARN  org.hibernate.orm.jdbc.error - (conn=4707) Duplicate entry '01a0ad3a-c254-79ce-bb33-88047401bf79-TIER_1' for key 'uk_price_tiers_service_price_id_tier'
+2026-09-17 13:53:43.427 [tomcat-handler-21] ERROR c.g.w.c.e.GlobalExceptionHandler - Data integrity violation
+org.springframework.dao.DataIntegrityViolationException: could not execute statement [(conn=4707) Duplicate entry '01a0ad3a-c254-79ce-bb33-88047401bf79-TIER_1' for key 'uk_price_tiers_service_price_id_tier'] [insert into price_tiers (basic_fee,extended_fee,extended_size,service_price_id,tier,id) values (?,?,?,?,?,?)]; SQL [insert into price_tiers (basic_fee,extended_fee,extended_size,service_price_id,tier,id) values (?,?,?,?,?,?)]; constraint [uk_price_tiers_service_price_id_tier]
+	at org.springframework.orm.jpa.hibernate.HibernateExceptionTranslator.convertHibernateAccessException(HibernateExceptionTranslator.java:169)
+	at org.springframework.orm.jpa.hibernate.HibernateExceptionTranslator.convertHibernateAccessException(HibernateExceptionTranslator.java:131)
+	at org.springframework.orm.jpa.hibernate.HibernateExceptionTranslator.translateExceptionIfPossible(HibernateExceptionTranslator.java:105)
+	at org.springframework.orm.jpa.vendor.HibernateJpaDialect.translateExceptionIfPossible(HibernateJpaDialect.java:223)
+	at org.springframework.orm.jpa.JpaTransactionManager.doCommit(JpaTransactionManager.java:556)
+	at org.springframework.transaction.support.AbstractPlatformTransactionManager.processCommit(AbstractPlatformTransactionManager.java:794)
+	at org.springframework.transaction.support.AbstractPlatformTransactionManager.commit(AbstractPlatformTransactionManager.java:757)
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.commitTransactionAfterReturning(TransactionAspectSupport.java:687)
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:408)
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:130)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:719)
+	at com.gateway.walletcentral.modules.servicecatalog.service.ServiceService$$SpringCGLIB$$0.createTier(<generated>)
+	at com.gateway.walletcentral.modules.servicecatalog.controller.ServiceController.createTier(ServiceController.java:123)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:252)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:184)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:117)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:934)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:853)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:86)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:963)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:866)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1000)
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:903)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:649)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:874)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:710)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:132)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:59)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:111)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:110)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:111)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:108)
+	at org.springframework.security.web.FilterChainProxy.lambda$doFilterInternal$2(FilterChainProxy.java:235)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:376)
+	at org.springframework.security.web.access.intercept.AuthorizationFilter.doFilter(AuthorizationFilter.java:101)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:126)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:120)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:132)
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:86)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:100)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:181)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at com.gateway.walletcentral.config.SecurityConfig$1.doFilterInternal(SecurityConfig.java:114)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:110)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:96)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90)
+	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:237)
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:195)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.ServletRequestPathFilter.doFilter(ServletRequestPathFilter.java:52)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74)
+	at org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebSecurityConfiguration.java:317)
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:355)
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:272)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:111)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:111)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:111)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:199)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:111)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:165)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:77)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:535)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:86)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:71)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:347)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:406)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:71)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:1307)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:2036)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:74)
+	at java.base/java.lang.VirtualThread.run(VirtualThread.java:329)
+Caused by: org.hibernate.exception.ConstraintViolationException: could not execute statement [(conn=4707) Duplicate entry '01a0ad3a-c254-79ce-bb33-88047401bf79-TIER_1' for key 'uk_price_tiers_service_price_id_tier'] [insert into price_tiers (basic_fee,extended_fee,extended_size,service_price_id,tier,id) values (?,?,?,?,?,?)]
+	at org.hibernate.dialect.MariaDBDialect.lambda$buildSQLExceptionConversionDelegate$0(MariaDBDialect.java:378)
+	at org.hibernate.exception.internal.StandardSQLExceptionConverter.convert(StandardSQLExceptionConverter.java:34)
+	at org.hibernate.engine.jdbc.spi.SqlExceptionHelper.convert(SqlExceptionHelper.java:115)
+	at org.hibernate.engine.jdbc.internal.ResultSetReturnImpl.executeUpdate(ResultSetReturnImpl.java:189)
+	at org.hibernate.engine.jdbc.mutation.internal.AbstractMutationExecutor.performNonBatchedMutation(AbstractMutationExecutor.java:145)
+	at org.hibernate.engine.jdbc.mutation.internal.MutationExecutorSingleNonBatched.performNonBatchedOperations(MutationExecutorSingleNonBatched.java:53)
+	at org.hibernate.engine.jdbc.mutation.internal.AbstractMutationExecutor.execute(AbstractMutationExecutor.java:65)
+	at org.hibernate.engine.jdbc.mutation.internal.AbstractMutationExecutor.execute(AbstractMutationExecutor.java:54)
+	at org.hibernate.persister.entity.mutation.InsertCoordinatorStandard.doStaticInserts(InsertCoordinatorStandard.java:183)
+	at org.hibernate.persister.entity.mutation.InsertCoordinatorStandard.coordinateInsert(InsertCoordinatorStandard.java:123)
+	at org.hibernate.persister.entity.mutation.InsertCoordinatorStandard.insert(InsertCoordinatorStandard.java:96)
+	at org.hibernate.action.internal.EntityInsertAction.execute(EntityInsertAction.java:108)
+	at org.hibernate.engine.spi.ActionQueue.executeActions(ActionQueue.java:634)
+	at org.hibernate.engine.spi.ActionQueue.executeActions(ActionQueue.java:505)
+	at org.hibernate.event.internal.AbstractFlushingEventListener.performExecutions(AbstractFlushingEventListener.java:386)
+	at org.hibernate.event.internal.DefaultFlushEventListener.onFlush(DefaultFlushEventListener.java:40)
+	at org.hibernate.event.service.internal.EventListenerGroupImpl.fireEventOnEachListener(EventListenerGroupImpl.java:138)
+	at org.hibernate.internal.SessionImpl.fireFlush(SessionImpl.java:1472)
+	at org.hibernate.internal.SessionImpl.managedFlush(SessionImpl.java:498)
+	at org.hibernate.internal.SessionImpl.flushBeforeTransactionCompletion(SessionImpl.java:2100)
+	at org.hibernate.internal.SessionImpl.beforeTransactionCompletion(SessionImpl.java:2021)
+	at org.hibernate.engine.jdbc.internal.JdbcCoordinatorImpl.beforeTransactionCompletion(JdbcCoordinatorImpl.java:426)
+	at org.hibernate.resource.transaction.backend.jdbc.internal.JdbcResourceLocalTransactionCoordinatorImpl.beforeCompletionCallback(JdbcResourceLocalTransactionCoordinatorImpl.java:167)
+	at org.hibernate.resource.transaction.backend.jdbc.internal.JdbcResourceLocalTransactionCoordinatorImpl$TransactionDriverControlImpl.commitNoRollbackOnly(JdbcResourceLocalTransactionCoordinatorImpl.java:252)
+	at org.hibernate.resource.transaction.backend.jdbc.internal.JdbcResourceLocalTransactionCoordinatorImpl$TransactionDriverControlImpl.commit(JdbcResourceLocalTransactionCoordinatorImpl.java:242)
+	at org.hibernate.engine.transaction.internal.TransactionImpl.commit(TransactionImpl.java:89)
+	at org.springframework.orm.jpa.JpaTransactionManager.doCommit(JpaTransactionManager.java:552)
+	... 100 common frames omitted
+Caused by: java.sql.SQLIntegrityConstraintViolationException: (conn=4707) Duplicate entry '01a0ad3a-c254-79ce-bb33-88047401bf79-TIER_1' for key 'uk_price_tiers_service_price_id_tier'
+	at org.mariadb.jdbc.export.ExceptionFactory.createException(ExceptionFactory.java:317)
+	at org.mariadb.jdbc.export.ExceptionFactory.create(ExceptionFactory.java:402)
+	at org.mariadb.jdbc.message.ClientMessage.readPacket(ClientMessage.java:196)
+	at org.mariadb.jdbc.client.impl.StandardClient.readPacket(StandardClient.java:1524)
+	at org.mariadb.jdbc.client.impl.StandardClient.readResults(StandardClient.java:1463)
+	at org.mariadb.jdbc.client.impl.StandardClient.readResponse(StandardClient.java:1382)
+	at org.mariadb.jdbc.client.impl.StandardClient.execute(StandardClient.java:1306)
+	at org.mariadb.jdbc.ClientPreparedStatement.executeInternal(ClientPreparedStatement.java:91)
+	at org.mariadb.jdbc.ClientPreparedStatement.executeLargeUpdate(ClientPreparedStatement.java:345)
+	at org.mariadb.jdbc.ClientPreparedStatement.executeUpdate(ClientPreparedStatement.java:322)
+	at com.zaxxer.hikari.pool.ProxyPreparedStatement.executeUpdate(ProxyPreparedStatement.java:61)
+	at com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeUpdate(HikariProxyPreparedStatement.java)
+	at org.hibernate.engine.jdbc.internal.ResultSetReturnImpl.executeUpdate(ResultSetReturnImpl.java:185)
+	... 123 common frames omitted
+2026-09-17 13:54:05.214 [tomcat-handler-23] WARN  o.m.jdbc.message.server.ErrorPacket - Error: 1062-23000: Duplicate entry '01a0ad3a-c254-79ce-bb33-88047401bf79-TIER_1' for key 'uk_price_tiers_service_price_id_tier'
+2026-09-17 13:54:05.214 [tomcat-handler-23] WARN  org.hibernate.orm.jdbc.error - HHH000247: ErrorCode: 1062, SQLState: 23000
+2026-09-17 13:54:05.214 [tomcat-handler-23] WARN  org.hibernate.orm.jdbc.error - (conn=4707) Duplicate entry '01a0ad3a-c254-79ce-bb33-88047401bf79-TIER_1' for key 'uk_price_tiers_service_price_id_tier'
+2026-09-17 13:54:05.217 [tomcat-handler-23] ERROR c.g.w.c.e.GlobalExceptionHandler - Data integrity violation
+org.springframework.dao.DataIntegrityViolationException: could not execute statement [(conn=4707) Duplicate entry '01a0ad3a-c254-79ce-bb33-88047401bf79-TIER_1' for key 'uk_price_tiers_service_price_id_tier'] [insert into price_tiers (basic_fee,extended_fee,extended_size,service_price_id,tier,id) values (?,?,?,?,?,?)]; SQL [insert into price_tiers (basic_fee,extended_fee,extended_size,service_price_id,tier,id) values (?,?,?,?,?,?)]; constraint [uk_price_tiers_service_price_id_tier]
+	at org.springframework.orm.jpa.hibernate.HibernateExceptionTranslator.convertHibernateAccessException(HibernateExceptionTranslator.java:169)
+	at org.springframework.orm.jpa.hibernate.HibernateExceptionTranslator.convertHibernateAccessException(HibernateExceptionTranslator.java:131)
+	at org.springframework.orm.jpa.hibernate.HibernateExceptionTranslator.translateExceptionIfPossible(HibernateExceptionTranslator.java:105)
+	at org.springframework.orm.jpa.vendor.HibernateJpaDialect.translateExceptionIfPossible(HibernateJpaDialect.java:223)
+	at org.springframework.orm.jpa.JpaTransactionManager.doCommit(JpaTransactionManager.java:556)
+	at org.springframework.transaction.support.AbstractPlatformTransactionManager.processCommit(AbstractPlatformTransactionManager.java:794)
+	at org.springframework.transaction.support.AbstractPlatformTransactionManager.commit(AbstractPlatformTransactionManager.java:757)
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.commitTransactionAfterReturning(TransactionAspectSupport.java:687)
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:408)
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:130)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:719)
+	at com.gateway.walletcentral.modules.servicecatalog.service.ServiceService$$SpringCGLIB$$0.createTier(<generated>)
+	at com.gateway.walletcentral.modules.servicecatalog.controller.ServiceController.createTier(ServiceController.java:123)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:252)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:184)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:117)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:934)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:853)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:86)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:963)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:866)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1000)
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:903)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:649)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:874)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:710)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:132)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:59)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:111)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:110)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:111)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:108)
+	at org.springframework.security.web.FilterChainProxy.lambda$doFilterInternal$2(FilterChainProxy.java:235)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:376)
+	at org.springframework.security.web.access.intercept.AuthorizationFilter.doFilter(AuthorizationFilter.java:101)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:126)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:120)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:132)
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:86)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:100)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:181)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at com.gateway.walletcentral.config.SecurityConfig$1.doFilterInternal(SecurityConfig.java:114)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:110)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:96)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90)
+	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:237)
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:195)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.ServletRequestPathFilter.doFilter(ServletRequestPathFilter.java:52)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74)
+	at org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebSecurityConfiguration.java:317)
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:355)
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:272)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:111)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:111)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:111)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:199)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:111)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:165)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:77)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:535)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:86)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:71)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:347)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:406)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:71)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:1307)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:2036)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:74)
+	at java.base/java.lang.VirtualThread.run(VirtualThread.java:329)
+Caused by: org.hibernate.exception.ConstraintViolationException: could not execute statement [(conn=4707) Duplicate entry '01a0ad3a-c254-79ce-bb33-88047401bf79-TIER_1' for key 'uk_price_tiers_service_price_id_tier'] [insert into price_tiers (basic_fee,extended_fee,extended_size,service_price_id,tier,id) values (?,?,?,?,?,?)]
+	at org.hibernate.dialect.MariaDBDialect.lambda$buildSQLExceptionConversionDelegate$0(MariaDBDialect.java:378)
+	at org.hibernate.exception.internal.StandardSQLExceptionConverter.convert(StandardSQLExceptionConverter.java:34)
+	at org.hibernate.engine.jdbc.spi.SqlExceptionHelper.convert(SqlExceptionHelper.java:115)
+	at org.hibernate.engine.jdbc.internal.ResultSetReturnImpl.executeUpdate(ResultSetReturnImpl.java:189)
+	at org.hibernate.engine.jdbc.mutation.internal.AbstractMutationExecutor.performNonBatchedMutation(AbstractMutationExecutor.java:145)
+	at org.hibernate.engine.jdbc.mutation.internal.MutationExecutorSingleNonBatched.performNonBatchedOperations(MutationExecutorSingleNonBatched.java:53)
+	at org.hibernate.engine.jdbc.mutation.internal.AbstractMutationExecutor.execute(AbstractMutationExecutor.java:65)
+	at org.hibernate.engine.jdbc.mutation.internal.AbstractMutationExecutor.execute(AbstractMutationExecutor.java:54)
+	at org.hibernate.persister.entity.mutation.InsertCoordinatorStandard.doStaticInserts(InsertCoordinatorStandard.java:183)
+	at org.hibernate.persister.entity.mutation.InsertCoordinatorStandard.coordinateInsert(InsertCoordinatorStandard.java:123)
+	at org.hibernate.persister.entity.mutation.InsertCoordinatorStandard.insert(InsertCoordinatorStandard.java:96)
+	at org.hibernate.action.internal.EntityInsertAction.execute(EntityInsertAction.java:108)
+	at org.hibernate.engine.spi.ActionQueue.executeActions(ActionQueue.java:634)
+	at org.hibernate.engine.spi.ActionQueue.executeActions(ActionQueue.java:505)
+	at org.hibernate.event.internal.AbstractFlushingEventListener.performExecutions(AbstractFlushingEventListener.java:386)
+	at org.hibernate.event.internal.DefaultFlushEventListener.onFlush(DefaultFlushEventListener.java:40)
+	at org.hibernate.event.service.internal.EventListenerGroupImpl.fireEventOnEachListener(EventListenerGroupImpl.java:138)
+	at org.hibernate.internal.SessionImpl.fireFlush(SessionImpl.java:1472)
+	at org.hibernate.internal.SessionImpl.managedFlush(SessionImpl.java:498)
+	at org.hibernate.internal.SessionImpl.flushBeforeTransactionCompletion(SessionImpl.java:2100)
+	at org.hibernate.internal.SessionImpl.beforeTransactionCompletion(SessionImpl.java:2021)
+	at org.hibernate.engine.jdbc.internal.JdbcCoordinatorImpl.beforeTransactionCompletion(JdbcCoordinatorImpl.java:426)
+	at org.hibernate.resource.transaction.backend.jdbc.internal.JdbcResourceLocalTransactionCoordinatorImpl.beforeCompletionCallback(JdbcResourceLocalTransactionCoordinatorImpl.java:167)
+	at org.hibernate.resource.transaction.backend.jdbc.internal.JdbcResourceLocalTransactionCoordinatorImpl$TransactionDriverControlImpl.commitNoRollbackOnly(JdbcResourceLocalTransactionCoordinatorImpl.java:252)
+	at org.hibernate.resource.transaction.backend.jdbc.internal.JdbcResourceLocalTransactionCoordinatorImpl$TransactionDriverControlImpl.commit(JdbcResourceLocalTransactionCoordinatorImpl.java:242)
+	at org.hibernate.engine.transaction.internal.TransactionImpl.commit(TransactionImpl.java:89)
+	at org.springframework.orm.jpa.JpaTransactionManager.doCommit(JpaTransactionManager.java:552)
+	... 100 common frames omitted
+Caused by: java.sql.SQLIntegrityConstraintViolationException: (conn=4707) Duplicate entry '01a0ad3a-c254-79ce-bb33-88047401bf79-TIER_1' for key 'uk_price_tiers_service_price_id_tier'
+	at org.mariadb.jdbc.export.ExceptionFactory.createException(ExceptionFactory.java:317)
+	at org.mariadb.jdbc.export.ExceptionFactory.create(ExceptionFactory.java:402)
+	at org.mariadb.jdbc.message.ClientMessage.readPacket(ClientMessage.java:196)
+	at org.mariadb.jdbc.client.impl.StandardClient.readPacket(StandardClient.java:1524)
+	at org.mariadb.jdbc.client.impl.StandardClient.readResults(StandardClient.java:1463)
+	at org.mariadb.jdbc.client.impl.StandardClient.readResponse(StandardClient.java:1382)
+	at org.mariadb.jdbc.client.impl.StandardClient.execute(StandardClient.java:1306)
+	at org.mariadb.jdbc.ClientPreparedStatement.executeInternal(ClientPreparedStatement.java:91)
+	at org.mariadb.jdbc.ClientPreparedStatement.executeLargeUpdate(ClientPreparedStatement.java:345)
+	at org.mariadb.jdbc.ClientPreparedStatement.executeUpdate(ClientPreparedStatement.java:322)
+	at com.zaxxer.hikari.pool.ProxyPreparedStatement.executeUpdate(ProxyPreparedStatement.java:61)
+	at com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeUpdate(HikariProxyPreparedStatement.java)
+	at org.hibernate.engine.jdbc.internal.ResultSetReturnImpl.executeUpdate(ResultSetReturnImpl.java:185)
+	... 123 common frames omitted
+2026-09-17 13:54:40.072 [tomcat-handler-25] WARN  o.m.jdbc.message.server.ErrorPacket - Error: 1062-23000: Duplicate entry '01a0ad3a-c254-79ce-bb33-88047401bf79-TIER_1' for key 'uk_price_tiers_service_price_id_tier'
+2026-09-17 13:54:40.073 [tomcat-handler-25] WARN  org.hibernate.orm.jdbc.error - HHH000247: ErrorCode: 1062, SQLState: 23000
+2026-09-17 13:54:40.073 [tomcat-handler-25] WARN  org.hibernate.orm.jdbc.error - (conn=4707) Duplicate entry '01a0ad3a-c254-79ce-bb33-88047401bf79-TIER_1' for key 'uk_price_tiers_service_price_id_tier'
+2026-09-17 13:54:40.077 [tomcat-handler-25] ERROR c.g.w.c.e.GlobalExceptionHandler - Data integrity violation
+org.springframework.dao.DataIntegrityViolationException: could not execute statement [(conn=4707) Duplicate entry '01a0ad3a-c254-79ce-bb33-88047401bf79-TIER_1' for key 'uk_price_tiers_service_price_id_tier'] [insert into price_tiers (basic_fee,extended_fee,extended_size,service_price_id,tier,id) values (?,?,?,?,?,?)]; SQL [insert into price_tiers (basic_fee,extended_fee,extended_size,service_price_id,tier,id) values (?,?,?,?,?,?)]; constraint [uk_price_tiers_service_price_id_tier]
+	at org.springframework.orm.jpa.hibernate.HibernateExceptionTranslator.convertHibernateAccessException(HibernateExceptionTranslator.java:169)
+	at org.springframework.orm.jpa.hibernate.HibernateExceptionTranslator.convertHibernateAccessException(HibernateExceptionTranslator.java:131)
+	at org.springframework.orm.jpa.hibernate.HibernateExceptionTranslator.translateExceptionIfPossible(HibernateExceptionTranslator.java:105)
+	at org.springframework.orm.jpa.vendor.HibernateJpaDialect.translateExceptionIfPossible(HibernateJpaDialect.java:223)
+	at org.springframework.orm.jpa.JpaTransactionManager.doCommit(JpaTransactionManager.java:556)
+	at org.springframework.transaction.support.AbstractPlatformTransactionManager.processCommit(AbstractPlatformTransactionManager.java:794)
+	at org.springframework.transaction.support.AbstractPlatformTransactionManager.commit(AbstractPlatformTransactionManager.java:757)
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.commitTransactionAfterReturning(TransactionAspectSupport.java:687)
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:408)
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:130)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:719)
+	at com.gateway.walletcentral.modules.servicecatalog.service.ServiceService$$SpringCGLIB$$0.createTier(<generated>)
+	at com.gateway.walletcentral.modules.servicecatalog.controller.ServiceController.createTier(ServiceController.java:123)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:252)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:184)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:117)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:934)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:853)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:86)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:963)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:866)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1000)
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:903)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:649)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:874)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:710)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:132)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:59)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:111)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:110)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:111)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:108)
+	at org.springframework.security.web.FilterChainProxy.lambda$doFilterInternal$2(FilterChainProxy.java:235)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:376)
+	at org.springframework.security.web.access.intercept.AuthorizationFilter.doFilter(AuthorizationFilter.java:101)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:126)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:120)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:132)
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:86)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:100)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:181)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at com.gateway.walletcentral.config.SecurityConfig$1.doFilterInternal(SecurityConfig.java:114)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:110)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:96)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90)
+	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:237)
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:195)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.ServletRequestPathFilter.doFilter(ServletRequestPathFilter.java:52)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74)
+	at org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebSecurityConfiguration.java:317)
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:355)
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:272)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:111)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:111)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:111)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:199)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:111)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:165)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:77)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:535)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:86)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:71)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:347)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:406)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:71)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:1307)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:2036)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:74)
+	at java.base/java.lang.VirtualThread.run(VirtualThread.java:329)
+Caused by: org.hibernate.exception.ConstraintViolationException: could not execute statement [(conn=4707) Duplicate entry '01a0ad3a-c254-79ce-bb33-88047401bf79-TIER_1' for key 'uk_price_tiers_service_price_id_tier'] [insert into price_tiers (basic_fee,extended_fee,extended_size,service_price_id,tier,id) values (?,?,?,?,?,?)]
+	at org.hibernate.dialect.MariaDBDialect.lambda$buildSQLExceptionConversionDelegate$0(MariaDBDialect.java:378)
+	at org.hibernate.exception.internal.StandardSQLExceptionConverter.convert(StandardSQLExceptionConverter.java:34)
+	at org.hibernate.engine.jdbc.spi.SqlExceptionHelper.convert(SqlExceptionHelper.java:115)
+	at org.hibernate.engine.jdbc.internal.ResultSetReturnImpl.executeUpdate(ResultSetReturnImpl.java:189)
+	at org.hibernate.engine.jdbc.mutation.internal.AbstractMutationExecutor.performNonBatchedMutation(AbstractMutationExecutor.java:145)
+	at org.hibernate.engine.jdbc.mutation.internal.MutationExecutorSingleNonBatched.performNonBatchedOperations(MutationExecutorSingleNonBatched.java:53)
+	at org.hibernate.engine.jdbc.mutation.internal.AbstractMutationExecutor.execute(AbstractMutationExecutor.java:65)
+	at org.hibernate.engine.jdbc.mutation.internal.AbstractMutationExecutor.execute(AbstractMutationExecutor.java:54)
+	at org.hibernate.persister.entity.mutation.InsertCoordinatorStandard.doStaticInserts(InsertCoordinatorStandard.java:183)
+	at org.hibernate.persister.entity.mutation.InsertCoordinatorStandard.coordinateInsert(InsertCoordinatorStandard.java:123)
+	at org.hibernate.persister.entity.mutation.InsertCoordinatorStandard.insert(InsertCoordinatorStandard.java:96)
+	at org.hibernate.action.internal.EntityInsertAction.execute(EntityInsertAction.java:108)
+	at org.hibernate.engine.spi.ActionQueue.executeActions(ActionQueue.java:634)
+	at org.hibernate.engine.spi.ActionQueue.executeActions(ActionQueue.java:505)
+	at org.hibernate.event.internal.AbstractFlushingEventListener.performExecutions(AbstractFlushingEventListener.java:386)
+	at org.hibernate.event.internal.DefaultFlushEventListener.onFlush(DefaultFlushEventListener.java:40)
+	at org.hibernate.event.service.internal.EventListenerGroupImpl.fireEventOnEachListener(EventListenerGroupImpl.java:138)
+	at org.hibernate.internal.SessionImpl.fireFlush(SessionImpl.java:1472)
+	at org.hibernate.internal.SessionImpl.managedFlush(SessionImpl.java:498)
+	at org.hibernate.internal.SessionImpl.flushBeforeTransactionCompletion(SessionImpl.java:2100)
+	at org.hibernate.internal.SessionImpl.beforeTransactionCompletion(SessionImpl.java:2021)
+	at org.hibernate.engine.jdbc.internal.JdbcCoordinatorImpl.beforeTransactionCompletion(JdbcCoordinatorImpl.java:426)
+	at org.hibernate.resource.transaction.backend.jdbc.internal.JdbcResourceLocalTransactionCoordinatorImpl.beforeCompletionCallback(JdbcResourceLocalTransactionCoordinatorImpl.java:167)
+	at org.hibernate.resource.transaction.backend.jdbc.internal.JdbcResourceLocalTransactionCoordinatorImpl$TransactionDriverControlImpl.commitNoRollbackOnly(JdbcResourceLocalTransactionCoordinatorImpl.java:252)
+	at org.hibernate.resource.transaction.backend.jdbc.internal.JdbcResourceLocalTransactionCoordinatorImpl$TransactionDriverControlImpl.commit(JdbcResourceLocalTransactionCoordinatorImpl.java:242)
+	at org.hibernate.engine.transaction.internal.TransactionImpl.commit(TransactionImpl.java:89)
+	at org.springframework.orm.jpa.JpaTransactionManager.doCommit(JpaTransactionManager.java:552)
+	... 100 common frames omitted
+Caused by: java.sql.SQLIntegrityConstraintViolationException: (conn=4707) Duplicate entry '01a0ad3a-c254-79ce-bb33-88047401bf79-TIER_1' for key 'uk_price_tiers_service_price_id_tier'
+	at org.mariadb.jdbc.export.ExceptionFactory.createException(ExceptionFactory.java:317)
+	at org.mariadb.jdbc.export.ExceptionFactory.create(ExceptionFactory.java:402)
+	at org.mariadb.jdbc.message.ClientMessage.readPacket(ClientMessage.java:196)
+	at org.mariadb.jdbc.client.impl.StandardClient.readPacket(StandardClient.java:1524)
+	at org.mariadb.jdbc.client.impl.StandardClient.readResults(StandardClient.java:1463)
+	at org.mariadb.jdbc.client.impl.StandardClient.readResponse(StandardClient.java:1382)
+	at org.mariadb.jdbc.client.impl.StandardClient.execute(StandardClient.java:1306)
+	at org.mariadb.jdbc.ClientPreparedStatement.executeInternal(ClientPreparedStatement.java:91)
+	at org.mariadb.jdbc.ClientPreparedStatement.executeLargeUpdate(ClientPreparedStatement.java:345)
+	at org.mariadb.jdbc.ClientPreparedStatement.executeUpdate(ClientPreparedStatement.java:322)
+	at com.zaxxer.hikari.pool.ProxyPreparedStatement.executeUpdate(ProxyPreparedStatement.java:61)
+	at com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeUpdate(HikariProxyPreparedStatement.java)
+	at org.hibernate.engine.jdbc.internal.ResultSetReturnImpl.executeUpdate(ResultSetReturnImpl.java:185)
+	... 123 common frames omitted
+2026-09-17 14:25:04.125 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2026-09-17 14:25:04.135 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2026-09-17 14:25:06.028 [main] INFO  c.g.w.WalletCentralGatewayApplication - Starting WalletCentralGatewayApplication using Java 21.0.12.1 with PID 443931 (/media/longhg/DATA/JAVA/WalletCentral/target/classes started by longhg in /media/longhg/DATA/JAVA/WalletCentral)
+2026-09-17 14:25:06.035 [main] INFO  c.g.w.WalletCentralGatewayApplication - No active profile set, falling back to 1 default profile: "default"
+2026-09-17 14:25:09.151 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+2026-09-17 14:25:09.155 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2026-09-17 14:25:09.156 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/11.0.24]
+2026-09-17 14:25:10.244 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-09-17 14:25:10.465 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.mariadb.jdbc.Connection@35277c6c
+2026-09-17 14:25:10.467 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2026-09-17 14:25:18.342 [main] WARN  o.s.b.s.a.UserDetailsServiceAutoConfiguration - 
+
+Using generated security password: 8d3f38d7-3f25-4ef5-b662-7a376441b3f5
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-09-17 14:25:20.159 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+2026-09-17 14:25:20.534 [main] INFO  c.g.w.WalletCentralGatewayApplication - Started WalletCentralGatewayApplication in 15.353 seconds (process running for 16.013)
+2026-09-17 14:25:23.348 [tomcat-handler-0] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-09-17 14:31:32.648 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2026-09-17 14:31:32.659 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2026-09-17 14:31:34.317 [main] INFO  c.g.w.WalletCentralGatewayApplication - Starting WalletCentralGatewayApplication using Java 21.0.12.1 with PID 446466 (/media/longhg/DATA/JAVA/WalletCentral/target/classes started by longhg in /media/longhg/DATA/JAVA/WalletCentral)
+2026-09-17 14:31:34.322 [main] INFO  c.g.w.WalletCentralGatewayApplication - No active profile set, falling back to 1 default profile: "default"
+2026-09-17 14:31:36.894 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+2026-09-17 14:31:36.897 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2026-09-17 14:31:36.898 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/11.0.24]
+2026-09-17 14:31:37.808 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-09-17 14:31:37.925 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.mariadb.jdbc.Connection@3809f65d
+2026-09-17 14:31:37.927 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2026-09-17 14:31:43.060 [main] WARN  o.s.b.s.a.UserDetailsServiceAutoConfiguration - 
+
+Using generated security password: 9c2c2ef6-893f-404e-b7aa-37e26e058db3
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-09-17 14:31:44.129 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+2026-09-17 14:31:44.401 [main] INFO  c.g.w.WalletCentralGatewayApplication - Started WalletCentralGatewayApplication in 10.778 seconds (process running for 11.351)
+2026-09-17 14:31:44.735 [tomcat-handler-0] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-09-17 14:31:52.977 [tomcat-handler-7] ERROR c.g.w.m.i.service.InvoiceService - Failed to generate invoice for tenant=01a0ad24-2fa8-7c73-9031-d5d1cff7a33e period=2026-09: Argument to parameter named 'startOfMonth' has an incompatible type (argument [2026-09-01 00:00:00] is not assignable to java.time.OffsetDateTime)
+2026-09-17 14:31:52.978 [tomcat-handler-7] INFO  c.g.w.m.i.service.InvoiceService - Generated 0 invoices for period 2026-09 (postpaid tenants only)
+2026-09-17 14:32:00.295 [tomcat-handler-9] ERROR c.g.w.m.i.service.InvoiceService - Failed to generate invoice for tenant=01a0ad24-2fa8-7c73-9031-d5d1cff7a33e period=2026-09: Argument to parameter named 'startOfMonth' has an incompatible type (argument [2026-09-01 00:00:00] is not assignable to java.time.OffsetDateTime)
+2026-09-17 14:32:00.295 [tomcat-handler-9] INFO  c.g.w.m.i.service.InvoiceService - Generated 0 invoices for period 2026-09 (postpaid tenants only)
+2026-09-17 14:32:06.498 [tomcat-handler-11] ERROR c.g.w.m.i.service.InvoiceService - Failed to generate invoice for tenant=01a0ad24-2fa8-7c73-9031-d5d1cff7a33e period=2026-09: Argument to parameter named 'startOfMonth' has an incompatible type (argument [2026-09-01 00:00:00] is not assignable to java.time.OffsetDateTime)
+2026-09-17 14:32:06.498 [tomcat-handler-11] INFO  c.g.w.m.i.service.InvoiceService - Generated 0 invoices for period 2026-09 (postpaid tenants only)
+2026-09-17 14:32:28.788 [tomcat-handler-34] INFO  c.g.w.core.rabbitmq.MessageProducer - Publishing notification event: {tenantId=01a0a969-7df2-7d49-a5ac-5f6c08359575, referenceType=WALLET_PLAN, type=WALLET_PLAN, title=Gói dịch vụ được tạo, message=Gói dịch vụ Gói cơ bản đã được tạo thành công, referenceId=01a0ae47-fdea-758d-89fd-2bdc4fd72abf}
+2026-09-17 14:32:28.842 [virtual-64] INFO  c.g.w.m.n.l.NotificationListener - ========== NOTIFICATION LISTENER START ==========
+2026-09-17 14:32:28.843 [virtual-64] INFO  c.g.w.m.n.l.NotificationListener - Notification listener payload: {tenantId=01a0a969-7df2-7d49-a5ac-5f6c08359575, referenceType=WALLET_PLAN, type=WALLET_PLAN, title=Gói dịch vụ được tạo, message=Gói dịch vụ Gói cơ bản đã được tạo thành công, referenceId=01a0ae47-fdea-758d-89fd-2bdc4fd72abf} | thread: VirtualThread[#64]/runnable@ForkJoinPool-1-worker-5
+2026-09-17 14:32:28.844 [virtual-64] INFO  c.g.w.m.n.h.NotificationEventHandler - Notification handler - tenantId: 01a0a969-7df2-7d49-a5ac-5f6c08359575 | type: WALLET_PLAN | title: Gói dịch vụ được tạo | thread: VirtualThread[#64]/runnable@ForkJoinPool-1-worker-5
+2026-09-17 14:32:28.852 [virtual-64] INFO  c.g.w.m.n.s.NotificationService - Notification saved: id=01a0ae47-fe33-787a-9918-7c25dda6fab9 type=WALLET_PLAN tenant=01a0a969-7df2-7d49-a5ac-5f6c08359575
+2026-09-17 14:32:28.867 [virtual-64] INFO  c.g.w.m.n.s.NotificationService - Notification pushed via WebSocket to tenant=01a0a969-7df2-7d49-a5ac-5f6c08359575 and admin
+2026-09-17 14:32:28.908 [virtual-64] INFO  c.g.w.m.n.l.NotificationListener - ========== NOTIFICATION LISTENER END ==========
+2026-09-17 14:32:51.779 [tomcat-handler-38] INFO  c.g.w.m.w.service.WalletPlanService - Approving wallet plan: 01a0ae47-fdea-758d-89fd-2bdc4fd72abf
+2026-09-17 14:32:51.799 [tomcat-handler-38] INFO  c.g.w.core.rabbitmq.MessageProducer - Publishing wallet plan event: {payload={tenantId=01a0a969-7df2-7d49-a5ac-5f6c08359575, id=01a0ae47-fdea-758d-89fd-2bdc4fd72abf}, event=APPROVED}
+2026-09-17 14:32:51.809 [virtual-82] INFO  c.g.w.m.w.l.WalletPlanListener - ========== WALLET PLAN LISTENER START ==========
+2026-09-17 14:32:51.809 [virtual-82] INFO  c.g.w.m.w.l.WalletPlanListener - Wallet plan listener event: APPROVED | payload: {tenantId=01a0a969-7df2-7d49-a5ac-5f6c08359575, id=01a0ae47-fdea-758d-89fd-2bdc4fd72abf} | thread: VirtualThread[#82]/runnable@ForkJoinPool-1-worker-7
+2026-09-17 14:32:51.817 [virtual-82] INFO  c.g.w.m.w.l.WalletPlanListener - ========== WALLET PLAN LISTENER END ==========
+2026-09-17 14:32:52.822 [virtual-82] INFO  c.g.w.m.w.l.WalletPlanListener - ========== WALLET PLAN LISTENER START ==========
+2026-09-17 14:32:52.822 [virtual-82] INFO  c.g.w.m.w.l.WalletPlanListener - Wallet plan listener event: APPROVED | payload: {tenantId=01a0a969-7df2-7d49-a5ac-5f6c08359575, id=01a0ae47-fdea-758d-89fd-2bdc4fd72abf} | thread: VirtualThread[#82]/runnable@ForkJoinPool-1-worker-4
+2026-09-17 14:32:52.826 [virtual-82] INFO  c.g.w.m.w.l.WalletPlanListener - ========== WALLET PLAN LISTENER END ==========
+2026-09-17 14:32:54.828 [virtual-82] INFO  c.g.w.m.w.l.WalletPlanListener - ========== WALLET PLAN LISTENER START ==========
+2026-09-17 14:32:54.828 [virtual-82] INFO  c.g.w.m.w.l.WalletPlanListener - Wallet plan listener event: APPROVED | payload: {tenantId=01a0a969-7df2-7d49-a5ac-5f6c08359575, id=01a0ae47-fdea-758d-89fd-2bdc4fd72abf} | thread: VirtualThread[#82]/runnable@ForkJoinPool-1-worker-4
+2026-09-17 14:32:54.832 [virtual-82] INFO  c.g.w.m.w.l.WalletPlanListener - ========== WALLET PLAN LISTENER END ==========
+2026-09-17 14:32:58.833 [virtual-82] INFO  c.g.w.m.w.l.WalletPlanListener - ========== WALLET PLAN LISTENER START ==========
+2026-09-17 14:32:58.833 [virtual-82] INFO  c.g.w.m.w.l.WalletPlanListener - Wallet plan listener event: APPROVED | payload: {tenantId=01a0a969-7df2-7d49-a5ac-5f6c08359575, id=01a0ae47-fdea-758d-89fd-2bdc4fd72abf} | thread: VirtualThread[#82]/runnable@ForkJoinPool-1-worker-4
+2026-09-17 14:32:58.837 [virtual-82] INFO  c.g.w.m.w.l.WalletPlanListener - ========== WALLET PLAN LISTENER END ==========
+2026-09-17 14:32:58.851 [virtual-82] WARN  o.s.a.r.r.RejectAndDontRequeueRecoverer - Retries exhausted for message (Body:'[B@688f20ef(byte[126])' MessageProperties [headers={__ContentTypeId__=java.lang.Object, __KeyTypeId__=java.lang.Object, __TypeId__=java.util.HashMap}, contentType=application/json, contentEncoding=UTF-8, contentLength=0, receivedDeliveryMode=PERSISTENT, priority=0, redelivered=false, receivedExchange=walletcentral.wallet.exchange, receivedRoutingKey=wallet.plan.binding, deliveryTag=1, consumerTag=amq.ctag-5acslYi-eng2SGn9CqRNOw, consumerQueue=walletcentral.wallet.plan.queue])
+java.lang.Error: Unresolved compilation problems: 
+	The method setBalanceBefore(BigDecimal) is undefined for the type WalletPlan
+	The method setBalanceAfter(BigDecimal) is undefined for the type WalletPlan
+	The method setCreditLimitBefore(BigDecimal) is undefined for the type WalletPlan
+	The method setCreditLimitAfter(BigDecimal) is undefined for the type WalletPlan
+
+	at com.gateway.walletcentral.modules.walletplan.handler.WalletPlanEventHandler.handlerApproved(WalletPlanEventHandler.java:146)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:359)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:190)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:158)
+	at org.springframework.transaction.interceptor.TransactionInterceptor$1.proceedWithInvocation(TransactionInterceptor.java:133)
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:371)
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:130)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:719)
+	at com.gateway.walletcentral.modules.walletplan.handler.WalletPlanEventHandler$$SpringCGLIB$$0.handlerApproved(<generated>)
+	at com.gateway.walletcentral.modules.walletplan.listener.WalletPlanListener.handleWalletPlanEvent(WalletPlanListener.java:51)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.messaging.handler.invocation.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:168)
+	at org.springframework.amqp.listener.adapter.KotlinAwareInvocableHandlerMethod.doInvoke(KotlinAwareInvocableHandlerMethod.java:47)
+	at org.springframework.messaging.handler.invocation.InvocableHandlerMethod.invoke(InvocableHandlerMethod.java:119)
+	at org.springframework.amqp.listener.adapter.HandlerAdapter.invoke(HandlerAdapter.java:85)
+	at org.springframework.amqp.rabbit.listener.adapter.MessagingMessageListenerAdapter.invokeHandler(MessagingMessageListenerAdapter.java:322)
+	at org.springframework.amqp.rabbit.listener.adapter.MessagingMessageListenerAdapter.invokeHandlerAndProcessResult(MessagingMessageListenerAdapter.java:266)
+	at org.springframework.amqp.rabbit.listener.adapter.MessagingMessageListenerAdapter.onMessage(MessagingMessageListenerAdapter.java:184)
+	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.doInvokeListener(AbstractMessageListenerContainer.java:1697)
+	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.actualInvokeListener(AbstractMessageListenerContainer.java:1626)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:359)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:190)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:158)
+	at org.springframework.core.retry.RetryTemplate.execute(RetryTemplate.java:174)
+	at org.springframework.amqp.rabbit.config.StatelessRetryOperationsInterceptor.invoke(StatelessRetryOperationsInterceptor.java:57)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:222)
+	at org.springframework.amqp.rabbit.listener.$Proxy210.invokeListener(Unknown Source)
+	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.invokeListener(AbstractMessageListenerContainer.java:1609)
+	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.doExecuteListener(AbstractMessageListenerContainer.java:1600)
+	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.executeListenerAndHandleException(AbstractMessageListenerContainer.java:1547)
+	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.executeListener(AbstractMessageListenerContainer.java:1528)
+	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer.doReceiveAndExecute(SimpleMessageListenerContainer.java:1158)
+	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer.receiveAndExecute(SimpleMessageListenerContainer.java:1103)
+	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer$AsyncMessageProcessingConsumer.mainLoop(SimpleMessageListenerContainer.java:1511)
+	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer$AsyncMessageProcessingConsumer.run(SimpleMessageListenerContainer.java:1405)
+	at java.base/java.util.concurrent.ThreadPerTaskExecutor$TaskRunner.run(ThreadPerTaskExecutor.java:314)
+	at java.base/java.lang.VirtualThread.run(VirtualThread.java:329)
+2026-09-17 14:32:58.856 [virtual-82] WARN  o.s.a.l.ConditionalRejectingErrorHandler - Execution of Rabbit message listener failed.
+org.springframework.amqp.rabbit.support.ListenerExecutionFailedException: Retry Policy Exhausted
+	at org.springframework.amqp.rabbit.retry.RejectAndDontRequeueRecoverer.recover(RejectAndDontRequeueRecoverer.java:78)
+	at org.springframework.amqp.rabbit.config.StatelessRetryOperationsInterceptorFactoryBean.recover(StatelessRetryOperationsInterceptorFactoryBean.java:65)
+	at org.springframework.amqp.rabbit.config.StatelessRetryOperationsInterceptor.invoke(StatelessRetryOperationsInterceptor.java:61)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:222)
+	at org.springframework.amqp.rabbit.listener.$Proxy210.invokeListener(Unknown Source)
+	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.invokeListener(AbstractMessageListenerContainer.java:1609)
+	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.doExecuteListener(AbstractMessageListenerContainer.java:1600)
+	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.executeListenerAndHandleException(AbstractMessageListenerContainer.java:1547)
+	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.executeListener(AbstractMessageListenerContainer.java:1528)
+	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer.doReceiveAndExecute(SimpleMessageListenerContainer.java:1158)
+	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer.receiveAndExecute(SimpleMessageListenerContainer.java:1103)
+	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer$AsyncMessageProcessingConsumer.mainLoop(SimpleMessageListenerContainer.java:1511)
+	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer$AsyncMessageProcessingConsumer.run(SimpleMessageListenerContainer.java:1405)
+	at java.base/java.util.concurrent.ThreadPerTaskExecutor$TaskRunner.run(ThreadPerTaskExecutor.java:314)
+	at java.base/java.lang.VirtualThread.run(VirtualThread.java:329)
+Caused by: org.springframework.amqp.AmqpRejectAndDontRequeueException
+	... 16 common frames omitted
+Caused by: java.lang.Error: Unresolved compilation problems: 
+	The method setBalanceBefore(BigDecimal) is undefined for the type WalletPlan
+	The method setBalanceAfter(BigDecimal) is undefined for the type WalletPlan
+	The method setCreditLimitBefore(BigDecimal) is undefined for the type WalletPlan
+	The method setCreditLimitAfter(BigDecimal) is undefined for the type WalletPlan
+
+	at com.gateway.walletcentral.modules.walletplan.handler.WalletPlanEventHandler.handlerApproved(WalletPlanEventHandler.java:146)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:359)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:190)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:158)
+	at org.springframework.transaction.interceptor.TransactionInterceptor$1.proceedWithInvocation(TransactionInterceptor.java:133)
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:371)
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:130)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:719)
+	at com.gateway.walletcentral.modules.walletplan.handler.WalletPlanEventHandler$$SpringCGLIB$$0.handlerApproved(<generated>)
+	at com.gateway.walletcentral.modules.walletplan.listener.WalletPlanListener.handleWalletPlanEvent(WalletPlanListener.java:51)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.messaging.handler.invocation.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:168)
+	at org.springframework.amqp.listener.adapter.KotlinAwareInvocableHandlerMethod.doInvoke(KotlinAwareInvocableHandlerMethod.java:47)
+	at org.springframework.messaging.handler.invocation.InvocableHandlerMethod.invoke(InvocableHandlerMethod.java:119)
+	at org.springframework.amqp.listener.adapter.HandlerAdapter.invoke(HandlerAdapter.java:85)
+	at org.springframework.amqp.rabbit.listener.adapter.MessagingMessageListenerAdapter.invokeHandler(MessagingMessageListenerAdapter.java:322)
+	at org.springframework.amqp.rabbit.listener.adapter.MessagingMessageListenerAdapter.invokeHandlerAndProcessResult(MessagingMessageListenerAdapter.java:266)
+	at org.springframework.amqp.rabbit.listener.adapter.MessagingMessageListenerAdapter.onMessage(MessagingMessageListenerAdapter.java:184)
+	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.doInvokeListener(AbstractMessageListenerContainer.java:1697)
+	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.actualInvokeListener(AbstractMessageListenerContainer.java:1626)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:359)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:190)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:158)
+	at org.springframework.core.retry.RetryTemplate.execute(RetryTemplate.java:174)
+	at org.springframework.amqp.rabbit.config.StatelessRetryOperationsInterceptor.invoke(StatelessRetryOperationsInterceptor.java:57)
+	... 13 common frames omitted
+2026-09-17 14:34:53.004 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2026-09-17 14:34:53.016 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2026-09-17 14:34:54.848 [main] INFO  c.g.w.WalletCentralGatewayApplication - Starting WalletCentralGatewayApplication using Java 21.0.12.1 with PID 447971 (/media/longhg/DATA/JAVA/WalletCentral/target/classes started by longhg in /media/longhg/DATA/JAVA/WalletCentral)
+2026-09-17 14:34:54.853 [main] INFO  c.g.w.WalletCentralGatewayApplication - No active profile set, falling back to 1 default profile: "default"
+2026-09-17 14:34:58.296 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+2026-09-17 14:34:58.299 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2026-09-17 14:34:58.299 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/11.0.24]
+2026-09-17 14:34:59.257 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-09-17 14:34:59.399 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.mariadb.jdbc.Connection@35277c6c
+2026-09-17 14:34:59.402 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2026-09-17 14:35:05.015 [main] WARN  o.s.b.s.a.UserDetailsServiceAutoConfiguration - 
+
+Using generated security password: 2264f1c2-d7a0-43f3-baf0-689060e49053
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-09-17 14:35:06.083 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+2026-09-17 14:35:06.339 [main] INFO  c.g.w.WalletCentralGatewayApplication - Started WalletCentralGatewayApplication in 12.272 seconds (process running for 12.927)
+2026-09-17 14:35:06.384 [virtual-81] INFO  c.g.w.m.w.l.WalletPlanListener - ========== WALLET PLAN LISTENER START ==========
+2026-09-17 14:35:06.385 [virtual-81] INFO  c.g.w.m.w.l.WalletPlanListener - Wallet plan listener event: APPROVED | payload: {tenantId=01a0a969-7df2-7d49-a5ac-5f6c08359575, id=01a0ae47-fdea-758d-89fd-2bdc4fd72abf} | thread: VirtualThread[#81]/runnable@ForkJoinPool-1-worker-3
+2026-09-17 14:35:06.409 [virtual-81] INFO  c.g.w.m.w.h.WalletPlanEventHandler - ========== WALLET PLAN HANDLER APPROVE START ==========
+2026-09-17 14:35:06.410 [virtual-81] INFO  c.g.w.m.w.h.WalletPlanEventHandler - Wallet plan handler approve payload: {tenantId=01a0a969-7df2-7d49-a5ac-5f6c08359575, id=01a0ae47-fdea-758d-89fd-2bdc4fd72abf} | thread: VirtualThread[#81]/runnable@ForkJoinPool-1-worker-3
+2026-09-17 14:35:06.536 [tomcat-handler-0] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-09-17 14:35:06.626 [virtual-81] INFO  c.g.w.m.w.h.WalletPlanEventHandler - Wallet updated: balance 500000.00 -> 1000000.00, creditLimit 0.00 -> 0.00
+2026-09-17 14:35:06.642 [virtual-81] INFO  c.g.w.m.w.h.WalletPlanEventHandler - Created DEPOSIT transaction: 01a0ae4a-6686-7480-90a4-5e5284de4a52 amount=500000.00 for wallet=01a0a974-bfef-7342-b1d6-17e03446a6e2
+2026-09-17 14:35:06.645 [virtual-81] INFO  c.g.w.m.w.h.WalletPlanEventHandler - Wallet plan snapshots updated for id: 01a0ae47-fdea-758d-89fd-2bdc4fd72abf
+2026-09-17 14:35:06.645 [virtual-81] INFO  c.g.w.core.rabbitmq.MessageProducer - Publishing notification event: {tenantId=01a0a969-7df2-7d49-a5ac-5f6c08359575, referenceType=WALLET_PLAN, type=WALLET_PLAN, title=Gói dịch vụ được duyệt, message=Gói dịch vụ Gói cơ bản đã được duyệt thành công, referenceId=01a0ae47-fdea-758d-89fd-2bdc4fd72abf}
+2026-09-17 14:35:06.679 [virtual-81] INFO  c.g.w.m.w.h.WalletPlanEventHandler - ========== WALLET PLAN HANDLER APPROVE END ========== SUCCESS plan=01a0ae47-fdea-758d-89fd-2bdc4fd72abf
+2026-09-17 14:35:06.688 [virtual-63] INFO  c.g.w.m.n.l.NotificationListener - ========== NOTIFICATION LISTENER START ==========
+2026-09-17 14:35:06.689 [virtual-63] INFO  c.g.w.m.n.l.NotificationListener - Notification listener payload: {tenantId=01a0a969-7df2-7d49-a5ac-5f6c08359575, referenceType=WALLET_PLAN, type=WALLET_PLAN, title=Gói dịch vụ được duyệt, message=Gói dịch vụ Gói cơ bản đã được duyệt thành công, referenceId=01a0ae47-fdea-758d-89fd-2bdc4fd72abf} | thread: VirtualThread[#63]/runnable@ForkJoinPool-1-worker-1
+2026-09-17 14:35:06.692 [virtual-63] INFO  c.g.w.m.n.h.NotificationEventHandler - Notification handler - tenantId: 01a0a969-7df2-7d49-a5ac-5f6c08359575 | type: WALLET_PLAN | title: Gói dịch vụ được duyệt | thread: VirtualThread[#63]/runnable@ForkJoinPool-1-worker-1
+2026-09-17 14:35:06.728 [virtual-63] INFO  c.g.w.m.n.s.NotificationService - Notification saved: id=01a0ae4a-66e8-7006-9809-dfbe9d114f3c type=WALLET_PLAN tenant=01a0a969-7df2-7d49-a5ac-5f6c08359575
+2026-09-17 14:35:06.743 [virtual-81] INFO  c.g.w.m.w.l.WalletPlanListener - ========== WALLET PLAN LISTENER END ==========
+2026-09-17 14:35:06.816 [virtual-63] INFO  c.g.w.m.n.s.NotificationService - Notification pushed via WebSocket to tenant=01a0a969-7df2-7d49-a5ac-5f6c08359575 and admin
+2026-09-17 14:35:06.826 [virtual-63] INFO  c.g.w.m.n.l.NotificationListener - ========== NOTIFICATION LISTENER END ==========
+2026-09-17 15:14:51.807 [tomcat-handler-46] INFO  o.s.api.AbstractOpenApiResource - Init duration for springdoc-openapi is: 2586 ms
+2026-09-17 15:15:35.466 [tomcat-handler-51] ERROR c.g.w.c.e.GlobalExceptionHandler - Unexpected error
+org.springframework.http.converter.HttpMessageNotReadableException: JSON parse error: Unexpected character ('}' (code 125)): was expecting double-quote to start property name
+	at org.springframework.http.converter.AbstractJacksonHttpMessageConverter.readJavaType(AbstractJacksonHttpMessageConverter.java:363)
+	at org.springframework.http.converter.AbstractJacksonHttpMessageConverter.read(AbstractJacksonHttpMessageConverter.java:319)
+	at org.springframework.web.servlet.mvc.method.annotation.AbstractMessageConverterMethodArgumentResolver.readWithMessageConverters(AbstractMessageConverterMethodArgumentResolver.java:203)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestResponseBodyMethodProcessor.readWithMessageConverters(RequestResponseBodyMethodProcessor.java:181)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestResponseBodyMethodProcessor.resolveArgument(RequestResponseBodyMethodProcessor.java:156)
+	at org.springframework.web.method.support.HandlerMethodArgumentResolverComposite.resolveArgument(HandlerMethodArgumentResolverComposite.java:122)
+	at org.springframework.web.method.support.InvocableHandlerMethod.getMethodArgumentValues(InvocableHandlerMethod.java:224)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:174)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:117)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:934)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:853)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:86)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:963)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:866)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1000)
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:903)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:649)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:874)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:710)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:132)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:59)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:111)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:110)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:111)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:108)
+	at org.springframework.security.web.FilterChainProxy.lambda$doFilterInternal$2(FilterChainProxy.java:235)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:376)
+	at org.springframework.security.web.access.intercept.AuthorizationFilter.doFilter(AuthorizationFilter.java:101)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:126)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:120)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:132)
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:86)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:100)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:181)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at com.gateway.walletcentral.config.SecurityConfig$1.doFilterInternal(SecurityConfig.java:130)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:110)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:96)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90)
+	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:385)
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:237)
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:195)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.ServletRequestPathFilter.doFilter(ServletRequestPathFilter.java:52)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74)
+	at org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebSecurityConfiguration.java:317)
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:355)
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:272)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:111)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:111)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:111)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:199)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:111)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:165)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:77)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:535)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:86)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:71)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:347)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:406)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:71)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:1307)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:2036)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:74)
+	at java.base/java.lang.VirtualThread.run(VirtualThread.java:329)
+Caused by: tools.jackson.core.exc.StreamReadException: Unexpected character ('}' (code 125)): was expecting double-quote to start property name
+ at [Source: REDACTED (`StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION` disabled); byte offset: #230]
+	at tools.jackson.core.JsonParser._constructReadException(JsonParser.java:1856)
+	at tools.jackson.core.base.ParserMinimalBase._reportUnexpectedChar(ParserMinimalBase.java:1049)
+	at tools.jackson.core.json.UTF8StreamJsonParser._handleOddName(UTF8StreamJsonParser.java:2516)
+	at tools.jackson.core.json.UTF8StreamJsonParser._parseName(UTF8StreamJsonParser.java:2126)
+	at tools.jackson.core.json.UTF8StreamJsonParser.nextToken(UTF8StreamJsonParser.java:765)
+	at tools.jackson.databind.deser.bean.BeanDeserializer._deserializeUsingPropertyBased(BeanDeserializer.java:698)
+	at tools.jackson.databind.deser.bean.BeanDeserializerBase.deserializeFromObjectUsingNonDefault(BeanDeserializerBase.java:1509)
+	at tools.jackson.databind.deser.bean.BeanDeserializer.deserializeFromObject(BeanDeserializer.java:605)
+	at tools.jackson.databind.deser.bean.BeanDeserializer.deserialize(BeanDeserializer.java:200)
+	at tools.jackson.databind.deser.DeserializationContextExt.readRootValue(DeserializationContextExt.java:266)
+	at tools.jackson.databind.ObjectReader._bindAndClose(ObjectReader.java:1888)
+	at tools.jackson.databind.ObjectReader.readValue(ObjectReader.java:1270)
+	at org.springframework.http.converter.AbstractJacksonHttpMessageConverter.readJavaType(AbstractJacksonHttpMessageConverter.java:352)
+	... 94 common frames omitted
+2026-09-17 15:15:54.109 [tomcat-handler-57] INFO  c.g.w.m.b.c.BillingController - Billing webhook request from API key: dev:123456...
+2026-09-17 15:15:54.114 [tomcat-handler-57] INFO  c.g.w.m.b.c.BillingController - Authenticated tenant: dev (dev)
+2026-09-17 15:15:54.115 [tomcat-handler-57] INFO  c.g.w.m.b.service.BillingService - ========== BILLING PROCESS START ==========
+2026-09-17 15:15:54.116 [tomcat-handler-57] INFO  c.g.w.m.b.service.BillingService - Tenant: dev (id=01a0a969-7df2-7d49-a5ac-5f6c08359575)
+2026-09-17 15:15:54.116 [tomcat-handler-57] INFO  c.g.w.m.b.service.BillingService - ServiceCode: kfc | UsageUnits: 100 | RefId: SMS-20260914-001
+2026-09-17 15:15:54.125 [tomcat-handler-57] INFO  c.g.w.m.b.service.BillingService - Service found: King FC (id=01a0ad3a-461b-78bd-92a7-b80adfbd9920)
+2026-09-17 15:15:54.140 [tomcat-handler-57] INFO  c.g.w.m.b.service.BillingService - ServicePrice found: id=01a0ad3a-c254-79ce-bb33-88047401bf79 initialFee=10000.00 initialSize=1000 subsequentFee=10000.00 subsequentSize=1000
+2026-09-17 15:15:54.147 [tomcat-handler-57] INFO  c.g.w.m.b.service.BillingService - Wallet locked (SELECT FOR UPDATE): id=01a0a974-bfef-7342-b1d6-17e03446a6e2 balance=1000000.00 creditLimit=0.00 available=1000000.00
+2026-09-17 15:15:54.147 [tomcat-handler-57] INFO  c.g.w.m.b.service.BillingService - Fee calculated: 10000.00 for 100 units
+2026-09-17 15:15:54.148 [tomcat-handler-57] INFO  c.g.w.m.b.service.BillingService - Wallet updated: balance 1000000.00 -> 990000.00 , available 1000000.00 -> 990000.00
+2026-09-17 15:15:54.150 [tomcat-handler-57] INFO  c.g.w.m.b.service.BillingService - Transaction created: id=01a0ae6f-bf25-7f70-b21b-28c5db06415a type=CHARGE amount=10000.00
+2026-09-17 15:15:54.150 [tomcat-handler-57] INFO  c.g.w.core.rabbitmq.MessageProducer - Publishing transaction event: {walletId=01a0a974-bfef-7342-b1d6-17e03446a6e2, amount=10000.00, balanceAfter=990000.00, type=CHARGE, transactionId=01a0ae6f-bf25-7f70-b21b-28c5db06415a}
+2026-09-17 15:15:54.160 [virtual-71] INFO  c.g.w.m.t.l.TransactionListener - ========== TRANSACTION LISTENER START ==========
+2026-09-17 15:15:54.160 [virtual-71] INFO  c.g.w.m.t.l.TransactionListener - Transaction listener payload: {walletId=01a0a974-bfef-7342-b1d6-17e03446a6e2, amount=10000.0, balanceAfter=990000.0, type=CHARGE, transactionId=01a0ae6f-bf25-7f70-b21b-28c5db06415a} | thread: VirtualThread[#71]/runnable@ForkJoinPool-1-worker-2
+2026-09-17 15:15:54.161 [virtual-71] INFO  c.g.w.m.t.h.TransactionEventHandler - Transaction handler - transactionId: 01a0ae6f-bf25-7f70-b21b-28c5db06415a | walletId: 01a0a974-bfef-7342-b1d6-17e03446a6e2 | thread: VirtualThread[#71]/runnable@ForkJoinPool-1-worker-2
+2026-09-17 15:15:54.168 [tomcat-handler-57] INFO  c.g.w.m.b.service.BillingService - UsageLog created: id=01a0ae6f-bf2a-7424-9e79-f65e684c8935 totalCharged=10000.00
+2026-09-17 15:15:54.170 [tomcat-handler-57] INFO  c.g.w.core.rabbitmq.MessageProducer - Publishing usage log event: {usageLogId=01a0ae6f-bf2a-7424-9e79-f65e684c8935, tenantId=01a0a969-7df2-7d49-a5ac-5f6c08359575, serviceId=01a0ad3a-461b-78bd-92a7-b80adfbd9920}
+2026-09-17 15:15:54.182 [virtual-71] ERROR c.g.w.m.t.h.TransactionEventHandler - Transaction not found: 01a0ae6f-bf25-7f70-b21b-28c5db06415a - possible data inconsistency
+2026-09-17 15:15:54.185 [virtual-71] INFO  c.g.w.m.t.l.TransactionListener - ========== TRANSACTION LISTENER END ==========
+2026-09-17 15:15:54.188 [virtual-76] INFO  c.g.w.m.u.listener.UsageLogListener - ========== USAGE LOG LISTENER START ==========
+2026-09-17 15:15:54.177 [tomcat-handler-57] INFO  c.g.w.core.rabbitmq.MessageProducer - Publishing billing event: {usageLogId=01a0ae6f-bf2a-7424-9e79-f65e684c8935, response=BillingWebhookResponse(transactionId=01a0ae6f-bf25-7f70-b21b-28c5db06415a, tenantId=01a0a969-7df2-7d49-a5ac-5f6c08359575, serviceCode=KFC, serviceName=King FC, usageUnits=100, totalCharged=10000.00, feeBreakdown=BillingWebhookResponse.FeeBreakdownDto(strategy=INITIAL_TIER_ONLY, initialFee=10000.00, initialUnits=1000, subsequentFee=0, subsequentUnits=0, totalFee=10000.00), balanceAfter=990000.00, availableBalanceAfter=990000.00, status=SUCCESS, createdAt=null, referenceId=58d92984-7906-4ffc-b3e1-f2ce58a9b9c9, metadata=null), webhookAuth=Bearer abc123, transactionId=01a0ae6f-bf25-7f70-b21b-28c5db06415a, webhookUrl=https://service.example.com/webhook/billing}
+2026-09-17 15:15:54.194 [virtual-76] INFO  c.g.w.m.u.listener.UsageLogListener - UsageLog listener payload: {usageLogId=01a0ae6f-bf2a-7424-9e79-f65e684c8935, tenantId=01a0a969-7df2-7d49-a5ac-5f6c08359575, serviceId=01a0ad3a-461b-78bd-92a7-b80adfbd9920} | thread: VirtualThread[#76]/runnable@ForkJoinPool-1-worker-6
+2026-09-17 15:15:54.196 [virtual-76] INFO  c.g.w.m.u.h.UsageLogEventHandler - UsageLog handler - usageLogId: 01a0ae6f-bf2a-7424-9e79-f65e684c8935 | tenantId: 01a0a969-7df2-7d49-a5ac-5f6c08359575 | thread: VirtualThread[#76]/runnable@ForkJoinPool-1-worker-6
+2026-09-17 15:15:54.201 [tomcat-handler-57] INFO  c.g.w.m.b.service.BillingService - ========== BILLING PROCESS END ========== transaction=01a0ae6f-bf25-7f70-b21b-28c5db06415a
+2026-09-17 15:15:54.221 [virtual-49] INFO  c.g.w.m.b.listener.BillingListener - ========== BILLING LISTENER START ==========
+2026-09-17 15:15:54.223 [virtual-49] INFO  c.g.w.m.b.listener.BillingListener - Billing listener payload: {usageLogId=01a0ae6f-bf2a-7424-9e79-f65e684c8935, response={transactionId=01a0ae6f-bf25-7f70-b21b-28c5db06415a, tenantId=01a0a969-7df2-7d49-a5ac-5f6c08359575, serviceCode=KFC, serviceName=King FC, usageUnits=100, totalCharged=10000.0, feeBreakdown={strategy=INITIAL_TIER_ONLY, initialFee=10000.0, initialUnits=1000, subsequentFee=0, subsequentUnits=0, totalFee=10000.0}, balanceAfter=990000.0, availableBalanceAfter=990000.0, status=SUCCESS, createdAt=null, referenceId=58d92984-7906-4ffc-b3e1-f2ce58a9b9c9, metadata=null}, webhookAuth=Bearer abc123, transactionId=01a0ae6f-bf25-7f70-b21b-28c5db06415a, webhookUrl=https://service.example.com/webhook/billing} | thread: VirtualThread[#49]/runnable@ForkJoinPool-1-worker-6
+2026-09-17 15:15:54.224 [virtual-49] INFO  c.g.w.m.b.h.BillingEventHandler - Billing handler - transactionId: 01a0ae6f-bf25-7f70-b21b-28c5db06415a | webhookUrl: https://service.example.com/webhook/billing | thread: VirtualThread[#49]/runnable@ForkJoinPool-1-worker-6
+2026-09-17 15:15:54.227 [virtual-76] ERROR c.g.w.m.u.h.UsageLogEventHandler - UsageLog not found: 01a0ae6f-bf2a-7424-9e79-f65e684c8935 - possible data inconsistency
+2026-09-17 15:15:54.233 [virtual-76] INFO  c.g.w.m.u.listener.UsageLogListener - ========== USAGE LOG LISTENER END ==========
+2026-09-17 15:15:54.233 [virtual-49] INFO  c.g.w.m.b.h.BillingEventHandler - Response payload: {"transactionId":"01a0ae6f-bf25-7f70-b21b-28c5db06415a","tenantId":"01a0a969-7df2-7d49-a5ac-5f6c08359575","serviceCode":"KFC","serviceName":"King FC","usageUnits":100,"totalCharged":10000.0,"feeBreakdown":{"strategy":"INITIAL_TIER_ONLY","initialFee":10000.0,"initialUnits":1000,"subsequentFee":0,"subsequentUnits":0,"totalFee":10000.0},"balanceAfter":990000.0,"availableBalanceAfter":990000.0,"status":"SUCCESS","createdAt":null,"referenceId":"58d92984-7906-4ffc-b3e1-f2ce58a9b9c9","metadata":null}
+2026-09-17 15:15:54.235 [virtual-49] INFO  c.g.w.m.b.h.BillingEventHandler - Webhook auth header set
+2026-09-17 15:15:54.344 [virtual-49] ERROR c.g.w.m.b.h.BillingEventHandler - Failed to call webhook URL: https://service.example.com/webhook/billing for transaction: 01a0ae6f-bf25-7f70-b21b-28c5db06415a
+org.springframework.web.client.ResourceAccessException: I/O error on POST request for "https://service.example.com/webhook/billing": service.example.com
+	at org.springframework.web.client.RestTemplate.createResourceAccessException(RestTemplate.java:780)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:760)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:677)
+	at org.springframework.web.client.RestTemplate.postForEntity(RestTemplate.java:430)
+	at com.gateway.walletcentral.modules.billing.handler.BillingEventHandler.handleBillingCallback(BillingEventHandler.java:50)
+	at com.gateway.walletcentral.modules.billing.listener.BillingListener.handleBillingEvent(BillingListener.java:40)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.messaging.handler.invocation.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:168)
+	at org.springframework.amqp.listener.adapter.KotlinAwareInvocableHandlerMethod.doInvoke(KotlinAwareInvocableHandlerMethod.java:47)
+	at org.springframework.messaging.handler.invocation.InvocableHandlerMethod.invoke(InvocableHandlerMethod.java:119)
+	at org.springframework.amqp.listener.adapter.HandlerAdapter.invoke(HandlerAdapter.java:85)
+	at org.springframework.amqp.rabbit.listener.adapter.MessagingMessageListenerAdapter.invokeHandler(MessagingMessageListenerAdapter.java:322)
+	at org.springframework.amqp.rabbit.listener.adapter.MessagingMessageListenerAdapter.invokeHandlerAndProcessResult(MessagingMessageListenerAdapter.java:266)
+	at org.springframework.amqp.rabbit.listener.adapter.MessagingMessageListenerAdapter.onMessage(MessagingMessageListenerAdapter.java:184)
+	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.doInvokeListener(AbstractMessageListenerContainer.java:1697)
+	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.actualInvokeListener(AbstractMessageListenerContainer.java:1626)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:359)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:190)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:158)
+	at org.springframework.core.retry.RetryTemplate.execute(RetryTemplate.java:135)
+	at org.springframework.amqp.rabbit.config.StatelessRetryOperationsInterceptor.invoke(StatelessRetryOperationsInterceptor.java:57)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:222)
+	at org.springframework.amqp.rabbit.listener.$Proxy210.invokeListener(Unknown Source)
+	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.invokeListener(AbstractMessageListenerContainer.java:1609)
+	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.doExecuteListener(AbstractMessageListenerContainer.java:1600)
+	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.executeListenerAndHandleException(AbstractMessageListenerContainer.java:1547)
+	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.executeListener(AbstractMessageListenerContainer.java:1528)
+	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer.doReceiveAndExecute(SimpleMessageListenerContainer.java:1158)
+	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer.receiveAndExecute(SimpleMessageListenerContainer.java:1103)
+	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer$AsyncMessageProcessingConsumer.mainLoop(SimpleMessageListenerContainer.java:1511)
+	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer$AsyncMessageProcessingConsumer.run(SimpleMessageListenerContainer.java:1405)
+	at java.base/java.util.concurrent.ThreadPerTaskExecutor$TaskRunner.run(ThreadPerTaskExecutor.java:314)
+	at java.base/java.lang.VirtualThread.run(VirtualThread.java:329)
+Caused by: java.net.UnknownHostException: service.example.com
+	at java.base/sun.nio.ch.NioSocketImpl.connect(NioSocketImpl.java:567)
+	at java.base/java.net.SocksSocketImpl.connect(SocksSocketImpl.java:327)
+	at java.base/java.net.Socket.connect(Socket.java:751)
+	at java.base/sun.security.ssl.SSLSocketImpl.connect(SSLSocketImpl.java:304)
+	at java.base/sun.net.NetworkClient.doConnect(NetworkClient.java:178)
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:539)
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:644)
+	at java.base/sun.net.www.protocol.https.HttpsClient.<init>(HttpsClient.java:265)
+	at java.base/sun.net.www.protocol.https.HttpsClient.New(HttpsClient.java:378)
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.getNewHttpClient(AbstractDelegateHttpsURLConnection.java:196)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect0(HttpURLConnection.java:1260)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect(HttpURLConnection.java:1146)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.connect(HttpURLConnection.java:1075)
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.connect(AbstractDelegateHttpsURLConnection.java:181)
+	at java.base/sun.net.www.protocol.https.HttpsURLConnectionImpl.connect(HttpsURLConnectionImpl.java:141)
+	at org.springframework.http.client.SimpleClientHttpRequest.executeInternal(SimpleClientHttpRequest.java:80)
+	at org.springframework.http.client.AbstractStreamingClientHttpRequest.executeInternal(AbstractStreamingClientHttpRequest.java:87)
+	at org.springframework.http.client.AbstractClientHttpRequest.execute(AbstractClientHttpRequest.java:80)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:754)
+	... 35 common frames omitted
+2026-09-17 15:15:54.348 [virtual-49] INFO  c.g.w.m.b.listener.BillingListener - ========== BILLING LISTENER END ==========
+2026-09-17 15:23:31.525 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2026-09-17 15:23:31.535 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2026-09-17 15:23:33.293 [main] INFO  c.g.w.WalletCentralGatewayApplication - Starting WalletCentralGatewayApplication using Java 21.0.12.1 with PID 464313 (/media/longhg/DATA/JAVA/WalletCentral/target/classes started by longhg in /media/longhg/DATA/JAVA/WalletCentral)
+2026-09-17 15:23:33.300 [main] INFO  c.g.w.WalletCentralGatewayApplication - No active profile set, falling back to 1 default profile: "default"
+2026-09-17 15:23:36.493 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+2026-09-17 15:23:36.497 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2026-09-17 15:23:36.498 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/11.0.24]
+2026-09-17 15:23:37.574 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-09-17 15:23:37.758 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.mariadb.jdbc.Connection@662d3e85
+2026-09-17 15:23:37.761 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2026-09-17 15:23:43.676 [main] WARN  o.s.b.s.a.UserDetailsServiceAutoConfiguration - 
+
+Using generated security password: 7e8d87a3-710d-4e0f-a813-d366eeaf8709
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-09-17 15:23:44.756 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+2026-09-17 15:23:45.018 [main] INFO  c.g.w.WalletCentralGatewayApplication - Started WalletCentralGatewayApplication in 12.48 seconds (process running for 13.086)
+2026-09-17 15:23:45.167 [tomcat-handler-0] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-09-17 15:23:46.741 [tomcat-handler-7] INFO  c.g.w.m.b.c.BillingController - Billing webhook request from API key: dev:123456...
+2026-09-17 15:23:46.746 [tomcat-handler-7] INFO  c.g.w.m.b.c.BillingController - Authenticated tenant: dev (dev)
+2026-09-17 15:23:46.748 [tomcat-handler-7] INFO  c.g.w.m.b.service.BillingService - ========== BILLING PROCESS START ==========
+2026-09-17 15:23:46.748 [tomcat-handler-7] INFO  c.g.w.m.b.service.BillingService - Tenant: dev (id=01a0a969-7df2-7d49-a5ac-5f6c08359575)
+2026-09-17 15:23:46.748 [tomcat-handler-7] INFO  c.g.w.m.b.service.BillingService - ServiceCode: kfc | UsageUnits: 100 | RefId: SMS-20260914-001
+2026-09-17 15:23:46.758 [tomcat-handler-7] INFO  c.g.w.m.b.service.BillingService - Service found: King FC (id=01a0ad3a-461b-78bd-92a7-b80adfbd9920)
+2026-09-17 15:23:46.785 [tomcat-handler-7] INFO  c.g.w.m.b.service.BillingService - ServicePrice found: id=01a0ad3a-c254-79ce-bb33-88047401bf79 initialFee=10000.00 initialSize=1000 subsequentFee=10000.00 subsequentSize=1000
+2026-09-17 15:23:46.807 [tomcat-handler-7] INFO  c.g.w.m.b.service.BillingService - Wallet locked (SELECT FOR UPDATE): id=01a0a974-bfef-7342-b1d6-17e03446a6e2 balance=990000.00 creditLimit=0.00 available=990000.00
+2026-09-17 15:23:46.807 [tomcat-handler-7] INFO  c.g.w.m.b.service.BillingService - Fee calculated: 10000.00 for 100 units
+2026-09-17 15:23:46.818 [tomcat-handler-7] INFO  c.g.w.m.b.service.BillingService - Wallet updated: balance 990000.00 -> 980000.00 , available 990000.00 -> 980000.00
+2026-09-17 15:23:46.833 [tomcat-handler-7] INFO  c.g.w.m.b.service.BillingService - Transaction created: id=01a0ae76-f587-766b-bc83-be26318b8d25 type=CHARGE amount=10000.00
+2026-09-17 15:23:46.834 [tomcat-handler-7] INFO  c.g.w.core.rabbitmq.MessageProducer - Publishing transaction event: {walletId=01a0a974-bfef-7342-b1d6-17e03446a6e2, amount=10000.00, balanceAfter=980000.00, type=CHARGE, transactionId=01a0ae76-f587-766b-bc83-be26318b8d25}
+2026-09-17 15:23:46.911 [virtual-72] INFO  c.g.w.m.t.l.TransactionListener - ========== TRANSACTION LISTENER START ==========
+2026-09-17 15:23:46.912 [virtual-72] INFO  c.g.w.m.t.l.TransactionListener - Transaction listener payload: {walletId=01a0a974-bfef-7342-b1d6-17e03446a6e2, amount=10000.0, balanceAfter=980000.0, type=CHARGE, transactionId=01a0ae76-f587-766b-bc83-be26318b8d25} | thread: VirtualThread[#72]/runnable@ForkJoinPool-1-worker-7
+2026-09-17 15:23:46.912 [virtual-72] INFO  c.g.w.m.t.h.TransactionEventHandler - Transaction handler - transactionId: 01a0ae76-f587-766b-bc83-be26318b8d25 | walletId: 01a0a974-bfef-7342-b1d6-17e03446a6e2 | thread: VirtualThread[#72]/runnable@ForkJoinPool-1-worker-7
+2026-09-17 15:23:46.921 [tomcat-handler-7] INFO  c.g.w.m.b.service.BillingService - UsageLog created: id=01a0ae76-f5bf-7bb2-a1a7-b8b21f8a05b2 totalCharged=10000.00
+2026-09-17 15:23:46.921 [tomcat-handler-7] INFO  c.g.w.core.rabbitmq.MessageProducer - Publishing usage log event: {usageLogId=01a0ae76-f5bf-7bb2-a1a7-b8b21f8a05b2, tenantId=01a0a969-7df2-7d49-a5ac-5f6c08359575, serviceId=01a0ad3a-461b-78bd-92a7-b80adfbd9920}
+2026-09-17 15:23:46.927 [virtual-77] INFO  c.g.w.m.u.listener.UsageLogListener - ========== USAGE LOG LISTENER START ==========
+2026-09-17 15:23:46.931 [virtual-77] INFO  c.g.w.m.u.listener.UsageLogListener - UsageLog listener payload: {usageLogId=01a0ae76-f5bf-7bb2-a1a7-b8b21f8a05b2, tenantId=01a0a969-7df2-7d49-a5ac-5f6c08359575, serviceId=01a0ad3a-461b-78bd-92a7-b80adfbd9920} | thread: VirtualThread[#77]/runnable@ForkJoinPool-1-worker-5
+2026-09-17 15:23:46.932 [virtual-77] INFO  c.g.w.m.u.h.UsageLogEventHandler - UsageLog handler - usageLogId: 01a0ae76-f5bf-7bb2-a1a7-b8b21f8a05b2 | tenantId: 01a0a969-7df2-7d49-a5ac-5f6c08359575 | thread: VirtualThread[#77]/runnable@ForkJoinPool-1-worker-5
+2026-09-17 15:23:46.924 [tomcat-handler-7] INFO  c.g.w.core.rabbitmq.MessageProducer - Publishing billing event: {usageLogId=01a0ae76-f5bf-7bb2-a1a7-b8b21f8a05b2, response=BillingWebhookResponse(transactionId=01a0ae76-f587-766b-bc83-be26318b8d25, tenantId=01a0a969-7df2-7d49-a5ac-5f6c08359575, serviceCode=KFC, serviceName=King FC, usageUnits=100, totalCharged=10000.00, feeBreakdown=BillingWebhookResponse.FeeBreakdownDto(strategy=INITIAL_TIER_ONLY, initialFee=10000.00, initialUnits=1000, subsequentFee=0, subsequentUnits=0, totalFee=10000.00), balanceAfter=980000.00, availableBalanceAfter=980000.00, status=SUCCESS, createdAt=2026-09-17T15:23:46.819738922+07:00, referenceId=65080e23-7e92-4e84-a983-7799d56a6ec0, metadata=null), webhookAuth=Bearer abc123, transactionId=01a0ae76-f587-766b-bc83-be26318b8d25, webhookUrl=https://service.example.com/webhook/billing}
+2026-09-17 15:23:46.937 [virtual-72] ERROR c.g.w.m.t.h.TransactionEventHandler - Transaction not found: 01a0ae76-f587-766b-bc83-be26318b8d25 - possible data inconsistency
+2026-09-17 15:23:46.944 [tomcat-handler-7] INFO  c.g.w.m.b.service.BillingService - ========== BILLING PROCESS END ========== transaction=01a0ae76-f587-766b-bc83-be26318b8d25
+2026-09-17 15:23:46.945 [virtual-72] INFO  c.g.w.m.t.l.TransactionListener - ========== TRANSACTION LISTENER END ==========
+2026-09-17 15:23:46.949 [virtual-77] ERROR c.g.w.m.u.h.UsageLogEventHandler - UsageLog not found: 01a0ae76-f5bf-7bb2-a1a7-b8b21f8a05b2 - possible data inconsistency
+2026-09-17 15:23:46.951 [virtual-77] INFO  c.g.w.m.u.listener.UsageLogListener - ========== USAGE LOG LISTENER END ==========
+2026-09-17 15:23:46.958 [virtual-49] INFO  c.g.w.m.b.listener.BillingListener - ========== BILLING LISTENER START ==========
+2026-09-17 15:23:46.959 [virtual-49] INFO  c.g.w.m.b.listener.BillingListener - Billing listener payload: {usageLogId=01a0ae76-f5bf-7bb2-a1a7-b8b21f8a05b2, response={transactionId=01a0ae76-f587-766b-bc83-be26318b8d25, tenantId=01a0a969-7df2-7d49-a5ac-5f6c08359575, serviceCode=KFC, serviceName=King FC, usageUnits=100, totalCharged=10000.0, feeBreakdown={strategy=INITIAL_TIER_ONLY, initialFee=10000.0, initialUnits=1000, subsequentFee=0, subsequentUnits=0, totalFee=10000.0}, balanceAfter=980000.0, availableBalanceAfter=980000.0, status=SUCCESS, createdAt=1.7896334268197389E9, referenceId=65080e23-7e92-4e84-a983-7799d56a6ec0, metadata=null}, webhookAuth=Bearer abc123, transactionId=01a0ae76-f587-766b-bc83-be26318b8d25, webhookUrl=https://service.example.com/webhook/billing} | thread: VirtualThread[#49]/runnable@ForkJoinPool-1-worker-3
+2026-09-17 15:23:46.961 [virtual-49] INFO  c.g.w.m.b.h.BillingEventHandler - Billing handler - transactionId: 01a0ae76-f587-766b-bc83-be26318b8d25 | webhookUrl: https://service.example.com/webhook/billing | thread: VirtualThread[#49]/runnable@ForkJoinPool-1-worker-3
+2026-09-17 15:23:46.972 [virtual-49] INFO  c.g.w.m.b.h.BillingEventHandler - Response payload: {"transactionId":"01a0ae76-f587-766b-bc83-be26318b8d25","tenantId":"01a0a969-7df2-7d49-a5ac-5f6c08359575","serviceCode":"KFC","serviceName":"King FC","usageUnits":100,"totalCharged":10000.0,"feeBreakdown":{"strategy":"INITIAL_TIER_ONLY","initialFee":10000.0,"initialUnits":1000,"subsequentFee":0,"subsequentUnits":0,"totalFee":10000.0},"balanceAfter":980000.0,"availableBalanceAfter":980000.0,"status":"SUCCESS","createdAt":1.7896334268197389E9,"referenceId":"65080e23-7e92-4e84-a983-7799d56a6ec0","metadata":null}
+2026-09-17 15:23:46.972 [virtual-49] INFO  c.g.w.m.b.h.BillingEventHandler - Webhook auth header set
+2026-09-17 15:23:47.096 [virtual-49] ERROR c.g.w.m.b.h.BillingEventHandler - Failed to call webhook URL: https://service.example.com/webhook/billing for transaction: 01a0ae76-f587-766b-bc83-be26318b8d25
+org.springframework.web.client.ResourceAccessException: I/O error on POST request for "https://service.example.com/webhook/billing": service.example.com
+	at org.springframework.web.client.RestTemplate.createResourceAccessException(RestTemplate.java:780)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:760)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:677)
+	at org.springframework.web.client.RestTemplate.postForEntity(RestTemplate.java:430)
+	at com.gateway.walletcentral.modules.billing.handler.BillingEventHandler.handleBillingCallback(BillingEventHandler.java:50)
+	at com.gateway.walletcentral.modules.billing.listener.BillingListener.handleBillingEvent(BillingListener.java:40)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.messaging.handler.invocation.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:168)
+	at org.springframework.amqp.listener.adapter.KotlinAwareInvocableHandlerMethod.doInvoke(KotlinAwareInvocableHandlerMethod.java:47)
+	at org.springframework.messaging.handler.invocation.InvocableHandlerMethod.invoke(InvocableHandlerMethod.java:119)
+	at org.springframework.amqp.listener.adapter.HandlerAdapter.invoke(HandlerAdapter.java:85)
+	at org.springframework.amqp.rabbit.listener.adapter.MessagingMessageListenerAdapter.invokeHandler(MessagingMessageListenerAdapter.java:322)
+	at org.springframework.amqp.rabbit.listener.adapter.MessagingMessageListenerAdapter.invokeHandlerAndProcessResult(MessagingMessageListenerAdapter.java:266)
+	at org.springframework.amqp.rabbit.listener.adapter.MessagingMessageListenerAdapter.onMessage(MessagingMessageListenerAdapter.java:184)
+	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.doInvokeListener(AbstractMessageListenerContainer.java:1697)
+	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.actualInvokeListener(AbstractMessageListenerContainer.java:1626)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:359)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:190)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:158)
+	at org.springframework.core.retry.RetryTemplate.execute(RetryTemplate.java:135)
+	at org.springframework.amqp.rabbit.config.StatelessRetryOperationsInterceptor.invoke(StatelessRetryOperationsInterceptor.java:57)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:222)
+	at org.springframework.amqp.rabbit.listener.$Proxy210.invokeListener(Unknown Source)
+	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.invokeListener(AbstractMessageListenerContainer.java:1609)
+	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.doExecuteListener(AbstractMessageListenerContainer.java:1600)
+	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.executeListenerAndHandleException(AbstractMessageListenerContainer.java:1547)
+	at org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer.executeListener(AbstractMessageListenerContainer.java:1528)
+	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer.doReceiveAndExecute(SimpleMessageListenerContainer.java:1158)
+	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer.receiveAndExecute(SimpleMessageListenerContainer.java:1103)
+	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer$AsyncMessageProcessingConsumer.mainLoop(SimpleMessageListenerContainer.java:1511)
+	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer$AsyncMessageProcessingConsumer.run(SimpleMessageListenerContainer.java:1405)
+	at java.base/java.util.concurrent.ThreadPerTaskExecutor$TaskRunner.run(ThreadPerTaskExecutor.java:314)
+	at java.base/java.lang.VirtualThread.run(VirtualThread.java:329)
+Caused by: java.net.UnknownHostException: service.example.com
+	at java.base/sun.nio.ch.NioSocketImpl.connect(NioSocketImpl.java:567)
+	at java.base/java.net.SocksSocketImpl.connect(SocksSocketImpl.java:327)
+	at java.base/java.net.Socket.connect(Socket.java:751)
+	at java.base/sun.security.ssl.SSLSocketImpl.connect(SSLSocketImpl.java:304)
+	at java.base/sun.net.NetworkClient.doConnect(NetworkClient.java:178)
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:539)
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:644)
+	at java.base/sun.net.www.protocol.https.HttpsClient.<init>(HttpsClient.java:265)
+	at java.base/sun.net.www.protocol.https.HttpsClient.New(HttpsClient.java:378)
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.getNewHttpClient(AbstractDelegateHttpsURLConnection.java:196)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect0(HttpURLConnection.java:1260)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect(HttpURLConnection.java:1146)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.connect(HttpURLConnection.java:1075)
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.connect(AbstractDelegateHttpsURLConnection.java:181)
+	at java.base/sun.net.www.protocol.https.HttpsURLConnectionImpl.connect(HttpsURLConnectionImpl.java:141)
+	at org.springframework.http.client.SimpleClientHttpRequest.executeInternal(SimpleClientHttpRequest.java:80)
+	at org.springframework.http.client.AbstractStreamingClientHttpRequest.executeInternal(AbstractStreamingClientHttpRequest.java:87)
+	at org.springframework.http.client.AbstractClientHttpRequest.execute(AbstractClientHttpRequest.java:80)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:754)
+	... 35 common frames omitted
+2026-09-17 15:23:47.102 [virtual-49] INFO  c.g.w.m.b.listener.BillingListener - ========== BILLING LISTENER END ==========
+2026-09-17 15:24:07.027 [tomcat-handler-13] INFO  c.g.w.core.rabbitmq.MessageProducer - Publishing notification event: {tenantId=01a0a969-7df2-7d49-a5ac-5f6c08359575, referenceType=WALLET_PLAN, type=WALLET_PLAN, title=Gói dịch vụ được tạo, message=Gói dịch vụ TOPUP_500k đã được tạo thành công, referenceId=01a0ae77-4472-77da-a62c-fda90492747d}
+2026-09-17 15:24:07.032 [virtual-64] INFO  c.g.w.m.n.l.NotificationListener - ========== NOTIFICATION LISTENER START ==========
+2026-09-17 15:24:07.032 [virtual-64] INFO  c.g.w.m.n.l.NotificationListener - Notification listener payload: {tenantId=01a0a969-7df2-7d49-a5ac-5f6c08359575, referenceType=WALLET_PLAN, type=WALLET_PLAN, title=Gói dịch vụ được tạo, message=Gói dịch vụ TOPUP_500k đã được tạo thành công, referenceId=01a0ae77-4472-77da-a62c-fda90492747d} | thread: VirtualThread[#64]/runnable@ForkJoinPool-1-worker-1
+2026-09-17 15:24:07.032 [virtual-64] INFO  c.g.w.m.n.h.NotificationEventHandler - Notification handler - tenantId: 01a0a969-7df2-7d49-a5ac-5f6c08359575 | type: WALLET_PLAN | title: Gói dịch vụ được tạo | thread: VirtualThread[#64]/runnable@ForkJoinPool-1-worker-1
+2026-09-17 15:24:07.042 [virtual-64] INFO  c.g.w.m.n.s.NotificationService - Notification saved: id=01a0ae77-4481-76ef-85f1-dba1e4881401 type=WALLET_PLAN tenant=01a0a969-7df2-7d49-a5ac-5f6c08359575
+2026-09-17 15:24:07.055 [virtual-64] INFO  c.g.w.m.n.s.NotificationService - Notification pushed via WebSocket to tenant=01a0a969-7df2-7d49-a5ac-5f6c08359575 and admin
+2026-09-17 15:24:07.064 [virtual-64] INFO  c.g.w.m.n.l.NotificationListener - ========== NOTIFICATION LISTENER END ==========
+2026-09-17 15:24:09.154 [tomcat-handler-16] INFO  c.g.w.m.w.service.WalletPlanService - Approving wallet plan: 01a0ae77-4472-77da-a62c-fda90492747d
+2026-09-17 15:24:09.163 [tomcat-handler-16] INFO  c.g.w.core.rabbitmq.MessageProducer - Publishing wallet plan event: {payload={tenantId=01a0a969-7df2-7d49-a5ac-5f6c08359575, id=01a0ae77-4472-77da-a62c-fda90492747d}, event=APPROVED}
+2026-09-17 15:24:09.169 [virtual-82] INFO  c.g.w.m.w.l.WalletPlanListener - ========== WALLET PLAN LISTENER START ==========
+2026-09-17 15:24:09.170 [virtual-82] INFO  c.g.w.m.w.l.WalletPlanListener - Wallet plan listener event: APPROVED | payload: {tenantId=01a0a969-7df2-7d49-a5ac-5f6c08359575, id=01a0ae77-4472-77da-a62c-fda90492747d} | thread: VirtualThread[#82]/runnable@ForkJoinPool-1-worker-3
+2026-09-17 15:24:09.174 [virtual-82] INFO  c.g.w.m.w.h.WalletPlanEventHandler - ========== WALLET PLAN HANDLER APPROVE START ==========
+2026-09-17 15:24:09.174 [virtual-82] INFO  c.g.w.m.w.h.WalletPlanEventHandler - Wallet plan handler approve payload: {tenantId=01a0a969-7df2-7d49-a5ac-5f6c08359575, id=01a0ae77-4472-77da-a62c-fda90492747d} | thread: VirtualThread[#82]/runnable@ForkJoinPool-1-worker-5
+2026-09-17 15:24:09.193 [virtual-82] INFO  c.g.w.m.w.h.WalletPlanEventHandler - Wallet updated: balance 980000.00 -> 1980000.00, creditLimit 0.00 -> 500000.00
+2026-09-17 15:24:09.195 [virtual-82] INFO  c.g.w.m.w.h.WalletPlanEventHandler - Created DEPOSIT transaction: 01a0ae77-4cea-7dfd-a81f-5290ffe0972f amount=1000000.00 for wallet=01a0a974-bfef-7342-b1d6-17e03446a6e2
+2026-09-17 15:24:09.199 [virtual-82] INFO  c.g.w.m.w.h.WalletPlanEventHandler - Created CreditAdjustment: 01a0ae77-4ced-7ab8-8148-685c319e60e2 type=INCREASE amount=500000.00
+2026-09-17 15:24:09.200 [virtual-82] INFO  c.g.w.m.w.h.WalletPlanEventHandler - Wallet plan snapshots updated for id: 01a0ae77-4472-77da-a62c-fda90492747d
+2026-09-17 15:24:09.200 [virtual-82] INFO  c.g.w.core.rabbitmq.MessageProducer - Publishing notification event: {tenantId=01a0a969-7df2-7d49-a5ac-5f6c08359575, referenceType=WALLET_PLAN, type=WALLET_PLAN, title=Gói dịch vụ được duyệt, message=Gói dịch vụ TOPUP_500k đã được duyệt thành công, referenceId=01a0ae77-4472-77da-a62c-fda90492747d}
+2026-09-17 15:24:09.201 [virtual-82] INFO  c.g.w.m.w.h.WalletPlanEventHandler - ========== WALLET PLAN HANDLER APPROVE END ========== SUCCESS plan=01a0ae77-4472-77da-a62c-fda90492747d
+2026-09-17 15:24:09.204 [virtual-66] INFO  c.g.w.m.n.l.NotificationListener - ========== NOTIFICATION LISTENER START ==========
+2026-09-17 15:24:09.205 [virtual-66] INFO  c.g.w.m.n.l.NotificationListener - Notification listener payload: {tenantId=01a0a969-7df2-7d49-a5ac-5f6c08359575, referenceType=WALLET_PLAN, type=WALLET_PLAN, title=Gói dịch vụ được duyệt, message=Gói dịch vụ TOPUP_500k đã được duyệt thành công, referenceId=01a0ae77-4472-77da-a62c-fda90492747d} | thread: VirtualThread[#66]/runnable@ForkJoinPool-1-worker-3
+2026-09-17 15:24:09.205 [virtual-66] INFO  c.g.w.m.n.h.NotificationEventHandler - Notification handler - tenantId: 01a0a969-7df2-7d49-a5ac-5f6c08359575 | type: WALLET_PLAN | title: Gói dịch vụ được duyệt | thread: VirtualThread[#66]/runnable@ForkJoinPool-1-worker-3
+2026-09-17 15:24:09.214 [virtual-66] INFO  c.g.w.m.n.s.NotificationService - Notification saved: id=01a0ae77-4cfd-7f71-b07a-1cde4e3f2c8b type=WALLET_PLAN tenant=01a0a969-7df2-7d49-a5ac-5f6c08359575
+2026-09-17 15:24:09.215 [virtual-66] INFO  c.g.w.m.n.s.NotificationService - Notification pushed via WebSocket to tenant=01a0a969-7df2-7d49-a5ac-5f6c08359575 and admin
+2026-09-17 15:24:16.772 [virtual-66] INFO  c.g.w.m.n.l.NotificationListener - ========== NOTIFICATION LISTENER END ==========
+2026-09-17 15:24:16.776 [virtual-82] INFO  c.g.w.m.w.l.WalletPlanListener - ========== WALLET PLAN LISTENER END ==========
+2026-09-17 15:27:11.078 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2026-09-17 15:27:11.089 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2026-09-17 15:27:12.700 [main] INFO  c.g.w.WalletCentralGatewayApplication - Starting WalletCentralGatewayApplication using Java 21.0.12.1 with PID 465698 (/media/longhg/DATA/JAVA/WalletCentral/target/classes started by longhg in /media/longhg/DATA/JAVA/WalletCentral)
+2026-09-17 15:27:12.704 [main] INFO  c.g.w.WalletCentralGatewayApplication - No active profile set, falling back to 1 default profile: "default"
+2026-09-17 15:27:15.883 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+2026-09-17 15:27:15.885 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2026-09-17 15:27:15.885 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/11.0.24]
+2026-09-17 15:27:16.820 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-09-17 15:27:16.958 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.mariadb.jdbc.Connection@73eae5f
+2026-09-17 15:27:16.962 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2026-09-17 15:27:22.195 [main] WARN  o.s.b.s.a.UserDetailsServiceAutoConfiguration - 
+
+Using generated security password: a16785dd-4a58-4bb1-b0d0-20d20b7c955c
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-09-17 15:27:23.157 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+2026-09-17 15:27:23.368 [main] INFO  c.g.w.WalletCentralGatewayApplication - Started WalletCentralGatewayApplication in 11.344 seconds (process running for 11.89)
+2026-09-17 15:27:23.698 [tomcat-handler-0] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-09-17 15:38:40.025 [tomcat-handler-70] INFO  c.g.w.core.rabbitmq.MessageProducer - Publishing notification event: {tenantId=01a0a969-7df2-7d49-a5ac-5f6c08359575, referenceType=WALLET_PLAN, type=WALLET_PLAN, title=Gói dịch vụ được tạo, message=Gói dịch vụ TOPUP_500k đã được tạo thành công, referenceId=01a0ae84-9692-7a23-9e2a-1e4b7e7261a2}
+2026-09-17 15:38:40.074 [virtual-63] INFO  c.g.w.m.n.l.NotificationListener - ========== NOTIFICATION LISTENER START ==========
+2026-09-17 15:38:40.075 [virtual-63] INFO  c.g.w.m.n.l.NotificationListener - Notification listener payload: {tenantId=01a0a969-7df2-7d49-a5ac-5f6c08359575, referenceType=WALLET_PLAN, type=WALLET_PLAN, title=Gói dịch vụ được tạo, message=Gói dịch vụ TOPUP_500k đã được tạo thành công, referenceId=01a0ae84-9692-7a23-9e2a-1e4b7e7261a2} | thread: VirtualThread[#63]/runnable@ForkJoinPool-1-worker-2
+2026-09-17 15:38:40.075 [virtual-63] INFO  c.g.w.m.n.h.NotificationEventHandler - Notification handler - tenantId: 01a0a969-7df2-7d49-a5ac-5f6c08359575 | type: WALLET_PLAN | title: Gói dịch vụ được tạo | thread: VirtualThread[#63]/runnable@ForkJoinPool-1-worker-2
+2026-09-17 15:38:40.084 [virtual-63] INFO  c.g.w.m.n.s.NotificationService - Notification saved: id=01a0ae84-96d3-7d98-954a-379b4d226503 type=WALLET_PLAN tenant=01a0a969-7df2-7d49-a5ac-5f6c08359575
+2026-09-17 15:38:40.092 [virtual-63] INFO  c.g.w.m.n.s.NotificationService - Notification pushed via WebSocket to tenant=01a0a969-7df2-7d49-a5ac-5f6c08359575 and admin
+2026-09-17 15:38:40.103 [virtual-63] INFO  c.g.w.m.n.l.NotificationListener - ========== NOTIFICATION LISTENER END ==========
+2026-09-17 15:38:43.111 [tomcat-handler-73] INFO  c.g.w.core.rabbitmq.MessageProducer - Publishing notification event: {tenantId=01a0a969-7df2-7d49-a5ac-5f6c08359575, referenceType=WALLET_PLAN, type=WALLET_PLAN, title=Gói dịch vụ được tạo, message=Gói dịch vụ TOPUP_500k đã được tạo thành công, referenceId=01a0ae84-a2a6-7d9b-9ec0-8cc76c8c9aec}
+2026-09-17 15:38:43.114 [virtual-64] INFO  c.g.w.m.n.l.NotificationListener - ========== NOTIFICATION LISTENER START ==========
+2026-09-17 15:38:43.115 [virtual-64] INFO  c.g.w.m.n.l.NotificationListener - Notification listener payload: {tenantId=01a0a969-7df2-7d49-a5ac-5f6c08359575, referenceType=WALLET_PLAN, type=WALLET_PLAN, title=Gói dịch vụ được tạo, message=Gói dịch vụ TOPUP_500k đã được tạo thành công, referenceId=01a0ae84-a2a6-7d9b-9ec0-8cc76c8c9aec} | thread: VirtualThread[#64]/runnable@ForkJoinPool-1-worker-5
+2026-09-17 15:38:43.115 [virtual-64] INFO  c.g.w.m.n.h.NotificationEventHandler - Notification handler - tenantId: 01a0a969-7df2-7d49-a5ac-5f6c08359575 | type: WALLET_PLAN | title: Gói dịch vụ được tạo | thread: VirtualThread[#64]/runnable@ForkJoinPool-1-worker-5
+2026-09-17 15:38:43.122 [virtual-64] INFO  c.g.w.m.n.s.NotificationService - Notification saved: id=01a0ae84-a2b2-72a4-a52f-a5839f0d1a8f type=WALLET_PLAN tenant=01a0a969-7df2-7d49-a5ac-5f6c08359575
+2026-09-17 15:38:43.125 [virtual-64] INFO  c.g.w.m.n.s.NotificationService - Notification pushed via WebSocket to tenant=01a0a969-7df2-7d49-a5ac-5f6c08359575 and admin
+2026-09-17 15:38:43.154 [virtual-64] INFO  c.g.w.m.n.l.NotificationListener - ========== NOTIFICATION LISTENER END ==========
+2026-09-17 15:38:46.208 [tomcat-handler-76] INFO  c.g.w.core.rabbitmq.MessageProducer - Publishing notification event: {tenantId=01a0a969-7df2-7d49-a5ac-5f6c08359575, referenceType=WALLET_PLAN, type=WALLET_PLAN, title=Gói dịch vụ được tạo, message=Gói dịch vụ TOPUP_500k đã được tạo thành công, referenceId=01a0ae84-aec0-71a6-884a-edc7aaa8d828}
+2026-09-17 15:38:46.210 [virtual-65] INFO  c.g.w.m.n.l.NotificationListener - ========== NOTIFICATION LISTENER START ==========
+2026-09-17 15:38:46.213 [virtual-65] INFO  c.g.w.m.n.l.NotificationListener - Notification listener payload: {tenantId=01a0a969-7df2-7d49-a5ac-5f6c08359575, referenceType=WALLET_PLAN, type=WALLET_PLAN, title=Gói dịch vụ được tạo, message=Gói dịch vụ TOPUP_500k đã được tạo thành công, referenceId=01a0ae84-aec0-71a6-884a-edc7aaa8d828} | thread: VirtualThread[#65]/runnable@ForkJoinPool-1-worker-1
+2026-09-17 15:38:46.213 [virtual-65] INFO  c.g.w.m.n.h.NotificationEventHandler - Notification handler - tenantId: 01a0a969-7df2-7d49-a5ac-5f6c08359575 | type: WALLET_PLAN | title: Gói dịch vụ được tạo | thread: VirtualThread[#65]/runnable@ForkJoinPool-1-worker-1
+2026-09-17 15:38:46.218 [virtual-65] INFO  c.g.w.m.n.s.NotificationService - Notification saved: id=01a0ae84-aeca-730f-a9ac-1db1ed815b88 type=WALLET_PLAN tenant=01a0a969-7df2-7d49-a5ac-5f6c08359575
+2026-09-17 15:38:46.220 [virtual-65] INFO  c.g.w.m.n.s.NotificationService - Notification pushed via WebSocket to tenant=01a0a969-7df2-7d49-a5ac-5f6c08359575 and admin
+2026-09-17 15:38:46.229 [virtual-65] INFO  c.g.w.m.n.l.NotificationListener - ========== NOTIFICATION LISTENER END ==========
+2026-09-17 15:44:47.640 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2026-09-17 15:44:47.649 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2026-09-17 15:44:49.290 [main] INFO  c.g.w.WalletCentralGatewayApplication - Starting WalletCentralGatewayApplication using Java 21.0.12.1 with PID 471618 (/media/longhg/DATA/JAVA/WalletCentral/target/classes started by longhg in /media/longhg/DATA/JAVA/WalletCentral)
+2026-09-17 15:44:49.296 [main] INFO  c.g.w.WalletCentralGatewayApplication - No active profile set, falling back to 1 default profile: "default"
+2026-09-17 15:44:52.181 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+2026-09-17 15:44:52.185 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2026-09-17 15:44:52.186 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/11.0.24]
+2026-09-17 15:44:52.979 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-09-17 15:44:53.101 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.mariadb.jdbc.Connection@662d3e85
+2026-09-17 15:44:53.105 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2026-09-17 15:44:57.867 [main] WARN  o.s.b.s.a.UserDetailsServiceAutoConfiguration - 
+
+Using generated security password: 68b95960-3346-4487-89e4-61a4e78d4878
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-09-17 15:44:58.859 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+2026-09-17 15:44:59.110 [main] INFO  c.g.w.WalletCentralGatewayApplication - Started WalletCentralGatewayApplication in 10.547 seconds (process running for 11.082)
+2026-09-17 15:44:59.728 [tomcat-handler-0] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-09-17 15:51:57.223 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2026-09-17 15:51:57.235 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2026-09-17 15:51:58.875 [main] INFO  c.g.w.WalletCentralGatewayApplication - Starting WalletCentralGatewayApplication using Java 21.0.12.1 with PID 474101 (/media/longhg/DATA/JAVA/WalletCentral/target/classes started by longhg in /media/longhg/DATA/JAVA/WalletCentral)
+2026-09-17 15:51:58.878 [main] INFO  c.g.w.WalletCentralGatewayApplication - No active profile set, falling back to 1 default profile: "default"
+2026-09-17 15:52:01.573 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+2026-09-17 15:52:01.576 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2026-09-17 15:52:01.576 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/11.0.24]
+2026-09-17 15:52:02.352 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-09-17 15:52:02.462 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.mariadb.jdbc.Connection@662d3e85
+2026-09-17 15:52:02.465 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2026-09-17 15:52:07.325 [main] WARN  o.s.b.s.a.UserDetailsServiceAutoConfiguration - 
+
+Using generated security password: fecdbe19-c26e-4ba9-b8b9-28cd3e280d07
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-09-17 15:52:08.339 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+2026-09-17 15:52:08.553 [main] INFO  c.g.w.WalletCentralGatewayApplication - Started WalletCentralGatewayApplication in 10.354 seconds (process running for 10.931)
+2026-09-17 15:52:10.736 [tomcat-handler-0] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-09-17 15:54:12.608 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2026-09-17 15:54:12.620 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2026-09-17 15:54:14.455 [main] INFO  c.g.w.WalletCentralGatewayApplication - Starting WalletCentralGatewayApplication using Java 21.0.12.1 with PID 475087 (/media/longhg/DATA/JAVA/WalletCentral/target/classes started by longhg in /media/longhg/DATA/JAVA/WalletCentral)
+2026-09-17 15:54:14.458 [main] INFO  c.g.w.WalletCentralGatewayApplication - No active profile set, falling back to 1 default profile: "default"
+2026-09-17 15:54:18.884 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+2026-09-17 15:54:18.888 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2026-09-17 15:54:18.889 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/11.0.24]
+2026-09-17 15:54:20.465 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-09-17 15:54:20.826 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.mariadb.jdbc.Connection@6bdad3bb
+2026-09-17 15:54:20.830 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2026-09-17 15:54:27.668 [main] WARN  o.s.b.s.a.UserDetailsServiceAutoConfiguration - 
+
+Using generated security password: ec6391f4-ff1b-47f7-82d8-c2feb3186a4a
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-09-17 15:54:28.677 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+2026-09-17 15:54:28.913 [main] INFO  c.g.w.WalletCentralGatewayApplication - Started WalletCentralGatewayApplication in 15.308 seconds (process running for 15.911)
+2026-09-17 15:54:29.691 [tomcat-handler-0] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'

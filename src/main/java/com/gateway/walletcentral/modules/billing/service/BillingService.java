@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -144,9 +145,10 @@ public class BillingService {
                                 .availableBalanceAfter(newAvailable)
                                 .status(TransactionStatus.SUCCESS)
                                 .description(request.getDescription() != null ? request.getDescription()
-                                                : "Charge for " + service.getCode())
+                                                : "Thanh toán cước" + service.getCode())
                                 .referenceFrom("BILLING_WEBHOOK")
                                 .referenceId(refId)
+                                .createdAt(OffsetDateTime.now())
                                 .build();
                 transactionRepository.save(transaction);
                 log.info("Transaction created: id={} type=CHARGE amount={}", transaction.getId(), totalFee);
@@ -174,6 +176,7 @@ public class BillingService {
                                 .feeBreakdown(feeBreakdownStructure)
                                 .referenceFrom("BILLING_WEBHOOK")
                                 .referenceId(refId)
+                                .createdAt(OffsetDateTime.now())
                                 .build();
                 usageLogRepository.save(usageLog);
                 log.info("UsageLog created: id={} totalCharged={}", usageLog.getId(), totalFee);
@@ -223,17 +226,6 @@ public class BillingService {
                 event.put("response", response);
                 messageProducer.publishBilling(event);
 
-                // // 12. Publish notification event
-                // Map<String, Object> notifEvent = new HashMap<>();
-                // notifEvent.put("tenantId", tenant.getId().toString());
-                // notifEvent.put("type", "BILLING");
-                // notifEvent.put("title", "Service Charged");
-                // notifEvent.put("message", String.format("Charge of %s for %s service",
-                // totalFee, service.getCode()));
-                // notifEvent.put("referenceType", "TRANSACTION");
-                // notifEvent.put("referenceId", transaction.getId().toString());
-                // messageProducer.publishNotificationCreated(notifEvent);
-
                 log.info("========== BILLING PROCESS END ========== transaction={}", transaction.getId());
                 return response;
         }
@@ -267,7 +259,7 @@ public class BillingService {
                 FeeBreakdownStructure breakdown = new FeeBreakdownStructure();
 
                 if (usageUnits <= servicePrice.getInitialSize()) {
-                        breakdown.setStrategy("INITIAL_TIER_ONLY");
+                        breakdown.setStrategy("INITIAL_ONLY");
                         breakdown.setInitialFeeApplied(servicePrice.getInitialFee());
                         breakdown.setSubsequentFeeApplied(BigDecimal.ZERO);
                 } else {
