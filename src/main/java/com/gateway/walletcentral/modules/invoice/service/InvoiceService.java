@@ -137,10 +137,14 @@ public class InvoiceService {
                                 .orElseThrow(() -> new ResourceNotFoundException("Wallet", "tenantId", tenantId));
 
                 YearMonth yearMonth = YearMonth.parse(billingPeriod);
-                String startOfMonth = yearMonth.atDay(1).atStartOfDay()
-                                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-                String endOfMonth = yearMonth.atEndOfMonth().atTime(23, 59, 59)
-                                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                OffsetDateTime startOfMonth = OffsetDateTime.now().withYear(yearMonth.getYear())
+                                .withMonth(yearMonth.getMonthValue())
+                                .withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+
+                OffsetDateTime endOfMonth = OffsetDateTime.now().withYear(yearMonth.getYear())
+                                .withMonth(yearMonth.getMonthValue())
+                                .withDayOfMonth(yearMonth.atEndOfMonth().getDayOfMonth()).withHour(23).withMinute(59)
+                                .withSecond(59).withNano(0);
 
                 // Sum POSTPAID usage for this period
                 BigDecimal postpaidTotal = usageLogRepository.sumChargedByTenantAndPeriod(
