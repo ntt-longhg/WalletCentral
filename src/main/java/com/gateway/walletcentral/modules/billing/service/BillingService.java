@@ -1,5 +1,6 @@
 package com.gateway.walletcentral.modules.billing.service;
 
+import com.gateway.walletcentral.modules.billing.dto.BillingEvent;
 import com.gateway.walletcentral.core.exception.BusinessException;
 import com.gateway.walletcentral.core.exception.ResourceNotFoundException;
 import com.gateway.walletcentral.core.rabbitmq.MessageProducer;
@@ -10,14 +11,9 @@ import com.gateway.walletcentral.modules.servicecatalog.model.ServicePrice;
 import com.gateway.walletcentral.modules.servicecatalog.repository.PriceTierRepository;
 import com.gateway.walletcentral.modules.servicecatalog.repository.ServicePriceRepository;
 import com.gateway.walletcentral.modules.servicecatalog.repository.ServiceRepository;
-import com.gateway.walletcentral.modules.transaction.model.Transaction;
 import com.gateway.walletcentral.modules.transaction.model.TransactionStatus;
-import com.gateway.walletcentral.modules.transaction.model.TransactionType;
-import com.gateway.walletcentral.modules.transaction.repository.TransactionRepository;
 import com.gateway.walletcentral.modules.tenant.model.Tenant;
 import com.gateway.walletcentral.modules.usagelog.model.FeeBreakdownStructure;
-import com.gateway.walletcentral.modules.usagelog.model.UsageLog;
-import com.gateway.walletcentral.modules.usagelog.repository.UsageLogRepository;
 import com.gateway.walletcentral.modules.wallet.model.Wallet;
 import com.gateway.walletcentral.modules.wallet.repository.WalletRepository;
 import org.slf4j.Logger;
@@ -41,23 +37,17 @@ public class BillingService {
         private final ServicePriceRepository servicePriceRepository;
         private final PriceTierRepository priceTierRepository;
         private final WalletRepository walletRepository;
-        private final TransactionRepository transactionRepository;
-        private final UsageLogRepository usageLogRepository;
         private final MessageProducer messageProducer;
 
         public BillingService(ServiceRepository serviceRepository,
                         ServicePriceRepository servicePriceRepository,
                         PriceTierRepository priceTierRepository,
                         WalletRepository walletRepository,
-                        TransactionRepository transactionRepository,
-                        UsageLogRepository usageLogRepository,
                         MessageProducer messageProducer) {
                 this.serviceRepository = serviceRepository;
                 this.servicePriceRepository = servicePriceRepository;
                 this.priceTierRepository = priceTierRepository;
                 this.walletRepository = walletRepository;
-                this.transactionRepository = transactionRepository;
-                this.usageLogRepository = usageLogRepository;
                 this.messageProducer = messageProducer;
         }
 
@@ -133,62 +123,49 @@ public class BillingService {
                 log.info("Wallet updated: balance {} -> {} , available {} -> {}",
                                 balanceBefore, newBalance, availableBefore, newAvailable);
 
-                // 8. Create Transaction (CHARGE)
+                // 8. Generate reference ID and build fee breakdown
                 String refId = UUID.randomUUID().toString();
-                Transaction transaction = Transaction.builder()
-                                .wallet(wallet)
-                                .amount(totalFee)
-                                .type(TransactionType.CHARGE)
-                                .balanceBefore(balanceBefore)
-                                .balanceAfter(newBalance)
-                                .availableBalanceBefore(availableBefore)
-                                .availableBalanceAfter(newAvailable)
-                                .status(TransactionStatus.SUCCESS)
-                                .description(request.getDescription() != null ? request.getDescription()
-                                                : "Thanh toán cước" + service.getCode())
-                                .referenceFrom("BILLING_WEBHOOK")
-                                .referenceId(refId)
-                                .createdAt(OffsetDateTime.now())
-                                .build();
-                transactionRepository.save(transaction);
-                log.info("Transaction created: id={} type=CHARGE amount={}", transaction.getId(), totalFee);
-
-                // Publish transaction.created event for TransactionConsumer
-                Map<String, Object> txnEvent = new HashMap<>();
-                txnEvent.put("transactionId", transaction.getId().toString());
-                txnEvent.put("walletId", wallet.getId().toString());
-                txnEvent.put("type", TransactionType.CHARGE.name());
-                txnEvent.put("amount", totalFee);
-                txnEvent.put("balanceAfter", newBalance);
-                messageProducer.publishTransaction(txnEvent);
-
-                // 9. Create UsageLog
                 FeeBreakdownStructure feeBreakdownStructure = buildFeeBreakdown(servicePrice, request.getUsageUnits(),
                                 totalFee);
-                UsageLog usageLog = UsageLog.builder()
-                                .tenant(tenant)
-                                .service(service)
-                                .walletTypeSnapshot(wallet.getType())
-                                .totalUsage(request.getUsageUnits())
-                                .totalCharged(totalFee)
-                                .creditLimitSnapshot(wallet.getCreditLimit())
-                                .availableBalanceSnapshot(newAvailable)
+                OffsetDateTime now = OffsetDateTime.now();
+
+                // 9. Build BillingEvent for async handlers
+                BillingEvent billingEvent = BillingEvent.builder()
+                                .tenantId(tenant.getId().toString())
+                                .serviceId(service.getId().toString())
+                                .serviceCode(service.getCode())
+                                .serviceName(service.getName())
+                                .usageUnits(request.getUsageUnits())
+                                .totalFee(totalFee)
+                                .walletId(wallet.getId().toString())
+                                .walletType(wallet.getType().name())
+                                .balanceBefore(balanceBefore)
+                                .balanceAfter(newBalance)
+                                .creditLimit(wallet.getCreditLimit())
+                                .availableBalanceAfter(newAvailable)
                                 .feeBreakdown(feeBreakdownStructure)
                                 .referenceFrom("BILLING_WEBHOOK")
                                 .referenceId(refId)
-                                .createdAt(OffsetDateTime.now())
+                                .createdAt(now)
+                                .description(request.getDescription() != null ? request.getDescription()
+                                                : "Thanh toán cước " + service.getCode())
+                                .webhookUrl(request.getWebhookUrl())
+                                .webhookAuth(request.getWebhookAuth())
+                                .metadata(request.getMetadata())
                                 .build();
-                usageLogRepository.save(usageLog);
-                log.info("UsageLog created: id={} totalCharged={}", usageLog.getId(), totalFee);
 
-                // Publish usage.log.recorded event for UsageLogConsumer
-                Map<String, Object> usageEvent = new HashMap<>();
-                usageEvent.put("usageLogId", usageLog.getId().toString());
-                usageEvent.put("tenantId", tenant.getId().toString());
-                usageEvent.put("serviceId", service.getId().toString());
-                messageProducer.publishUsageLog(usageEvent);
+                // 10. Publish event to transaction exchange for Transaction handler
+                Map<String, Object> txnEvent = new HashMap<>();
+                txnEvent.put("event", "BILLING_WEBHOOK");
+                txnEvent.put("payload", billingEvent);
+                messageProducer.publishTransaction(txnEvent);
+                log.info("Published BILLING_WEBHOOK event to transaction exchange for refId={}", refId);
 
-                // 10. Build response
+                // 11. Publish event to usage exchange for UsageLog handler
+                messageProducer.publishUsageLog(txnEvent);
+                log.info("Published BILLING_WEBHOOK event to usage exchange for refId={}", refId);
+
+                // 12. Build response
                 BillingWebhookResponse.FeeBreakdownDto feeBreakdownDto = BillingWebhookResponse.FeeBreakdownDto
                                 .builder()
                                 .strategy(feeBreakdownStructure.getStrategy())
@@ -202,7 +179,7 @@ public class BillingService {
                                 .build();
 
                 BillingWebhookResponse response = BillingWebhookResponse.builder()
-                                .transactionId(transaction.getId().toString())
+                                .transactionId(refId)
                                 .tenantId(tenant.getId().toString())
                                 .serviceCode(service.getCode())
                                 .serviceName(service.getName())
@@ -212,21 +189,21 @@ public class BillingService {
                                 .balanceAfter(newBalance)
                                 .availableBalanceAfter(newAvailable)
                                 .status(TransactionStatus.SUCCESS.name())
-                                .createdAt(transaction.getCreatedAt())
+                                .createdAt(now)
                                 .referenceId(refId)
                                 .metadata(request.getMetadata())
                                 .build();
 
-                // 11. Publish event for async webhook callback
-                Map<String, Object> event = new HashMap<>();
-                event.put("transactionId", transaction.getId().toString());
-                event.put("usageLogId", usageLog.getId().toString());
-                event.put("webhookUrl", request.getWebhookUrl());
-                event.put("webhookAuth", request.getWebhookAuth());
-                event.put("response", response);
-                messageProducer.publishBilling(event);
+                // 13. Publish event for async webhook callback
+                Map<String, Object> webhookEvent = new HashMap<>();
+                webhookEvent.put("transactionId", refId);
+                webhookEvent.put("usageLogId", refId);
+                webhookEvent.put("webhookUrl", request.getWebhookUrl());
+                webhookEvent.put("webhookAuth", request.getWebhookAuth());
+                webhookEvent.put("response", response);
+                messageProducer.publishBilling(webhookEvent);
 
-                log.info("========== BILLING PROCESS END ========== transaction={}", transaction.getId());
+                log.info("========== BILLING PROCESS END ========== refId={}", refId);
                 return response;
         }
 

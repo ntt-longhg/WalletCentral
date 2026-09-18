@@ -30,14 +30,24 @@ public class UsageLogListener {
             Channel channel) throws IOException {
 
         log.info("========== USAGE LOG LISTENER START ==========");
+        String event = (String) message.get("event");
         Map<String, Object> payload = (Map<String, Object>) message.get("payload");
         if (payload == null) {
             payload = message;
         }
+        log.info("UsageLog listener event: {} | payload: {} | thread: {}", event, payload,
+                Thread.currentThread());
 
         try {
-            log.info("UsageLog listener payload: {} | thread: {}", payload, Thread.currentThread());
-            usageLogEventHandler.handleUsageLogRecorded(payload, channel, deliveryTag);
+            switch (event) {
+                case "BILLING_WEBHOOK":
+                    usageLogEventHandler.handleBillingUsageLog(message, channel, deliveryTag);
+                    break;
+                default:
+                    log.error("Unknown usage log event: {}", event);
+                    channel.basicAck(deliveryTag, false);
+                    break;
+            }
         } catch (Exception e) {
             log.error("UsageLog listener error: {}", e.getMessage(), e);
             channel.basicNack(deliveryTag, false, false);

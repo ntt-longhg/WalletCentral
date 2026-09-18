@@ -27,7 +27,8 @@ public class BillingEventHandler {
         this.objectMapper = objectMapper;
     }
 
-    public void handleBillingCallback(Map<String, Object> payload, Channel channel, long deliveryTag) throws IOException {
+    public void handleBillingCallback(Map<String, Object> payload, Channel channel, long deliveryTag)
+            throws IOException {
         String transactionId = (String) payload.get("transactionId");
         String webhookUrl = (String) payload.get("webhookUrl");
         String webhookAuth = (String) payload.get("webhookAuth");

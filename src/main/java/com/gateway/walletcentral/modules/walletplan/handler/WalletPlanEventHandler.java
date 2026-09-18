@@ -1,6 +1,6 @@
 package com.gateway.walletcentral.modules.walletplan.handler;
 
-import com.gateway.walletcentral.core.exception.BusinessException;
+import com.gateway.walletcentral.modules.walletplan.dto.WalletPlanEvent;
 import com.gateway.walletcentral.core.exception.ResourceNotFoundException;
 import com.gateway.walletcentral.core.rabbitmq.MessageProducer;
 import com.gateway.walletcentral.modules.creditadjustment.model.CreditAdjustment;
@@ -8,10 +8,6 @@ import com.gateway.walletcentral.modules.creditadjustment.model.CreditAdjustment
 import com.gateway.walletcentral.modules.creditadjustment.repository.CreditAdjustmentRepository;
 import com.gateway.walletcentral.modules.pricingplan.model.BonusType;
 import com.gateway.walletcentral.modules.pricingplan.model.PricingPlan;
-import com.gateway.walletcentral.modules.transaction.model.Transaction;
-import com.gateway.walletcentral.modules.transaction.model.TransactionStatus;
-import com.gateway.walletcentral.modules.transaction.model.TransactionType;
-import com.gateway.walletcentral.modules.transaction.repository.TransactionRepository;
 import com.gateway.walletcentral.modules.wallet.model.Wallet;
 import com.gateway.walletcentral.modules.wallet.model.WalletType;
 import com.gateway.walletcentral.modules.wallet.repository.WalletRepository;
@@ -38,18 +34,15 @@ public class WalletPlanEventHandler {
 
     private final WalletPlanRepository walletPlanRepository;
     private final WalletRepository walletRepository;
-    private final TransactionRepository transactionRepository;
     private final CreditAdjustmentRepository creditAdjustmentRepository;
     private final MessageProducer messageProducer;
 
     public WalletPlanEventHandler(WalletPlanRepository walletPlanRepository,
             WalletRepository walletRepository,
-            TransactionRepository transactionRepository,
             CreditAdjustmentRepository creditAdjustmentRepository,
             MessageProducer messageProducer) {
         this.walletPlanRepository = walletPlanRepository;
         this.walletRepository = walletRepository;
-        this.transactionRepository = transactionRepository;
         this.creditAdjustmentRepository = creditAdjustmentRepository;
         this.messageProducer = messageProducer;
     }
@@ -97,24 +90,25 @@ public class WalletPlanEventHandler {
             log.info("Wallet updated: balance {} -> {}, creditLimit {} -> {}",
                     balanceBefore, newBalance, creditLimitBefore, newCreditLimit);
 
-            // Create Transaction (DEPOSIT)
-            Transaction transaction = Transaction.builder()
-                    .wallet(wallet)
+            // Publish event for Transaction handler to create DEPOSIT transaction
+            WalletPlanEvent walletPlanEvent = WalletPlanEvent.builder()
+                    .walletPlanId(walletPlanId)
+                    .tenantId(walletPlan.getTenant().getId().toString())
+                    .walletId(wallet.getId().toString())
                     .amount(creditedAmount)
-                    .type(TransactionType.DEPOSIT)
                     .balanceBefore(balanceBefore)
                     .balanceAfter(newBalance)
                     .availableBalanceBefore(availableBefore)
                     .availableBalanceAfter(newAvailable)
-                    .status(TransactionStatus.SUCCESS)
                     .description("Mua gói dịch vụ " + plan.getName() + " (Khuyến mãi thêm: " + bonusAmount + ")")
                     .referenceFrom("WALLET_PLAN")
                     .referenceId(walletPlanId)
-                    .createdAt(OffsetDateTime.now())
                     .build();
-            transactionRepository.save(transaction);
-            log.info("Created DEPOSIT transaction: {} amount={} for wallet={}",
-                    transaction.getId(), creditedAmount, wallet.getId());
+            Map<String, Object> txnEvent = new HashMap<>();
+            txnEvent.put("event", "WALLET_PLAN");
+            txnEvent.put("payload", walletPlanEvent);
+            messageProducer.publishTransaction(txnEvent);
+            log.info("Published WALLET_PLAN event for wallet={}", wallet.getId());
 
             // Create CreditAdjustment (if credit limit changed)
             BigDecimal creditDiff = newCreditLimit.subtract(creditLimitBefore);

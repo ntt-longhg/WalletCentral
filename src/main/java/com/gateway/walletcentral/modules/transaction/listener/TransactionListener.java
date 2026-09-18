@@ -30,14 +30,27 @@ public class TransactionListener {
             Channel channel) throws IOException {
 
         log.info("========== TRANSACTION LISTENER START ==========");
+        String event = (String) message.get("event");
         Map<String, Object> payload = (Map<String, Object>) message.get("payload");
         if (payload == null) {
             payload = message;
         }
+        log.info("Transaction listener event: {} | payload: {} | thread: {}", event, payload,
+                Thread.currentThread());
 
         try {
-            log.info("Transaction listener payload: {} | thread: {}", payload, Thread.currentThread());
-            transactionEventHandler.handleTransactionCreated(payload, channel, deliveryTag);
+            switch (event) {
+                case "BILLING_WEBHOOK":
+                    transactionEventHandler.handleBillingCharge(message, channel, deliveryTag);
+                    break;
+                case "WALLET_PLAN":
+                    transactionEventHandler.handleWalletPlanDeposit(message, channel, deliveryTag);
+                    break;
+                default:
+                    log.error("Unknown transaction event: {}", event);
+                    channel.basicAck(deliveryTag, false);
+                    break;
+            }
         } catch (Exception e) {
             log.error("Transaction listener error: {}", e.getMessage(), e);
             channel.basicNack(deliveryTag, false, false);
