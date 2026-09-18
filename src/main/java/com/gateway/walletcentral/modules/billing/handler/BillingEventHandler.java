@@ -1,6 +1,7 @@
 package com.gateway.walletcentral.modules.billing.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gateway.walletcentral.core.exception.BusinessException;
 import com.rabbitmq.client.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +57,7 @@ public class BillingEventHandler {
             channel.basicAck(deliveryTag, false);
         } catch (Exception e) {
             log.error("Failed to call webhook URL: {} for transaction: {}", webhookUrl, transactionId, e);
-            channel.basicNack(deliveryTag, false, false);
+            throw new BusinessException("Failed to call webhook URL handler error: " + e.getMessage());
         }
     }
 }
