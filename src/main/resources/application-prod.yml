@@ -1,0 +1,68 @@
+# ============================================================
+# Production Profile - Override khi chạy: --spring.profiles.active=prod
+# Đặt file này BÊN NGOÀI jar để không cần build lại
+# ============================================================
+
+spring:
+  jackson:
+    time-zone: Asia/Ho_Chi_Minh
+    locale: vi_VN
+
+  datasource:
+    url: jdbc:mariadb://prod-host:3306/walletcentral
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:ENC(encrypted_value_here)}
+    driver-class-name: org.mariadb.jdbc.Driver
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+    defer-datasource-initialization: true
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          time_zone: Asia/Ho_Chi_Minh
+
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:ENC(encrypted_value_here)}
+    listener:
+      simple:
+        acknowledge-mode: manual
+        prefetch: 10
+        concurrency: 5
+        max-concurrency: 20
+        retry:
+          enabled: true
+          initial-interval: 1000
+          max-attempts: 3
+          multiplier: 2.0
+
+  springdoc:
+    swagger-ui:
+      path: /swagger-ui.html
+      tags-sorter: alpha
+      operations-sorter: alpha
+    api-docs:
+      path: /v3/api-docs
+    packages-to-scan: com.gateway.walletcentral.modules.*.controller
+
+app:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    password: ${MAIL_PASSWORD:ENC(encrypted_value_here)}
+
+# ============================================================
+# Encryption - Master password cho production
+# KHÔNG hardcode ở đây! Phải truyền qua env var hoặc JVM arg:
+#   export ENCRYPTION_MASTER_PASSWORD=your-secret-key
+#   java -jar walletcentral.jar --spring.profiles.active=prod
+# ============================================================
+encryption:
+  master-password: ${ENCRYPTION_MASTER_PASSWORD}

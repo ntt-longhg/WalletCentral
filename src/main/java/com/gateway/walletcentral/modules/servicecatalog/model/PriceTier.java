@@ -11,13 +11,11 @@ import java.util.UUID;
  * Each tier has a basic fee and extended pricing for additional units.
  */
 @Entity
-@Table(
-    name = "price_tiers",
-    comment = "Defines tiered pricing within a service price. Each tier has a basic fee and extended pricing for additional units.",
-    indexes = {
+@Table(name = "price_tiers", comment = "Defines tiered pricing within a service price. Each tier has a basic fee and extended pricing for additional units.", uniqueConstraints = {
+        @UniqueConstraint(name = "uq_price_tiers_service_price_id_tier", columnNames = { "service_price_id", "tier" })
+}, indexes = {
         @Index(name = "idx_price_tiers_service_price_id", columnList = "service_price_id")
-    }
-)
+})
 @Getter
 @Setter
 @NoArgsConstructor

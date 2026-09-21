@@ -70,13 +70,13 @@ public class UsageLogService {
 
                 var saved = usageLogRepository.save(usageLog);
 
-                Map<String, Object> event = new HashMap<>();
-                event.put("usageLogId", saved.getId().toString());
-                event.put("tenantId", request.getTenantId().toString());
-                event.put("serviceId", request.getServiceId().toString());
-                event.put("totalUsage", request.getTotalUsage());
-                event.put("walletId", wallet.getId().toString());
-                messageProducer.publishUsageLogRecorded(event);
+                // Map<String, Object> event = new HashMap<>();
+                // event.put("usageLogId", saved.getId().toString());
+                // event.put("tenantId", request.getTenantId().toString());
+                // event.put("serviceId", request.getServiceId().toString());
+                // event.put("totalUsage", request.getTotalUsage());
+                // event.put("walletId", wallet.getId().toString());
+                // messageProducer.publishUsageLog(event);
 
                 return toResponse(saved);
         }

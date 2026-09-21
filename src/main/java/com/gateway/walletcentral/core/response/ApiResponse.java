@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.slf4j.MDC;
 
 import java.time.OffsetDateTime;
 
@@ -26,6 +27,9 @@ public class ApiResponse<T> {
     @Schema(description = "Response data payload")
     private T data;
 
+    @Schema(description = "Request tracking ID", example = "abc-123-def-456")
+    private String requestId;
+
     @Schema(description = "Response timestamp")
     @Builder.Default
     private OffsetDateTime timestamp = OffsetDateTime.now();
@@ -35,6 +39,7 @@ public class ApiResponse<T> {
                 .success(true)
                 .message("Success")
                 .data(data)
+                .requestId(MDC.get("requestId"))
                 .build();
     }
 
@@ -43,6 +48,7 @@ public class ApiResponse<T> {
                 .success(true)
                 .message(message)
                 .data(data)
+                .requestId(MDC.get("requestId"))
                 .build();
     }
 
@@ -50,6 +56,7 @@ public class ApiResponse<T> {
         return ApiResponse.<T>builder()
                 .success(false)
                 .message(message)
+                .requestId(MDC.get("requestId"))
                 .build();
     }
 }

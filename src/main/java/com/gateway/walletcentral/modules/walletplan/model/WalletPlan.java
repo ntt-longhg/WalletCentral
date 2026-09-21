@@ -1,4 +1,5 @@
 package com.gateway.walletcentral.modules.walletplan.model;
+
 import com.gateway.walletcentral.modules.pricingplan.model.PricingPlan;
 import com.gateway.walletcentral.modules.tenant.model.Tenant;
 
@@ -16,17 +17,13 @@ import java.util.UUID;
  * Snapshots balance and credit_limit at time of purchase for audit.
  */
 @Entity
-@Table(
-    name = "wallet_plans",
-    comment = "Records tenant plan purchase requests and approval status. Tracks balance/credit snapshots for audit trail.",
-    indexes = {
+@Table(name = "wallet_plans", comment = "Records tenant plan purchase requests and approval status. Tracks balance/credit snapshots for audit trail.", indexes = {
         @Index(name = "idx_wallet_plans_tenant_id", columnList = "tenant_id"),
         @Index(name = "idx_wallet_plans_pricing_plan_id", columnList = "pricing_plan_id"),
         @Index(name = "idx_wallet_plans_status", columnList = "status"),
         @Index(name = "idx_wallet_plans_created_at", columnList = "created_at"),
         @Index(name = "idx_wallet_plans_deleted_at", columnList = "deleted_at")
-    }
-)
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -61,22 +58,6 @@ public class WalletPlan {
     /** Total amount credited to wallet (price + bonus) */
     @Column(name = "credited_amount", nullable = false, precision = 15, scale = 2, comment = "Total amount credited to wallet (price + bonus)")
     private BigDecimal creditedAmount = BigDecimal.ZERO;
-
-    /** Wallet balance snapshot before plan was approved */
-    @Column(name = "balance_before", nullable = false, precision = 15, scale = 2, comment = "Wallet balance snapshot before plan was approved")
-    private BigDecimal balanceBefore = BigDecimal.ZERO;
-
-    /** Wallet balance snapshot after plan was approved */
-    @Column(name = "balance_after", nullable = false, precision = 15, scale = 2, comment = "Wallet balance snapshot after plan was approved")
-    private BigDecimal balanceAfter = BigDecimal.ZERO;
-
-    /** Credit limit snapshot before plan was approved */
-    @Column(name = "credit_limit_before", nullable = false, precision = 15, scale = 2, comment = "Credit limit snapshot before plan was approved")
-    private BigDecimal creditLimitBefore = BigDecimal.ZERO;
-
-    /** Credit limit snapshot after plan was approved */
-    @Column(name = "credit_limit_after", nullable = false, precision = 15, scale = 2, comment = "Credit limit snapshot after plan was approved")
-    private BigDecimal creditLimitAfter = BigDecimal.ZERO;
 
     /** Plan purchase status: PENDING, APPROVED, REJECTED */
     @Enumerated(EnumType.STRING)

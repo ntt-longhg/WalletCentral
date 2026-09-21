@@ -1,18 +1,14 @@
-package com.gateway.walletcentral.core.rabbitmq;
+package com.gateway.walletcentral.modules.billing.handler;
 
-import com.gateway.walletcentral.modules.billing.dto.BillingWebhookResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gateway.walletcentral.core.exception.BusinessException;
 import com.rabbitmq.client.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.amqp.support.AmqpHeaders;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -20,38 +16,31 @@ import java.io.IOException;
 import java.util.Map;
 
 @Component
-public class BillingConsumer {
+public class BillingEventHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(BillingConsumer.class);
+    private static final Logger log = LoggerFactory.getLogger(BillingEventHandler.class);
 
     private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    public BillingConsumer(RestTemplate restTemplate) {
+    public BillingEventHandler(RestTemplate restTemplate, ObjectMapper objectMapper) {
         this.restTemplate = restTemplate;
+        this.objectMapper = objectMapper;
     }
 
-    @RabbitListener(queues = "billing.completed.process", executor = "virtualThreadExecutor")
-    public void handleBillingCompleted(Map<String, Object> message,
-            @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag,
-            Channel channel) throws IOException {
-        String transactionId = (String) message.get("transactionId");
-        String webhookUrl = (String) message.get("webhookUrl");
-        String webhookAuth = (String) message.get("webhookAuth");
-
-        log.info("========== BILLING CALLBACK START ==========");
-        log.info("TransactionId: {}", transactionId);
-        log.info("WebhookUrl: {}", webhookUrl);
+    public void handleBillingCallback(Map<String, Object> payload, Channel channel, long deliveryTag)
+            throws IOException {
+        String transactionId = (String) payload.get("transactionId");
+        String webhookUrl = (String) payload.get("webhookUrl");
+        String webhookAuth = (String) payload.get("webhookAuth");
+        log.info("Billing handler - transactionId: {} | webhookUrl: {} | thread: {}", transactionId, webhookUrl,
+                Thread.currentThread());
 
         try {
-            // Convert response to JSON
-            Object responseObj = message.get("response");
+            Object responseObj = payload.get("response");
             String responseBody = objectMapper.writeValueAsString(responseObj);
             log.info("Response payload: {}", responseBody);
 
-            // Call webhook URL
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             if (webhookAuth != null && !webhookAuth.isBlank()) {
@@ -64,13 +53,11 @@ public class BillingConsumer {
 
             log.info("Webhook callback response: status={} body={}", webhookResponse.getStatusCode(),
                     webhookResponse.getBody());
-            log.info("========== BILLING CALLBACK END ========== SUCCESS");
 
             channel.basicAck(deliveryTag, false);
         } catch (Exception e) {
             log.error("Failed to call webhook URL: {} for transaction: {}", webhookUrl, transactionId, e);
-            log.info("========== BILLING CALLBACK END ========== FAILED");
-            channel.basicNack(deliveryTag, false, false);
+            throw new BusinessException("Failed to call webhook URL handler error: " + e.getMessage());
         }
     }
 }

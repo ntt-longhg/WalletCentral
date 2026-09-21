@@ -22,4 +22,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
                                      org.springframework.data.domain.Pageable pageable);
 
     List<Transaction> findByWalletIdOrderByCreatedAtDesc(UUID walletId);
+
+    boolean existsByReferenceId(String referenceId);
 }

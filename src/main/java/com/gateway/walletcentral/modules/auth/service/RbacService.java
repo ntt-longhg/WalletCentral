@@ -29,10 +29,10 @@ public class RbacService {
     private final AdminUserRepository adminUserRepository;
 
     public RbacService(RoleRepository roleRepository,
-                       PermissionRepository permissionRepository,
-                       AdminUserRoleRepository userRoleRepository,
-                       AdminUserPermissionRepository userPermissionRepository,
-                       AdminUserRepository adminUserRepository) {
+            PermissionRepository permissionRepository,
+            AdminUserRoleRepository userRoleRepository,
+            AdminUserPermissionRepository userPermissionRepository,
+            AdminUserRepository adminUserRepository) {
         this.roleRepository = roleRepository;
         this.permissionRepository = permissionRepository;
         this.userRoleRepository = userRoleRepository;
@@ -211,7 +211,8 @@ public class RbacService {
         log.info("Role removed from user {} (email={})", adminUser.getId(), email);
     }
 
-    // ====================== USER PERMISSION OVERRIDES (by email) ======================
+    // ====================== USER PERMISSION OVERRIDES (by email)
+    // ======================
 
     public void grantPermissionToUser(String email, UserPermissionRequest request) {
         var permission = permissionRepository.findById(request.getPermissionId())
@@ -250,8 +251,9 @@ public class RbacService {
     // ====================== USER MANAGEMENT ======================
 
     @Transactional(readOnly = true)
-    public List<AdminUserResponse> listUsers() {
+    public List<AdminUserResponse> listUsers(String email) {
         return adminUserRepository.findAll().stream()
+                .filter(u -> !u.getEmail().equals(email))
                 .map(this::toAdminUserResponse)
                 .toList();
     }

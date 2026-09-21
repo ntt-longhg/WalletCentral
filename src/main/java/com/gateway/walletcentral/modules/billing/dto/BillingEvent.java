@@ -1,0 +1,41 @@
+package com.gateway.walletcentral.modules.billing.dto;
+
+import com.gateway.walletcentral.modules.usagelog.model.FeeBreakdownStructure;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.Map;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class BillingEvent {
+    private String transactionId;
+    private String tenantId;
+    private String serviceId;
+    private String serviceCode;
+    private String serviceName;
+    private Integer usageUnits;
+    private BigDecimal totalFee;
+    private String walletId;
+    private String walletType;
+    private BigDecimal balanceBefore;
+    private BigDecimal balanceAfter;
+    private BigDecimal creditLimit;
+    private BigDecimal availableBalanceAfter;
+    private FeeBreakdownStructure feeBreakdown;
+    private String referenceFrom;
+    private String referenceId;
+    private OffsetDateTime createdAt;
+    private String description;
+
+    // Webhook fields
+    private String webhookUrl;
+    private String webhookAuth;
+    private Map<String, Object> metadata;
+}
