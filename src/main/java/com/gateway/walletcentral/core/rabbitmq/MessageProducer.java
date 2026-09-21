@@ -3,6 +3,7 @@ package com.gateway.walletcentral.core.rabbitmq;
 import com.gateway.walletcentral.config.RabbitMQConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +20,7 @@ public class MessageProducer {
     }
 
     public void publishTransaction(Map<String, Object> payload) {
+        payload.put("requestId", MDC.get("requestId"));
         log.info("Publishing transaction event: {}", payload);
         rabbitTemplate.convertAndSend(
                 RabbitMQConfig.EXCHANGE_TRANSACTION,
@@ -27,6 +29,7 @@ public class MessageProducer {
     }
 
     public void publishWalletPlan(Map<String, Object> payload) {
+        payload.put("requestId", MDC.get("requestId"));
         log.info("Publishing wallet plan event: {}", payload);
         rabbitTemplate.convertAndSend(
                 RabbitMQConfig.EXCHANGE_WALLET,
@@ -35,6 +38,7 @@ public class MessageProducer {
     }
 
     public void publishUsageLog(Map<String, Object> payload) {
+        payload.put("requestId", MDC.get("requestId"));
         log.info("Publishing usage log event: {}", payload);
         rabbitTemplate.convertAndSend(
                 RabbitMQConfig.EXCHANGE_USAGE,
@@ -43,6 +47,7 @@ public class MessageProducer {
     }
 
     public void publishBilling(Map<String, Object> payload) {
+        payload.put("requestId", MDC.get("requestId"));
         log.info("Publishing billing event: {}", payload);
         rabbitTemplate.convertAndSend(
                 RabbitMQConfig.EXCHANGE_BILLING,
@@ -51,6 +56,7 @@ public class MessageProducer {
     }
 
     public void publishNotification(Map<String, Object> payload) {
+        payload.put("requestId", MDC.get("requestId"));
         log.info("Publishing notification event: {}", payload);
         rabbitTemplate.convertAndSend(
                 RabbitMQConfig.EXCHANGE_NOTIFICATION,

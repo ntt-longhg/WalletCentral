@@ -6,6 +6,7 @@ import com.gateway.walletcentral.modules.walletplan.model.WalletPlanStatus;
 import com.rabbitmq.client.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.support.AmqpHeaders;
 import org.springframework.messaging.handler.annotation.Header;
@@ -30,6 +31,10 @@ public class WalletPlanListener {
             @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag,
             Channel channel) throws IOException {
 
+        String requestId = (String) message.get("requestId");
+        if (requestId != null) {
+            MDC.put("requestId", requestId);
+        }
         log.info("========== WALLET PLAN LISTENER START ==========");
         String event = (String) message.get("event");
         Map<String, Object> payload = (Map<String, Object>) message.get("payload");
@@ -61,6 +66,7 @@ public class WalletPlanListener {
             channel.basicNack(deliveryTag, false, false);
         } finally {
             log.info("========== WALLET PLAN LISTENER END ==========");
+            MDC.clear();
         }
     }
 }

@@ -5,6 +5,7 @@ import com.gateway.walletcentral.modules.billing.handler.BillingEventHandler;
 import com.rabbitmq.client.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.support.AmqpHeaders;
 import org.springframework.messaging.handler.annotation.Header;
@@ -29,6 +30,10 @@ public class BillingListener {
             @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag,
             Channel channel) throws IOException {
 
+        String requestId = (String) message.get("requestId");
+        if (requestId != null) {
+            MDC.put("requestId", requestId);
+        }
         log.info("========== BILLING LISTENER START ==========");
         Map<String, Object> payload = (Map<String, Object>) message.get("payload");
         if (payload == null) {
@@ -43,6 +48,7 @@ public class BillingListener {
             channel.basicNack(deliveryTag, false, false);
         } finally {
             log.info("========== BILLING LISTENER END ==========");
+            MDC.clear();
         }
     }
 }

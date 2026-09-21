@@ -13,7 +13,7 @@ public class WalletCentralGatewayApplication {
         TimeZone.setDefault(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
 
         SpringApplication app = new SpringApplication(WalletCentralGatewayApplication.class);
-        app.setApplicationStartup(new BufferingApplicationStartup(2048));
+        app.setApplicationStartup(new BufferingApplicationStartup(8192));
         app.run(args);
     }
 

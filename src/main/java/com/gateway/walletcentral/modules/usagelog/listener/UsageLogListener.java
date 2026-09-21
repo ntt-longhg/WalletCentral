@@ -5,6 +5,7 @@ import com.gateway.walletcentral.modules.usagelog.handler.UsageLogEventHandler;
 import com.rabbitmq.client.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.support.AmqpHeaders;
 import org.springframework.messaging.handler.annotation.Header;
@@ -29,6 +30,10 @@ public class UsageLogListener {
             @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag,
             Channel channel) throws IOException {
 
+        String requestId = (String) message.get("requestId");
+        if (requestId != null) {
+            MDC.put("requestId", requestId);
+        }
         log.info("========== USAGE LOG LISTENER START ==========");
         String event = (String) message.get("event");
         Map<String, Object> payload = (Map<String, Object>) message.get("payload");
@@ -53,6 +58,7 @@ public class UsageLogListener {
             channel.basicNack(deliveryTag, false, false);
         } finally {
             log.info("========== USAGE LOG LISTENER END ==========");
+            MDC.clear();
         }
     }
 }

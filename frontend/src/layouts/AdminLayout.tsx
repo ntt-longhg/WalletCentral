@@ -24,9 +24,12 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { NotificationCenter } from '@/components/NotificationCenter';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 import Logo from '@/assets/logo.svg';
 
 export const AdminLayout: React.FC = () => {
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const { adminLogout, adminEmail } = useAuth();
@@ -173,6 +176,7 @@ export const AdminLayout: React.FC = () => {
 
           <div className="flex items-center gap-4">
             <NotificationCenter />
+            <LanguageSwitcher />
             <div className="h-6 w-[1px] bg-slate-200" />
             <div className="flex items-center gap-3">
               <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-700 font-semibold">

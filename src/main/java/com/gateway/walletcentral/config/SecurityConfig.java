@@ -126,7 +126,8 @@ public class SecurityConfig {
                         Tenant tenant = tenantOpt.get();
                         // Validate client_secret matches
                         if (tenant.getClientSecret().equals(clientSecret)
-                                && tenant.getStatus() == com.gateway.walletcentral.modules.tenant.model.TenantStatus.ACTIVE) {
+                                && tenant
+                                        .getStatus() == com.gateway.walletcentral.modules.tenant.model.TenantStatus.ACTIVE) {
                             filterChain.doFilter(request, response);
                             return;
                         }

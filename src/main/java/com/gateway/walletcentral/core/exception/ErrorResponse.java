@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.slf4j.MDC;
 
 import java.time.OffsetDateTime;
 import java.util.Map;
@@ -28,6 +29,9 @@ public class ErrorResponse {
     @Schema(description = "Field-level validation errors", example = "{\"name\": \"must not be blank\"}")
     private Map<String, String> errors;
 
+    @Schema(description = "Request tracking ID", example = "abc-123-def-456")
+    private String requestId;
+
     @Schema(description = "Error timestamp")
     @Builder.Default
     private OffsetDateTime timestamp = OffsetDateTime.now();
@@ -37,6 +41,7 @@ public class ErrorResponse {
                 .status(status)
                 .code(code)
                 .message(message)
+                .requestId(MDC.get("requestId"))
                 .build();
     }
 
@@ -46,6 +51,7 @@ public class ErrorResponse {
                 .code(code)
                 .message(message)
                 .errors(errors)
+                .requestId(MDC.get("requestId"))
                 .build();
     }
 }
