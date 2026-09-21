@@ -18,7 +18,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Boxes, Plus, DollarSign, Layers } from 'lucide-react';
 import { useServiceStore } from '@/stores';
 import { ServiceResponse, ServicePriceResponse } from '@/types/api';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatDate } from '@/lib/utils';
 
 export const ServiceCatalogPage: React.FC = () => {
   const { addToast } = useToast();
@@ -105,6 +105,13 @@ export const ServiceCatalogPage: React.FC = () => {
       addToast({ variant: 'success', message: 'Tạo thiết lập giá thành công!' });
       setShowCreatePrice(false);
       handleSelectService(selectedService);
+      setNewPrice({
+        initialSize: 1,
+        initialFee: 0,
+        subsequentSize: 1,
+        subsequentFee: 0,
+        effectiveDate: new Date().toISOString(),
+      });
     } catch (err: any) {
       addToast({ variant: 'destructive', message: err.response?.data?.message || 'Tạo giá thất bại.' });
     }
@@ -131,6 +138,7 @@ export const ServiceCatalogPage: React.FC = () => {
       setShowCreateTier(false);
       handleSelectPrice(selectedPrice);
     } catch (err: any) {
+      console.log('Error adding tier:', err.response?.status);
       addToast({ variant: 'destructive', message: err.response?.data?.message || 'Lỗi thêm bậc giá.' });
     }
   };
@@ -225,6 +233,7 @@ export const ServiceCatalogPage: React.FC = () => {
                           <TableHead>Initial (Size / Fee)</TableHead>
                           <TableHead>Subsequent (Size / Fee)</TableHead>
                           <TableHead>Trạng thái</TableHead>
+                          <TableHead>Ngày có hiệu lực</TableHead>
                           <TableHead>Thao tác</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -244,6 +253,9 @@ export const ServiceCatalogPage: React.FC = () => {
                               <Badge variant={pr.active ? 'success' : 'secondary'}>
                                 {pr.active ? 'Kích hoạt' : 'Chưa active'}
                               </Badge>
+                            </TableCell>
+                            <TableCell className="text-sm">
+                              {pr.effectiveDate ? formatDate(pr.effectiveDate) : '-'}
                             </TableCell>
                             <TableCell className="flex items-center gap-2">
                               {!pr.active && (

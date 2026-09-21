@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect } fr
 import { useWebSocket } from '../hooks/useWebSocket';
 import { useToast } from '../components/ui/toast';
 import { walletPlanService } from '../services/billingServices';
+import { useBillingStore } from '@/stores/useBillingStore';
 
 interface Notification {
   id: string;
@@ -25,7 +26,7 @@ interface NotificationContextType {
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   clearNotifications: () => void;
-  refreshPendingCount: () => void;
+  // refreshPendingCount: () => void;
 }
 
 const NotificationContext = createContext<NotificationContextType>({
@@ -37,13 +38,14 @@ const NotificationContext = createContext<NotificationContextType>({
   markAsRead: () => { },
   markAllAsRead: () => { },
   clearNotifications: () => { },
-  refreshPendingCount: () => { },
+  // refreshPendingCount: () => { },
 });
 
 export const NotificationProvider: React.FC<{ children: React.ReactNode; tenantId?: string; admin?: boolean }> = ({ children, tenantId, admin }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [pendingWalletPlanCount, setPendingWalletPlanCount] = useState(0);
   const { addToast } = useToast();
+   const { pendingPlans, plansLoading: loading, fetchPendingWalletPlans } = useBillingStore();
 
   const handleNotification = useCallback((notification: Notification) => {
     setNotifications(prev => [notification, ...prev].slice(0, 100));
@@ -57,7 +59,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; tenantI
       });
 
       if (notification.type === 'WALLET_PLAN' || notification.referenceType === 'WALLET_PLAN') {
-        setPendingWalletPlanCount(prev => prev + 1);
+        // setPendingWalletPlanCount(prev => prev + 1);
+        fetchPendingWalletPlans();
       }
     } else {
       addToast({
@@ -78,25 +81,32 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; tenantI
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
-  const refreshPendingCount = useCallback(async () => {
-    if (!admin) return;
-    try {
-      const res = await walletPlanService.getPending();
-      if (res.data.success && res.data?.data?.items) {
-        setPendingWalletPlanCount(res.data.data.items.length);
-      }
-    } catch {
-      // ignore
-    }
-  }, [admin]);
+  // const refreshPendingCount = useCallback(async () => {
+  //   if (!admin) return;
+  //   try {
+  //     const res = await walletPlanService.getPending();
+  //     if (res.data.success && res.data?.data?.items) {
+  //       setPendingWalletPlanCount(res.data.data.items.length);
+  //     }
+  //   } catch {
+  //     // ignore
+  //   }
+  // }, [admin]);
+
+  // useEffect(() => {
+  //   if (admin) {
+  //     refreshPendingCount();
+  //     const interval = setInterval(refreshPendingCount, 30000);
+  //     return () => clearInterval(interval);
+  //   }
+  // }, [admin, refreshPendingCount]);
 
   useEffect(() => {
     if (admin) {
-      refreshPendingCount();
-      const interval = setInterval(refreshPendingCount, 30000);
-      return () => clearInterval(interval);
+      setPendingWalletPlanCount(pendingPlans.length);
     }
-  }, [admin, refreshPendingCount]);
+  }, [admin, pendingPlans]);
+
 
   const addNotification = useCallback((notification: Notification) => {
     setNotifications(prev => [notification, ...prev].slice(0, 100));
@@ -120,7 +130,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; tenantI
 
   return (
     <NotificationContext.Provider
-      value={{ notifications, unreadCount, isConnected, pendingWalletPlanCount, addNotification, markAsRead, markAllAsRead, clearNotifications, refreshPendingCount }}
+      value={{ notifications, unreadCount, isConnected, pendingWalletPlanCount, addNotification, markAsRead, markAllAsRead, clearNotifications }}
     >
       {children}
     </NotificationContext.Provider>

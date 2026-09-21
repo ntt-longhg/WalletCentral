@@ -20,9 +20,138 @@ import { useServiceStore } from '@/stores';
 import { formatCurrency, getStatusConfig } from '@/lib/utils';
 
 export const PricingPlansPage: React.FC = () => {
+  const MAX_NUMBER_DIGITS = 11;
+  const MAX_FORMATTED_NUMBER_LENGTH = 14;
+
   const { addToast } = useToast();
   const { pricingPlans: plans, plansLoading: loading, fetchPricingPlans, createPricingPlan, updatePricingPlanStatus } = useServiceStore();
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [percentageBonusInput, setPercentageBonusInput] = useState('');
+  const [activeNumberField, setActiveNumberField] = useState<
+    'price' | 'bonusValue' | 'creditLimitValue' | null
+  >(null);
+
+  const sanitizePercentageInput = (value: string) => {
+    const cleaned = value.replace(/\D/g, '');
+    if (!cleaned) {
+      return '';
+    }
+
+    const normalizedWhole = cleaned.slice(0, 3);
+    const parsedValue = Number(normalizedWhole || 0);
+
+    return parsedValue > 100 ? '100' : normalizedWhole;
+  };
+
+  const parseNumberInput = (
+    value: string,
+    options: { min?: number; max?: number; maxDigits?: number; allowDecimal?: boolean } = {},
+  ) => {
+    const { min = 0, max, maxDigits = MAX_NUMBER_DIGITS, allowDecimal = false } = options;
+
+    if (value.trim() === '') {
+      return 0;
+    }
+
+    if (allowDecimal) {
+      const sanitizedValue = sanitizePercentageInput(value);
+      const normalizedValue = sanitizedValue === '' ? '0' : sanitizedValue.replace(',', '.');
+      const parsedValue = Number(normalizedValue);
+
+      if (!Number.isFinite(parsedValue)) {
+        return min;
+      }
+
+      if (parsedValue < min) {
+        return min;
+      }
+
+      if (typeof max === 'number' && parsedValue > max) {
+        return max;
+      }
+
+      return parsedValue;
+    }
+
+    const normalizedValue = value.replace(/\D/g, '').slice(0, maxDigits);
+    const parsedValue = Number(normalizedValue);
+    if (!Number.isFinite(parsedValue)) {
+      return min;
+    }
+
+    if (parsedValue < min) {
+      return min;
+    }
+
+    if (typeof max === 'number' && parsedValue > max) {
+      return max;
+    }
+
+    return parsedValue;
+  };
+
+  const formatNumberWithDots = (value: number) => {
+    return new Intl.NumberFormat('vi-VN').format(value);
+  };
+
+  const getNumberInputValue = (
+    field: 'price' | 'bonusValue' | 'creditLimitValue',
+    value: number,
+    options: { useDecimal?: boolean; rawValue?: string } = {},
+  ) => {
+    if (options.rawValue !== undefined) {
+      return options.rawValue;
+    }
+
+    if (activeNumberField === field && value === 0) {
+      return '';
+    }
+
+    if (options.useDecimal) {
+      return value.toString();
+    }
+
+    return formatNumberWithDots(value);
+  };
+
+  const handleNumberKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    allowDecimal = false,
+  ) => {
+    if (e.ctrlKey || e.metaKey) {
+      return;
+    }
+
+    const allowedControlKeys = [
+      'Backspace',
+      'Delete',
+      'ArrowLeft',
+      'ArrowRight',
+      'Tab',
+      'Home',
+      'End',
+      'Enter',
+    ];
+
+    if (allowedControlKeys.includes(e.key)) {
+      return;
+    }
+
+    if (
+      allowDecimal &&
+      ['.', ',', 'Decimal', 'NumpadDecimal', 'Period'].includes(e.key)
+    ) {
+      // Cho phép "." hoặc "," nhưng chỉ một dấu phân cách
+      if (e.currentTarget.value.includes('.') || e.currentTarget.value.includes(',')) {
+        e.preventDefault();
+      }
+      return;
+    }
+
+    if (!/^[0-9]$/.test(e.key)) {
+      e.preventDefault();
+    }
+  };
 
   const [formData, setFormData] = useState({
     code: '',
@@ -32,7 +161,7 @@ export const PricingPlansPage: React.FC = () => {
     type: 'BALANCE_TOPUP',
     bonusType: 'NONE' as 'NONE' | 'PERCENTAGE' | 'FIXED',
     bonusValue: 0,
-    creditLimitAction: 'NONE' as 'NONE' | 'SET' | 'INCREASE',
+    creditLimitAction: 'SET' as 'SET' | 'INCREASE',
     creditLimitValue: 0,
   });
 
@@ -43,9 +172,21 @@ export const PricingPlansPage: React.FC = () => {
   const handleCreatePlan = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createPricingPlan(formData);
-      addToast({ variant: 'success', message: 'Tạo bảng giá Tenant thành công!' });
-      setShowCreateModal(false);
+      // await createPricingPlan(formData);
+      // addToast({ variant: 'success', message: 'Tạo bảng giá Tenant thành công!' });
+      // setShowCreateModal(false);
+      // setFormData({
+      //   code: '',
+      //   name: '',
+      //   description: '',
+      //   price: 100000,
+      //   type: 'BALANCE_TOPUP',
+      //   bonusType: 'NONE',
+      //   bonusValue: 0,
+      //   creditLimitAction: 'SET',
+      //   creditLimitValue: 0,
+      // });
+      // setPercentageBonusInput('');
     } catch (err: any) {
       addToast({ variant: 'destructive', message: err.response?.data?.message || 'Không thể tạo bảng giá.' });
     }
@@ -60,6 +201,23 @@ export const PricingPlansPage: React.FC = () => {
       addToast({ variant: 'destructive', message: 'Lỗi cập nhật trạng thái bảng giá.' });
     }
   };
+
+  const handleCancel = () => {
+    setShowCreateModal(false);
+    setFormData({
+      code: '',
+      name: '',
+      description: '',
+      price: 100000,
+      type: 'BALANCE_TOPUP',
+      bonusType: 'NONE',
+      bonusValue: 0,
+      creditLimitAction: 'SET',
+      creditLimitValue: 0,
+    });
+    setPercentageBonusInput('');
+  };
+
 
   return (
     <div className="space-y-6">
@@ -163,7 +321,13 @@ export const PricingPlansPage: React.FC = () => {
       </Card>
 
       {/* Create Pricing Plan Dialog */}
-      <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+      <Dialog
+        open={showCreateModal}
+        onOpenChange={(open) => {
+          setShowCreateModal(open);
+          if (!open) handleCancel();
+        }}
+      >
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Tạo Bảng giá Tenant Mới</DialogTitle>
@@ -194,11 +358,21 @@ export const PricingPlansPage: React.FC = () => {
             <div className="space-y-2">
               <Label>Giá gói (VNĐ)</Label>
               <Input
-                type="number"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9.]*"
+                maxLength={MAX_FORMATTED_NUMBER_LENGTH}
                 required
-                min={0}
-                value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                value={getNumberInputValue('price', formData.price)}
+                onFocus={() => setActiveNumberField('price')}
+                onBlur={() => setActiveNumberField(null)}
+                onKeyDown={handleNumberKeyDown}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    price: parseNumberInput(e.target.value, { min: 0, maxDigits: MAX_NUMBER_DIGITS }),
+                  })
+                }
               />
             </div>
 
@@ -236,48 +410,105 @@ export const PricingPlansPage: React.FC = () => {
               </div>
             </div>
 
-            {formData.bonusType !== 'NONE' && (
+            {formData.bonusType === 'PERCENTAGE' && (
               <div className="space-y-2">
-                <Label>Giá trị Khuyến Mãi ({formData.bonusType === 'PERCENTAGE' ? '%' : 'VNĐ'})</Label>
+                <Label>Giá trị Khuyến Mãi (%)</Label>
                 <Input
-                  type="number"
-                  min={0}
-                  value={formData.bonusValue}
-                  onChange={(e) => setFormData({ ...formData, bonusValue: Number(e.target.value) })}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={3}
+                  value={getNumberInputValue('bonusValue', formData.bonusValue, {
+                    rawValue: percentageBonusInput,
+                  })}
+                  onFocus={() => setActiveNumberField('bonusValue')}
+                  onBlur={() => setActiveNumberField(null)}
+                  onKeyDown={(e) => handleNumberKeyDown(e, false)}
+                  onChange={(e) => {
+                    const nextValue = sanitizePercentageInput(e.target.value);
+
+                    setPercentageBonusInput(nextValue);
+
+                    setFormData({
+                      ...formData,
+                      bonusValue: parseNumberInput(nextValue, {
+                        min: 0,
+                        max: 100,
+                        maxDigits: 3,
+                      }),
+                    });
+                  }}
                 />
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-3">
+            {formData.bonusType === 'FIXED' && (
               <div className="space-y-2">
-                <Label>Credit Limit Action</Label>
-                <Select
-                  value={formData.creditLimitAction}
-                  onValueChange={(value: 'NONE' | 'SET' | 'INCREASE') => setFormData({ ...formData, creditLimitAction: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="NONE">Không thay đổi</SelectItem>
-                    <SelectItem value="SET">Thiết lập cố định</SelectItem>
-                    <SelectItem value="INCREASE">Cộng dồn</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Giá trị Credit Limit</Label>
+                <Label>Giá trị Khuyến Mãi (VNĐ)</Label>
                 <Input
-                  type="number"
-                  min={0}
-                  value={formData.creditLimitValue}
-                  onChange={(e) => setFormData({ ...formData, creditLimitValue: Number(e.target.value) })}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={MAX_FORMATTED_NUMBER_LENGTH}
+                  value={getNumberInputValue('bonusValue', formData.bonusValue)}
+                  onFocus={() => setActiveNumberField('bonusValue')}
+                  onBlur={() => setActiveNumberField(null)}
+                  onKeyDown={handleNumberKeyDown}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      bonusValue: parseNumberInput(e.target.value, {
+                        min: 0,
+                        maxDigits: MAX_NUMBER_DIGITS,
+                      }),
+                    })
+                  }
                 />
               </div>
-            </div>
+            )}
+
+            {
+              formData.type === "CREDIT_INCREASE" && (
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>Credit Limit Action</Label>
+                  <Select
+                    value={formData.creditLimitAction}
+                    onValueChange={(value: 'SET' | 'INCREASE') => setFormData({ ...formData, creditLimitAction: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="SET">Thiết lập cố định</SelectItem>
+                      <SelectItem value="INCREASE">Cộng dồn</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Giá trị Credit Limit</Label>
+                  <Input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9.]*"
+                    maxLength={MAX_FORMATTED_NUMBER_LENGTH}
+                    value={getNumberInputValue('creditLimitValue', formData.creditLimitValue)}
+                    onFocus={() => setActiveNumberField('creditLimitValue')}
+                    onBlur={() => setActiveNumberField(null)}
+                    onKeyDown={handleNumberKeyDown}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        creditLimitValue: parseNumberInput(e.target.value, { min: 0, maxDigits: MAX_NUMBER_DIGITS }),
+                      })
+                    }
+                  />
+                </div>
+              </div>
+            )}
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setShowCreateModal(false)}>
+              <Button type="button" variant="outline" onClick={() => handleCancel()}>
                 Hủy
               </Button>
               <Button type="submit">Tạo Bảng Giá</Button>

@@ -342,7 +342,7 @@ export const WalletManagementPage: React.FC = () => {
                           <Button
                             size="sm"
                             variant={wallet.status === 'ACTIVE' ? 'destructive' : 'success'}
-                            className="text-xs h-7"
+                            className="text-xs h-7 gap-1"
                             onClick={() => handleToggleStatus(wallet)}
                           >
                             {wallet.status === 'ACTIVE' ? (
@@ -363,7 +363,15 @@ export const WalletManagementPage: React.FC = () => {
       </Card>
 
       {/* Create Wallet Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+      <Dialog
+        open={showCreateDialog}
+        onOpenChange={(open) => {
+          setShowCreateDialog(open);
+          if (!open) {
+            setCreateData({ tenantId: '', type: 'PREPAID' });
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Tạo Ví Mới</DialogTitle>
@@ -393,18 +401,25 @@ export const WalletManagementPage: React.FC = () => {
 
             <div className="space-y-2">
               <Label>Loại Ví</Label>
-              <Select
-                value={createData.type}
-                onValueChange={(value: 'PREPAID' | 'POSTPAID') => setCreateData({ ...createData, type: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="PREPAID">Trả trước (Prepaid)</SelectItem>
-                  <SelectItem value="POSTPAID">Trả sau (Postpaid)</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-1">
+                <div className="grid grid-cols-2 gap-1">
+                  {(['PREPAID', 'POSTPAID'] as const).map((type) => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => setCreateData({ ...createData, type })}
+                      className={[
+                        'rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
+                        createData.type === type
+                          ? 'bg-white text-blue-700 shadow-sm ring-1 ring-blue-200'
+                          : 'text-slate-600 hover:text-slate-900',
+                      ].join(' ')}
+                    >
+                      {type === 'PREPAID' ? 'Trả trước (Prepaid)' : 'Trả sau (Postpaid)'}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {/* {createData.type === 'POSTPAID' && (
@@ -432,7 +447,15 @@ export const WalletManagementPage: React.FC = () => {
       </Dialog>
 
       {/* Add Plan to Wallet Dialog */}
-      <Dialog open={showAddPlanDialog} onOpenChange={setShowAddPlanDialog}>
+      <Dialog
+        open={showAddPlanDialog}
+        onOpenChange={(open) => {
+          setShowAddPlanDialog(open);
+          if (!open) {
+            setAddPlanData({ walletId: '', pricingPlanId: '' });
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Thêm Gói vào Ví</DialogTitle>
@@ -515,7 +538,15 @@ export const WalletManagementPage: React.FC = () => {
       </Dialog>
 
       {/* Switch Type Dialog */}
-      <Dialog open={showSwitchDialog} onOpenChange={setShowSwitchDialog}>
+      <Dialog
+        open={showSwitchDialog}
+        onOpenChange={(open) => {
+          setShowSwitchDialog(open);
+          if (!open) {
+            setSwitchData(null);
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Chuyển loại Ví</DialogTitle>

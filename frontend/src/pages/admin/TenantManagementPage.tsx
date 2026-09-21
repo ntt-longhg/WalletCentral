@@ -80,6 +80,15 @@ export const TenantManagementPage: React.FC = () => {
     }
   };
 
+  const handleCancelCreate = () => {
+    setShowCreateModal(false);
+    setFormData({ name: '', clientId: '', clientSecret: '', allowedDomains: '' });
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteConfirm(null);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -193,7 +202,15 @@ export const TenantManagementPage: React.FC = () => {
       </Card>
 
       {/* Create Tenant Dialog */}
-      <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+      <Dialog
+          open={showCreateModal}
+          onOpenChange={(open) => {
+            setShowCreateModal(open);
+            if (!open) {
+              handleCancelCreate();
+            }
+          }}
+        >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Tạo Tenant Mới</DialogTitle>
@@ -240,7 +257,7 @@ export const TenantManagementPage: React.FC = () => {
               <p className="text-xs text-slate-400">Phân tách bằng dấu phẩy</p>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setShowCreateModal(false)}>
+              <Button type="button" variant="outline" onClick={handleCancelCreate}>
                 Hủy
               </Button>
               <Button type="submit">Tạo Tenant</Button>
@@ -250,7 +267,11 @@ export const TenantManagementPage: React.FC = () => {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={!!showDeleteConfirm} onOpenChange={() => setShowDeleteConfirm(null)}>
+      <Dialog open={!!showDeleteConfirm} onOpenChange={(open) => {
+        if (!open) {
+          handleCancelDelete();
+        }
+      }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Xác nhận xóa Tenant</DialogTitle>
@@ -260,7 +281,7 @@ export const TenantManagementPage: React.FC = () => {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDeleteConfirm(null)}>
+            <Button variant="outline" onClick={handleCancelDelete}>
               Hủy
             </Button>
             <Button variant="destructive" onClick={handleDelete}>
