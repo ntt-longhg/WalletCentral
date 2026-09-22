@@ -14,6 +14,7 @@ import com.rabbitmq.client.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -42,6 +43,7 @@ public class TransactionEventHandler {
                 this.messageProducer = messageProducer;
         }
 
+        @Transactional
         public void handleWalletPlanDeposit(Map<String, Object> message, Channel channel, long deliveryTag)
                         throws IOException {
                 String event = (String) message.get("event");
@@ -59,7 +61,8 @@ public class TransactionEventHandler {
                                 return;
                         }
 
-                        Wallet wallet = walletRepository.findById(UUID.fromString(walletPlanEvent.getWalletId()))
+                        Wallet wallet = walletRepository
+                                        .findByIdWithTenant(UUID.fromString(walletPlanEvent.getWalletId()))
                                         .orElseThrow(() -> new RuntimeException(
                                                         "Wallet not found: " + walletPlanEvent.getWalletId()));
 
@@ -93,6 +96,7 @@ public class TransactionEventHandler {
                 }
         }
 
+        @Transactional
         public void handleBillingCharge(Map<String, Object> message, Channel channel, long deliveryTag)
                         throws IOException {
 
@@ -111,7 +115,7 @@ public class TransactionEventHandler {
                                 return;
                         }
 
-                        Wallet wallet = walletRepository.findById(UUID.fromString(billingEvent.getWalletId()))
+                        Wallet wallet = walletRepository.findByIdWithTenant(UUID.fromString(billingEvent.getWalletId()))
                                         .orElseThrow(() -> new RuntimeException(
                                                         "Wallet not found: " + billingEvent.getWalletId()));
 
@@ -202,6 +206,7 @@ public class TransactionEventHandler {
                                 .availableBalanceBefore(new BigDecimal(map.get("availableBalanceBefore").toString()))
                                 .availableBalanceAfter(new BigDecimal(map.get("availableBalanceAfter").toString()))
                                 .description((String) map.get("description"))
+                                .approvedBy((String) map.get("approvedBy"))
                                 .referenceFrom((String) map.get("referenceFrom"))
                                 .referenceId((String) map.get("referenceId"))
                                 .build();

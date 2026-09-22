@@ -18,9 +18,11 @@ import com.gateway.walletcentral.modules.wallet.model.Wallet;
 import com.gateway.walletcentral.modules.wallet.repository.WalletRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -77,7 +79,9 @@ public class BillingService {
 
                 // 2. Find active service price
                 List<ServicePrice> activePrices = servicePriceRepository
-                                .findByServiceIdAndIsActiveTrue(service.getId());
+                                .findByServiceIdAndIsActiveTrue(service.getId(),
+                                                OffsetDateTime.now(),
+                                                PageRequest.of(0, 1));
                 if (activePrices.isEmpty()) {
                         log.error("No active price found for service: {}", service.getCode());
                         throw new BusinessException("NO_ACTIVE_PRICE",

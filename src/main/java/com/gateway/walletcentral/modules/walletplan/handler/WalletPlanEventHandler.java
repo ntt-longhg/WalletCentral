@@ -101,6 +101,7 @@ public class WalletPlanEventHandler {
                     .availableBalanceBefore(availableBefore)
                     .availableBalanceAfter(newAvailable)
                     .description("Mua gói dịch vụ " + plan.getName() + " (Khuyến mãi thêm: " + bonusAmount + ")")
+                    .approvedBy(walletPlan.getApprovedBy())
                     .referenceFrom("WALLET_PLAN")
                     .referenceId(walletPlanId)
                     .build();

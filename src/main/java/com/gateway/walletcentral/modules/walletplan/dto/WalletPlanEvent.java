@@ -20,6 +20,7 @@ public class WalletPlanEvent {
     private BigDecimal availableBalanceBefore;
     private BigDecimal availableBalanceAfter;
     private String description;
+    private String approvedBy;
     private String referenceFrom;
     private String referenceId;
 
