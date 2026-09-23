@@ -5,7 +5,10 @@ import com.gateway.walletcentral.core.cursor.CursorParams;
 import com.gateway.walletcentral.core.cursor.CursorUtil;
 import com.gateway.walletcentral.core.exception.BusinessException;
 import com.gateway.walletcentral.core.exception.ResourceNotFoundException;
-import com.gateway.walletcentral.core.rabbitmq.MessageProducer;
+import com.gateway.walletcentral.core.event.NotificationEvent;
+import com.gateway.walletcentral.core.event.WalletPlanApprovedEvent;
+import com.gateway.walletcentral.core.event.WalletPlanCreatedEvent;
+import com.gateway.walletcentral.core.event.WalletPlanRejectedEvent;
 import com.gateway.walletcentral.modules.pricingplan.model.BonusType;
 import com.gateway.walletcentral.modules.pricingplan.model.PricingPlan;
 import com.gateway.walletcentral.modules.pricingplan.repository.PricingPlanRepository;
@@ -18,6 +21,7 @@ import com.gateway.walletcentral.modules.walletplan.model.WalletPlanStatus;
 import com.gateway.walletcentral.modules.walletplan.repository.WalletPlanRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,18 +42,18 @@ public class WalletPlanService {
     private final TenantRepository tenantRepository;
     private final PricingPlanRepository pricingPlanRepository;
     private final WalletRepository walletRepository;
-    private final MessageProducer messageProducer;
+    private final ApplicationEventPublisher eventPublisher;
 
     public WalletPlanService(WalletPlanRepository walletPlanRepository,
             TenantRepository tenantRepository,
             PricingPlanRepository pricingPlanRepository,
             WalletRepository walletRepository,
-            MessageProducer messageProducer) {
+            ApplicationEventPublisher eventPublisher) {
         this.walletPlanRepository = walletPlanRepository;
         this.tenantRepository = tenantRepository;
         this.pricingPlanRepository = pricingPlanRepository;
         this.walletRepository = walletRepository;
-        this.messageProducer = messageProducer;
+        this.eventPublisher = eventPublisher;
     }
 
     public WalletPlanResponse create(WalletPlanCreateRequest request) {
@@ -78,15 +82,13 @@ public class WalletPlanService {
 
         var saved = walletPlanRepository.save(walletPlan);
 
-        Map<String, Object> notificationEvent = new HashMap<>();
-        notificationEvent.put("tenantId", walletPlan.getTenant().getId().toString());
-        notificationEvent.put("type", "WALLET_PLAN");
-        notificationEvent.put("title", "Gói dịch vụ được tạo");
-        notificationEvent.put("message",
-                String.format("Gói dịch vụ %s đã được tạo thành công", pricingPlan.getName()));
-        notificationEvent.put("referenceType", "WALLET_PLAN");
-        notificationEvent.put("referenceId", saved.getId().toString());
-        messageProducer.publishNotification(notificationEvent);
+        WalletPlanCreatedEvent createdEvent = WalletPlanCreatedEvent.builder()
+                .tenantId(walletPlan.getTenant().getId().toString())
+                .walletPlanId(saved.getId().toString())
+                .pricingPlanName(pricingPlan.getName())
+                .createdBy(request.getCreatedBy())
+                .build();
+        eventPublisher.publishEvent(createdEvent);
 
         return toResponse(saved);
     }
@@ -137,14 +139,13 @@ public class WalletPlanService {
 
         var saved = walletPlanRepository.save(walletPlan);
 
-        // Publish event for async handler processing
-        Map<String, Object> event = new HashMap<>();
-        event.put("event", WalletPlanStatus.APPROVED);
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("id", saved.getId().toString());
-        payload.put("tenantId", saved.getTenant().getId().toString());
-        event.put("payload", payload);
-        messageProducer.publishWalletPlan(event);
+        WalletPlanApprovedEvent approvedEvent = WalletPlanApprovedEvent.builder()
+                .walletPlanId(saved.getId().toString())
+                .tenantId(saved.getTenant().getId().toString())
+                .pricingPlanName(saved.getPricingPlan().getName())
+                .approvedBy(request.getApprovedBy())
+                .build();
+        eventPublisher.publishEvent(approvedEvent);
 
         return toResponse(saved);
     }
@@ -165,14 +166,13 @@ public class WalletPlanService {
 
         var saved = walletPlanRepository.save(walletPlan);
 
-        // Publish event for async handler processing
-        Map<String, Object> event = new HashMap<>();
-        event.put("event", WalletPlanStatus.REJECTED);
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("id", saved.getId().toString());
-        payload.put("tenantId", saved.getTenant().getId().toString());
-        event.put("payload", payload);
-        messageProducer.publishWalletPlan(event);
+        WalletPlanRejectedEvent rejectedEvent = WalletPlanRejectedEvent.builder()
+                .walletPlanId(saved.getId().toString())
+                .tenantId(saved.getTenant().getId().toString())
+                .pricingPlanName(saved.getPricingPlan().getName())
+                .approvedBy(request.getApprovedBy())
+                .build();
+        eventPublisher.publishEvent(rejectedEvent);
 
         return toResponse(saved);
     }
@@ -180,6 +180,23 @@ public class WalletPlanService {
     @Transactional(readOnly = true)
     public CursorPage<WalletPlanResponse> listPending(CursorParams params) {
         var items = walletPlanRepository.findByStatusOrderByCreatedAtAsc(WalletPlanStatus.PENDING)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+
+        boolean hasNext = items.size() > params.getSize();
+        if (hasNext) {
+            items = items.subList(0, params.getSize());
+        }
+        String nextCursor = hasNext && !items.isEmpty() ? items.getLast().getId().toString() : null;
+
+        return CursorPage.of(items, nextCursor, hasNext, params.getSize());
+    }
+
+    @Transactional(readOnly = true)
+    public CursorPage<WalletPlanResponse> listPendingByTenant(UUID tenantId, CursorParams params) {
+        var items = walletPlanRepository
+                .findWithCursor(null, tenantId, WalletPlanStatus.PENDING, PageRequest.of(0, params.getSize() + 1))
                 .stream()
                 .map(this::toResponse)
                 .toList();

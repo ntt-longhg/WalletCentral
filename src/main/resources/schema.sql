@@ -165,6 +165,35 @@ CREATE INDEX idx_transactions_status ON transactions(status);
 CREATE INDEX idx_transactions_created_at ON transactions(created_at);
 CREATE INDEX idx_transactions_reference ON transactions(reference_from, reference_id);
 
+-- 8b. Refund Requests (FK -> transactions, FK -> wallets, FK -> tenants)
+CREATE TABLE IF NOT EXISTS refund_requests (
+    id CHAR(36) NOT NULL,
+    transaction_id CHAR(36) NOT NULL,
+    wallet_id CHAR(36) NOT NULL,
+    tenant_id CHAR(36) NOT NULL,
+    amount DECIMAL(15,2) NOT NULL DEFAULT 0.00,
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    reason TEXT NULL,
+    reject_reason TEXT NULL,
+    requested_by VARCHAR(100) NOT NULL,
+    reviewed_by VARCHAR(100) NULL,
+    reviewed_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT fk_refund_requests_transaction FOREIGN KEY (transaction_id) REFERENCES transactions(id),
+    CONSTRAINT fk_refund_requests_wallet FOREIGN KEY (wallet_id) REFERENCES wallets(id),
+    CONSTRAINT fk_refund_requests_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE INDEX idx_refund_requests_transaction_id ON refund_requests(transaction_id);
+CREATE INDEX idx_refund_requests_wallet_id ON refund_requests(wallet_id);
+CREATE INDEX idx_refund_requests_tenant_id ON refund_requests(tenant_id);
+CREATE INDEX idx_refund_requests_status ON refund_requests(status);
+CREATE INDEX idx_refund_requests_created_at ON refund_requests(created_at);
+CREATE INDEX idx_refund_requests_deleted_at ON refund_requests(deleted_at);
+
 -- 9. Wallet Plans (FK -> tenants, FK -> pricing_plans)
 CREATE TABLE IF NOT EXISTS wallet_plans (
     id CHAR(36) NOT NULL,
@@ -450,7 +479,10 @@ INSERT IGNORE INTO permissions (id, code, module, description) VALUES
 ('00000000-0000-0000-0000-000000000120', 'SETTINGS_VIEW', 'SETTINGS', 'View system settings'),
 ('00000000-0000-0000-0000-000000000121', 'SETTINGS_UPDATE', 'SETTINGS', 'Update system settings'),
 ('00000000-0000-0000-0000-000000000130', 'NOTIFICATION_VIEW', 'NOTIFICATION', 'View notifications'),
-('00000000-0000-0000-0000-000000000131', 'NOTIFICATION_MANAGE', 'NOTIFICATION', 'Manage notification settings');
+('00000000-0000-0000-0000-000000000131', 'NOTIFICATION_MANAGE', 'NOTIFICATION', 'Manage notification settings'),
+('00000000-0000-0000-0000-000000000140', 'REFUND_VIEW', 'REFUND', 'View refund requests'),
+('00000000-0000-0000-0000-000000000141', 'REFUND_APPROVE', 'REFUND', 'Approve refund requests'),
+('00000000-0000-0000-0000-000000000142', 'REFUND_REJECT', 'REFUND', 'Reject refund requests');
 
 -- SUPER_ADMIN gets ALL permissions
 INSERT IGNORE INTO role_permissions (role_id, permission_id)
@@ -470,6 +502,7 @@ SELECT '00000000-0000-0000-0000-000000000003', id FROM permissions WHERE code IN
     'TRANSACTION_VIEW', 'USAGE_LOG_VIEW',
     'SERVICE_VIEW', 'PRICING_VIEW',
     'PLAN_VIEW', 'PLAN_APPROVE', 'PLAN_REJECT',
+    'REFUND_VIEW', 'REFUND_APPROVE', 'REFUND_REJECT',
     'REPORT_VIEW', 'NOTIFICATION_VIEW'
 );
 

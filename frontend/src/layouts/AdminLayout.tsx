@@ -26,7 +26,9 @@ import { useNotifications } from '@/context/NotificationContext';
 import { NotificationCenter } from '@/components/NotificationCenter';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
-import Logo from '@/assets/logo.svg';
+// import Logo from '@/assets/logo.svg';
+import { Mascot } from 'page-mascot'
+
 
 export const AdminLayout: React.FC = () => {
   const { t } = useTranslation();
@@ -64,7 +66,8 @@ export const AdminLayout: React.FC = () => {
         {/* Brand Header */}
         <div className="h-16 px-6 flex items-center justify-between border-b border-slate-800">
           <div className="flex items-center gap-3">
-            <img src={Logo} alt="Logo" className="h-9 w-9" />
+            {/* <img src={Logo} alt="Logo" className="h-9 w-9" /> */}
+            <Mascot size={50} directions="/mascots/cloudpbx-directions.webp" reactions="/mascots/cloudpbx-reactions.webp" />
             <div>
               <h2 className="font-bold text-base tracking-wide text-white">WalletCentral</h2>
               <p className="text-xs text-slate-400">Admin Control Panel</p>

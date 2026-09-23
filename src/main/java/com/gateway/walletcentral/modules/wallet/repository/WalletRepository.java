@@ -31,11 +31,15 @@ public interface WalletRepository extends JpaRepository<Wallet, UUID> {
 
     @Query("SELECT w FROM Wallet w JOIN FETCH w.tenant WHERE w.deletedAt IS NULL AND (:cursor IS NULL OR w.id > :cursor) AND (:tenantId IS NULL OR w.tenant.id = :tenantId) AND (:type IS NULL OR w.type = :type) AND (:status IS NULL OR w.status = :status) ORDER BY w.id ASC")
     List<Wallet> findWithCursor(@Param("cursor") UUID cursor,
-                                @Param("tenantId") UUID tenantId,
-                                @Param("type") WalletType type,
-                                @Param("status") WalletStatus status,
-                                org.springframework.data.domain.Pageable pageable);
+            @Param("tenantId") UUID tenantId,
+            @Param("type") WalletType type,
+            @Param("status") WalletStatus status,
+            org.springframework.data.domain.Pageable pageable);
 
     @Query("SELECT w.tenant.id FROM Wallet w WHERE w.type = :type AND w.deletedAt IS NULL")
     List<UUID> findTenantIdsByType(@Param("type") WalletType type);
+
+    @Query("SELECT w FROM Wallet w JOIN FETCH w.tenant WHERE w.id = :id")
+    Optional<Wallet> findByIdWithTenant(@Param("id") UUID id);
+
 }

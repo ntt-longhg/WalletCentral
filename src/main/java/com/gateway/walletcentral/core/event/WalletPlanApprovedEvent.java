@@ -1,16 +1,18 @@
-package com.gateway.walletcentral.modules.walletplan.dto;
+package com.gateway.walletcentral.core.event;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import java.math.BigDecimal;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class WalletPlanEvent {
+public class WalletPlanApprovedEvent {
+
     private String walletPlanId;
     private String tenantId;
     private String walletId;
@@ -21,7 +23,5 @@ public class WalletPlanEvent {
     private BigDecimal availableBalanceAfter;
     private String description;
     private String approvedBy;
-    private String referenceFrom;
-    private String referenceId;
-
+    private String pricingPlanName;
 }
