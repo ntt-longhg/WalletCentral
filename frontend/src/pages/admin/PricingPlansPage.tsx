@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,144 +14,58 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/toast';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableSkeleton } from '@/components/ui/table';
+import { TablePagination } from '@/components/ui/pagination';
 import { FileSpreadsheet, Plus, RefreshCw } from 'lucide-react';
+import { useCursorPagination } from '@/hooks/useCursorPagination';
 import { useServiceStore } from '@/stores';
-import { formatCurrency, getStatusConfig } from '@/lib/utils';
+import {
+  formatCurrency,
+  getNumberInputValue,
+  getStatusConfig,
+  handleNumberKeyDown,
+  parseNumberInput,
+  sanitizePercentageInput,
+  type NumericField,
+} from '@/lib/utils';
 
 export const PricingPlansPage: React.FC = () => {
   const MAX_NUMBER_DIGITS = 11;
   const MAX_FORMATTED_NUMBER_LENGTH = 14;
 
   const { addToast } = useToast();
-  const { pricingPlans: plans, plansLoading: loading, fetchPricingPlans, createPricingPlan, updatePricingPlanStatus } = useServiceStore();
+  const {
+    pricingPlans: plans,
+    pricingPlansCount,
+    pricingPlansHasNext,
+    pricingPlansNextCursor,
+    plansLoading: loading,
+    fetchPricingPlans,
+    createPricingPlan,
+    updatePricingPlanStatus,
+  } = useServiceStore();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [percentageBonusInput, setPercentageBonusInput] = useState('');
-  const [activeNumberField, setActiveNumberField] = useState<
-    'price' | 'bonusValue' | 'creditLimitValue' | null
-  >(null);
+  const [activeNumberField, setActiveNumberField] = useState<NumericField | null>(null);
 
-  const sanitizePercentageInput = (value: string) => {
-    const cleaned = value.replace(/\D/g, '');
-    if (!cleaned) {
-      return '';
-    }
+  const handleFetchPage = useCallback(
+    ({ cursor, size }: { cursor: string | null; size: number }) =>
+      fetchPricingPlans({ cursor, size }),
+    [fetchPricingPlans]
+  );
 
-    const normalizedWhole = cleaned.slice(0, 3);
-    const parsedValue = Number(normalizedWhole || 0);
-
-    return parsedValue > 100 ? '100' : normalizedWhole;
-  };
-
-  const parseNumberInput = (
-    value: string,
-    options: { min?: number; max?: number; maxDigits?: number; allowDecimal?: boolean } = {},
-  ) => {
-    const { min = 0, max, maxDigits = MAX_NUMBER_DIGITS, allowDecimal = false } = options;
-
-    if (value.trim() === '') {
-      return 0;
-    }
-
-    if (allowDecimal) {
-      const sanitizedValue = sanitizePercentageInput(value);
-      const normalizedValue = sanitizedValue === '' ? '0' : sanitizedValue.replace(',', '.');
-      const parsedValue = Number(normalizedValue);
-
-      if (!Number.isFinite(parsedValue)) {
-        return min;
-      }
-
-      if (parsedValue < min) {
-        return min;
-      }
-
-      if (typeof max === 'number' && parsedValue > max) {
-        return max;
-      }
-
-      return parsedValue;
-    }
-
-    const normalizedValue = value.replace(/\D/g, '').slice(0, maxDigits);
-    const parsedValue = Number(normalizedValue);
-    if (!Number.isFinite(parsedValue)) {
-      return min;
-    }
-
-    if (parsedValue < min) {
-      return min;
-    }
-
-    if (typeof max === 'number' && parsedValue > max) {
-      return max;
-    }
-
-    return parsedValue;
-  };
-
-  const formatNumberWithDots = (value: number) => {
-    return new Intl.NumberFormat('vi-VN').format(value);
-  };
-
-  const getNumberInputValue = (
-    field: 'price' | 'bonusValue' | 'creditLimitValue',
-    value: number,
-    options: { useDecimal?: boolean; rawValue?: string } = {},
-  ) => {
-    if (options.rawValue !== undefined) {
-      return options.rawValue;
-    }
-
-    if (activeNumberField === field && value === 0) {
-      return '';
-    }
-
-    if (options.useDecimal) {
-      return value.toString();
-    }
-
-    return formatNumberWithDots(value);
-  };
-
-  const handleNumberKeyDown = (
-    e: React.KeyboardEvent<HTMLInputElement>,
-    allowDecimal = false,
-  ) => {
-    if (e.ctrlKey || e.metaKey) {
-      return;
-    }
-
-    const allowedControlKeys = [
-      'Backspace',
-      'Delete',
-      'ArrowLeft',
-      'ArrowRight',
-      'Tab',
-      'Home',
-      'End',
-      'Enter',
-    ];
-
-    if (allowedControlKeys.includes(e.key)) {
-      return;
-    }
-
-    if (
-      allowDecimal &&
-      ['.', ',', 'Decimal', 'NumpadDecimal', 'Period'].includes(e.key)
-    ) {
-      // Cho phép "." hoặc "," nhưng chỉ một dấu phân cách
-      if (e.currentTarget.value.includes('.') || e.currentTarget.value.includes(',')) {
-        e.preventDefault();
-      }
-      return;
-    }
-
-    if (!/^[0-9]$/.test(e.key)) {
-      e.preventDefault();
-    }
-  };
+  const {
+    pageSize,
+    hasPrevious,
+    initialize,
+    changePageSize,
+    goNext,
+    goPrevious,
+    refresh,
+  } = useCursorPagination({
+    initialPageSize: 2,
+    onFetchPage: handleFetchPage,
+  });
 
   const [formData, setFormData] = useState({
     code: '',
@@ -166,27 +80,31 @@ export const PricingPlansPage: React.FC = () => {
   });
 
   useEffect(() => {
-    fetchPricingPlans();
-  }, []);
+    initialize();
+  }, [initialize]);
+
+  const handleNextPage = async () => {
+    await goNext(pricingPlansNextCursor);
+  };
 
   const handleCreatePlan = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // await createPricingPlan(formData);
-      // addToast({ variant: 'success', message: 'Tạo bảng giá Tenant thành công!' });
-      // setShowCreateModal(false);
-      // setFormData({
-      //   code: '',
-      //   name: '',
-      //   description: '',
-      //   price: 100000,
-      //   type: 'BALANCE_TOPUP',
-      //   bonusType: 'NONE',
-      //   bonusValue: 0,
-      //   creditLimitAction: 'SET',
-      //   creditLimitValue: 0,
-      // });
-      // setPercentageBonusInput('');
+      await createPricingPlan(formData);
+      addToast({ variant: 'success', message: 'Tạo bảng giá Tenant thành công!' });
+      setShowCreateModal(false);
+      setFormData({
+        code: '',
+        name: '',
+        description: '',
+        price: 100000,
+        type: 'BALANCE_TOPUP',
+        bonusType: 'NONE',
+        bonusValue: 0,
+        creditLimitAction: 'SET',
+        creditLimitValue: 0,
+      });
+      setPercentageBonusInput('');
     } catch (err: any) {
       addToast({ variant: 'destructive', message: err.response?.data?.message || 'Không thể tạo bảng giá.' });
     }
@@ -218,6 +136,50 @@ export const PricingPlansPage: React.FC = () => {
     setPercentageBonusInput('');
   };
 
+  const columns = [
+    {
+      header: 'Mã Gói',
+      accessor: 'code',
+      widthClass: 'w-[130px]',
+    },
+    {
+      header: 'Tên Bảng Giá',
+      accessor: 'name',
+      widthClass: 'w-[220px]',
+    },
+    {
+      header: 'Giá Gói',
+      accessor: 'price',
+      widthClass: 'w-[140px]',
+    },
+    {
+      header: 'Loại Gói',
+      accessor: 'type',
+      widthClass: 'w-[140px]',
+    },
+    {
+      header: 'Khuyến Mãi',
+      accessor: 'bonusType',
+      widthClass: 'w-[170px]',
+    },
+    {
+      header: 'Credit Limit',
+      accessor: 'creditLimitValue',
+      widthClass: 'w-[170px]',
+    },
+    {
+      header: 'Trạng Thái',
+      accessor: 'status',
+      widthClass: 'w-[120px]',
+    },
+    {
+      header: 'Thao Tác',
+      accessor: 'actions',
+      widthClass: 'w-[120px]',
+    },
+  ];
+
+
 
   return (
     <div className="space-y-6">
@@ -232,7 +194,7 @@ export const PricingPlansPage: React.FC = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => fetchPricingPlans()} disabled={loading} className="gap-1.5">
+          <Button variant="outline" onClick={refresh} disabled={loading} className="gap-1.5">
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           </Button>
           <Button onClick={() => setShowCreateModal(true)} className="gap-2 bg-blue-600 hover:bg-blue-700">
@@ -255,67 +217,80 @@ export const PricingPlansPage: React.FC = () => {
           {plans.length === 0 ? (
             <div className="text-center py-10 text-slate-400 text-sm">Chưa có bảng giá nào trong hệ thống.</div>
           ) : (
-            <Table>
+            <Table className="table-fixed">
               <TableHeader>
                 <TableRow>
-                  <TableHead>Mã Gói</TableHead>
-                  <TableHead>Tên Bảng Giá</TableHead>
-                  <TableHead>Giá Gói</TableHead>
-                  <TableHead>Loại Gói</TableHead>
-                  <TableHead>Khuyến Mãi</TableHead>
-                  <TableHead>Credit Limit</TableHead>
-                  <TableHead>Trạng Thái</TableHead>
-                  <TableHead>Thao Tác</TableHead>
+                  {columns.map((column) => (
+                    <TableHead key={column.accessor} className={column.widthClass}>{column.header}</TableHead>
+                  ))}
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {plans.map((plan) => {
-                  const statusConf = getStatusConfig(plan.status as any);
-                  return (
-                    <TableRow key={plan.id}>
-                      <TableCell className="font-mono font-bold text-slate-800">{plan.code}</TableCell>
-                      <TableCell>
-                        <div className="font-medium text-slate-900">{plan.name}</div>
-                        {plan.description && <div className="text-xs text-slate-400">{plan.description}</div>}
-                      </TableCell>
-                      <TableCell className="font-semibold text-slate-900">{formatCurrency(plan.price)}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="font-mono text-xs">
-                          {plan.type === 'BALANCE_TOPUP' ? 'Nạp số dư' : 'Tăng hạn mức'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {plan.bonusType === 'NONE' ? (
-                          <span className="text-slate-400">-</span>
-                        ) : plan.bonusType === 'PERCENTAGE' ? (
-                          <span className="text-emerald-600 font-medium">+{plan.bonusValue}%</span>
-                        ) : (
-                          <span className="text-emerald-600 font-medium">+{formatCurrency(plan.bonusValue || 0)}</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-xs">
-                        {plan.creditLimitAction} ({formatCurrency(plan.creditLimitValue)})
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={statusConf.variant}>
-                          {statusConf.label}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleToggleStatus(plan)}
-                          className="text-xs h-7"
-                        >
-                          {plan.status === 'ACTIVE' ? 'Tắt' : 'Kích hoạt'}
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                {
+                  loading ? (
+                    <TableSkeleton columns={columns.length} rows={pageSize} />
+                  ): (
+                    plans.map((plan) => {
+                      const statusConf = getStatusConfig(plan.status as any);
+                      return (
+                        <TableRow key={plan.id}>
+                          <TableCell className="font-mono font-bold text-slate-800 truncate">{plan.code}</TableCell>
+                          <TableCell>
+                            <div className="font-medium text-slate-900 truncate">{plan.name}</div>
+                            {plan.description && <div className="text-xs text-slate-400 truncate">{plan.description}</div>}
+                          </TableCell>
+                          <TableCell className="font-semibold text-slate-900">{formatCurrency(plan.price)}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="font-mono text-xs">
+                              {plan.type === 'BALANCE_TOPUP' ? 'Nạp số dư' : 'Tăng hạn mức'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            {plan.bonusType === 'NONE' ? (
+                              <span className="text-slate-400">-</span>
+                            ) : plan.bonusType === 'PERCENTAGE' ? (
+                              <span className="text-emerald-600 font-medium">+{plan.bonusValue}%</span>
+                            ) : (
+                              <span className="text-emerald-600 font-medium">+{formatCurrency(plan.bonusValue || 0)}</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-xs">
+                            {plan.creditLimitAction} ({formatCurrency(plan.creditLimitValue)})
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={statusConf.variant}>
+                              {statusConf.label}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleToggleStatus(plan)}
+                              className="text-xs h-7"
+                            >
+                              {plan.status === 'ACTIVE' ? 'Tắt' : 'Kích hoạt'}
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )
+                }
               </TableBody>
             </Table>
+          )}
+
+          {plans.length > 0 && (
+            <TablePagination
+              pageSize={pageSize}
+              onPageSizeChange={changePageSize}
+              onPrevious={goPrevious}
+              onNext={handleNextPage}
+              hasPrevious={hasPrevious}
+              hasNext={pricingPlansHasNext}
+              summaryText={`${pricingPlansCount} bản ghi trong trang hiện tại`}
+            />
           )}
         </CardContent>
       </Card>
@@ -363,7 +338,10 @@ export const PricingPlansPage: React.FC = () => {
                 pattern="[0-9.]*"
                 maxLength={MAX_FORMATTED_NUMBER_LENGTH}
                 required
-                value={getNumberInputValue('price', formData.price)}
+                value={getNumberInputValue(formData.price, undefined, {
+                  activeField: activeNumberField,
+                  currentField: 'price',
+                })}
                 onFocus={() => setActiveNumberField('price')}
                 onBlur={() => setActiveNumberField(null)}
                 onKeyDown={handleNumberKeyDown}
@@ -396,7 +374,7 @@ export const PricingPlansPage: React.FC = () => {
                 <Label>Loại Khuyến Mãi</Label>
                 <Select
                   value={formData.bonusType}
-                  onValueChange={(value: 'NONE' | 'PERCENTAGE' | 'FIXED') => setFormData({ ...formData, bonusType: value })}
+                  onValueChange={(value: 'NONE' | 'PERCENTAGE' | 'FIXED') => setFormData({ ...formData, bonusType: value, bonusValue: 0 })}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -418,8 +396,9 @@ export const PricingPlansPage: React.FC = () => {
                   inputMode="numeric"
                   pattern="[0-9]*"
                   maxLength={3}
-                  value={getNumberInputValue('bonusValue', formData.bonusValue, {
-                    rawValue: percentageBonusInput,
+                  value={getNumberInputValue(formData.bonusValue, percentageBonusInput, {
+                    activeField: activeNumberField,
+                    currentField: 'bonusValue',
                   })}
                   onFocus={() => setActiveNumberField('bonusValue')}
                   onBlur={() => setActiveNumberField(null)}
@@ -450,7 +429,10 @@ export const PricingPlansPage: React.FC = () => {
                   inputMode="numeric"
                   pattern="[0-9]*"
                   maxLength={MAX_FORMATTED_NUMBER_LENGTH}
-                  value={getNumberInputValue('bonusValue', formData.bonusValue)}
+                  value={getNumberInputValue(formData.bonusValue, undefined, {
+                    activeField: activeNumberField,
+                    currentField: 'bonusValue',
+                  })}
                   onFocus={() => setActiveNumberField('bonusValue')}
                   onBlur={() => setActiveNumberField(null)}
                   onKeyDown={handleNumberKeyDown}
@@ -474,7 +456,13 @@ export const PricingPlansPage: React.FC = () => {
                   <Label>Credit Limit Action</Label>
                   <Select
                     value={formData.creditLimitAction}
-                    onValueChange={(value: 'SET' | 'INCREASE') => setFormData({ ...formData, creditLimitAction: value })}
+                    onValueChange={(value: 'SET' | 'INCREASE') =>
+                      setFormData({
+                        ...formData,
+                        creditLimitAction: value,
+                        creditLimitValue: 0,
+                      })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -492,7 +480,10 @@ export const PricingPlansPage: React.FC = () => {
                     inputMode="numeric"
                     pattern="[0-9.]*"
                     maxLength={MAX_FORMATTED_NUMBER_LENGTH}
-                    value={getNumberInputValue('creditLimitValue', formData.creditLimitValue)}
+                    value={getNumberInputValue(formData.creditLimitValue, undefined, {
+                      activeField: activeNumberField,
+                      currentField: 'creditLimitValue',
+                    })}
                     onFocus={() => setActiveNumberField('creditLimitValue')}
                     onBlur={() => setActiveNumberField(null)}
                     onKeyDown={handleNumberKeyDown}

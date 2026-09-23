@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { MonthPicker } from '@/components/ui/month-picker';
 import { Badge } from '@/components/ui/badge';
+import { TablePagination } from '@/components/ui/pagination';
 import {
   Dialog,
   DialogContent,
@@ -38,8 +39,10 @@ export const AdminInvoicePage: React.FC = () => {
   const { invoices, invoicesLoading: loading, fetchInvoices, payInvoice, generateAllInvoices } = useTransactionStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
   const [showGenerateDialog, setShowGenerateDialog] = useState(false);
-  const [showDetailDialog, setShowDetailDialog] = useState<{ id: string; billingPeriod: string; status: string; totalAmount: number; dueDate?: string; tenantId: string; createdAt: string } | null>(null);
+  const [showDetailDialog, setShowDetailDialog] = useState<{ id: string; billingPeriod: string; status: string; totalAmount: number; dueDate?: string; tenantId: string; createdAt: string; updatedBy?: string } | null>(null);
   const [generating, setGenerating] = useState(false);
 
   const [generateForm, setGenerateForm] = useState({
@@ -56,14 +59,35 @@ export const AdminInvoicePage: React.FC = () => {
     fetchAllData();
   }, []);
 
-  const filteredInvoices = invoices.filter((inv) => {
-    const matchSearch = !searchTerm ||
-      inv.tenantId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      inv.billingPeriod.includes(searchTerm) ||
-      inv.status.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchTab = activeTab === 'all' || inv.status === activeTab;
-    return matchSearch && matchTab;
-  });
+  const filteredInvoices = useMemo(() => {
+    return invoices.filter((inv) => {
+      const matchSearch = !searchTerm ||
+        inv.tenantId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        inv.billingPeriod.includes(searchTerm) ||
+        inv.status.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchTab = activeTab === 'all' || inv.status === activeTab;
+      return matchSearch && matchTab;
+    });
+  }, [invoices, searchTerm, activeTab]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredInvoices.length / pageSize));
+  const hasPrevious = currentPage > 1;
+  const hasNext = currentPage < totalPages;
+
+  const paginatedInvoices = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return filteredInvoices.slice(startIndex, startIndex + pageSize);
+  }, [filteredInvoices, currentPage, pageSize]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, activeTab, pageSize]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   const handleGenerateAll = async () => {
     setGenerating(true);
@@ -109,6 +133,39 @@ export const AdminInvoicePage: React.FC = () => {
     totalAmount: invoices.reduce((sum, i) => sum + i.totalAmount, 0),
     unpaidAmount: invoices.filter(i => i.status !== 'PAID').reduce((sum, i) => sum + i.totalAmount, 0),
   };
+
+  const columns = [
+    {
+      header: 'Tên Tenant',
+      accessor: 'name',
+      widthClass: 'w-[140px]',
+    },
+    {
+      header: 'Kỳ hóa đơn',
+      accessor: 'billingPeriod',
+      widthClass: 'w-[120px]',
+    },
+    {
+      header: 'Tổng tiền',
+      accessor: 'totalAmount',
+      widthClass: 'w-[120px]',
+    },
+    {
+      header: 'Trạng thái',
+      accessor: 'status',
+      widthClass: 'w-[120px]',
+    },
+    {
+      header: 'Hạn thanh toán',
+      accessor: 'dueDate',
+      widthClass: 'w-[140px]',
+    },
+    {
+      header: 'Thao tác',
+      accessor: 'actions',
+      widthClass: 'w-[140px]',
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -214,7 +271,7 @@ export const AdminInvoicePage: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredInvoices.map((invoice) => (
+                {paginatedInvoices.map((invoice) => (
                   <TableRow key={invoice.id}>
                     <TableCell>
                       <div className="font-medium text-slate-900">{getTenantName(invoice.tenantId)}</div>
@@ -249,6 +306,22 @@ export const AdminInvoicePage: React.FC = () => {
                 ))}
               </TableBody>
             </Table>
+          )}
+
+          {filteredInvoices.length > 0 && (
+            <TablePagination
+              pageSize={pageSize}
+              onPageSizeChange={(nextSize) => {
+                setPageSize(nextSize);
+                setCurrentPage(1);
+              }}
+              onPrevious={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              onNext={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+              hasPrevious={hasPrevious}
+              hasNext={hasNext}
+              summaryText={`${filteredInvoices.length} hóa đơn trong hệ thống`}
+              pageSizeOptions={[5, 10, 20, 50]}
+            />
           )}
         </CardContent>
       </Card>

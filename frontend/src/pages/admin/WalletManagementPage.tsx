@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { TablePagination } from '@/components/ui/pagination';
 import {
   Dialog,
   DialogContent,
@@ -15,7 +16,7 @@ import {
 } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/components/ui/toast';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableSkeleton } from '@/components/ui/table';
 import { formatCurrency, formatDate, getStatusConfig, walletTypeConfig } from '@/lib/utils';
 import { useBillingStore, useServiceStore } from '@/stores';
 import {
@@ -50,6 +51,8 @@ export const WalletManagementPage: React.FC = () => {
   const loading = walletsLoading || tenantsLoading;
   const plans = pricingPlans.filter((p) => p.status === 'ACTIVE');
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
 
   // Create wallet dialog
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -80,15 +83,36 @@ export const WalletManagementPage: React.FC = () => {
     fetchAllData();
   }, []);
 
-  const filteredWallets = wallets.filter((w) => {
-    if (!searchTerm) return true;
-    const term = searchTerm.toLowerCase();
-    return (
-      w.tenantName.toLowerCase().includes(term) ||
-      w.type.toLowerCase().includes(term) ||
-      w.status.toLowerCase().includes(term)
-    );
-  });
+  const filteredWallets = useMemo(() => {
+    return wallets.filter((w) => {
+      if (!searchTerm) return true;
+      const term = searchTerm.toLowerCase();
+      return (
+        w.tenantName.toLowerCase().includes(term) ||
+        w.type.toLowerCase().includes(term) ||
+        w.status.toLowerCase().includes(term)
+      );
+    });
+  }, [wallets, searchTerm]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredWallets.length / pageSize));
+  const hasPrevious = currentPage > 1;
+  const hasNext = currentPage < totalPages;
+
+  const paginatedWallets = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return filteredWallets.slice(startIndex, startIndex + pageSize);
+  }, [filteredWallets, currentPage, pageSize]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, pageSize]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   // Get filtered plans based on wallet type
   const getFilteredPlansForWallet = (walletType: string) => {
@@ -170,6 +194,49 @@ export const WalletManagementPage: React.FC = () => {
       addToast({ variant: 'destructive', message: err.response?.data?.message || 'Lỗi cập nhật trạng thái.' });
     }
   };
+
+  const columns = [
+    {
+      header: 'Tenant',
+      accessor: 'tenantName',
+      widthClass: 'w-[140px]',
+    },
+    {
+      header: 'Loại Ví',
+      accessor: 'type',
+      widthClass: 'w-[120px]',
+    },
+    {
+      header: 'Số Dư (Balance)',
+      accessor: 'balance',
+      widthClass: 'w-[140px]',
+    },
+    {
+      header: 'Hạn Mức (Credit)',
+      accessor: 'creditLimit',
+      widthClass: 'w-[140px]',
+    },
+    {
+      header: 'Số Dư Khả Dụng',
+      accessor: 'availableBalance',
+      widthClass: 'w-[140px]',
+    },
+    {
+      header: 'Trạng Thái',
+      accessor: 'status',
+      widthClass: 'w-[120px]',
+    },
+    {
+      header: 'Ngày Tạo',
+      accessor: 'createdAt',
+      widthClass: 'w-[140px]',
+    },
+    {
+      header: 'Thao Tác',
+      accessor: 'actions',
+      widthClass: 'w-[160px]',
+    },
+  ]
 
   return (
     <div className="space-y-6">
@@ -272,92 +339,115 @@ export const WalletManagementPage: React.FC = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Tenant</TableHead>
-                  <TableHead>Loại Ví</TableHead>
-                  <TableHead>Số Dư (Balance)</TableHead>
-                  <TableHead>Hạn Mức (Credit)</TableHead>
-                  <TableHead>Số Dư Khả Dụng</TableHead>
-                  <TableHead>Trạng Thái</TableHead>
-                  <TableHead>Ngày Tạo</TableHead>
-                  <TableHead>Thao Tác</TableHead>
+                  {
+                    columns.map((col) => (
+                      <TableCell key={col.accessor} className={col.widthClass}>
+                        {col.header}
+                      </TableCell>
+                    ))
+                  }
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredWallets.map((wallet) => {
-                  const typeConf = walletTypeConfig[wallet.type as keyof typeof walletTypeConfig];
-                  const statusConf = getStatusConfig(wallet.status as any);
-                  return (
-                    <TableRow key={wallet.id}>
-                      <TableCell>
-                        <div className="font-medium text-slate-900 text-sm">{wallet.tenantName}</div>
-                        <div className="text-xs text-slate-400 font-mono">{wallet.id.slice(0, 8)}...</div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={`text-xs ${typeConf?.textClass || ''}`}>
-                          {typeConf?.label || wallet.type}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="font-semibold text-slate-900">
-                        {formatCurrency(wallet.balance)}
-                      </TableCell>
-                      <TableCell className="text-sm text-slate-600">
-                        {formatCurrency(wallet.creditLimit)}
-                      </TableCell>
-                      <TableCell className="font-semibold text-blue-600">
-                        {formatCurrency(wallet.availableBalance)}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={statusConf.variant} className="text-xs">
-                          {statusConf.label}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-xs text-slate-500">
-                        {formatDate(wallet.createdAt)}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1.5">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-xs h-7 gap-1"
-                            onClick={() => {
-                              setAddPlanData({ walletId: wallet.id, pricingPlanId: '' });
-                              setShowAddPlanDialog(true);
-                            }}
-                          >
-                            <ShoppingCart className="h-3 w-3" /> Thêm gói
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-xs h-7 gap-1"
-                            onClick={() => {
-                              setSwitchData({ wallet, newType: wallet.type === 'PREPAID' ? 'POSTPAID' : 'PREPAID' });
-                              setShowSwitchDialog(true);
-                            }}
-                          >
-                            <ArrowRightLeft className="h-3 w-3" />
-                            {wallet.type === 'PREPAID' ? 'Chuyển PS' : 'Chuyển TT'}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant={wallet.status === 'ACTIVE' ? 'destructive' : 'success'}
-                            className="text-xs h-7 gap-1"
-                            onClick={() => handleToggleStatus(wallet)}
-                          >
-                            {wallet.status === 'ACTIVE' ? (
-                              <><Lock className="h-3 w-3" /> Đình chỉ</>
-                            ) : (
-                              <><Unlock className="h-3 w-3" /> Kích hoạt</>
-                            )}
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                {
+                  walletsLoading ? (
+                    <TableSkeleton columns={columns.length} rows={pageSize} />
+                  ) : (
+                    <>
+                      {paginatedWallets.map((wallet) => {
+                        const typeConf = walletTypeConfig[wallet.type as keyof typeof walletTypeConfig];
+                        const statusConf = getStatusConfig(wallet.status as any);
+                        return (
+                          <TableRow key={wallet.id}>
+                            <TableCell>
+                              <div className="font-medium text-slate-900 text-sm">{wallet.tenantName}</div>
+                              <div className="text-xs text-slate-400 font-mono">{wallet.id.slice(0, 8)}...</div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={`text-xs ${typeConf?.textClass || ''}`}>
+                                {typeConf?.label || wallet.type}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="font-semibold text-slate-900">
+                              {formatCurrency(wallet.balance)}
+                            </TableCell>
+                            <TableCell className="text-sm text-slate-600">
+                              {formatCurrency(wallet.creditLimit)}
+                            </TableCell>
+                            <TableCell className="font-semibold text-blue-600">
+                              {formatCurrency(wallet.availableBalance)}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={statusConf.variant} className="text-xs">
+                                {statusConf.label}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-xs text-slate-500">
+                              {formatDate(wallet.createdAt)}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1.5">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-xs h-7 gap-1"
+                                  onClick={() => {
+                                    setAddPlanData({ walletId: wallet.id, pricingPlanId: '' });
+                                    setShowAddPlanDialog(true);
+                                  }}
+                                >
+                                  <ShoppingCart className="h-3 w-3" /> Thêm gói
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-xs h-7 gap-1"
+                                  onClick={() => {
+                                    setSwitchData({ wallet, newType: wallet.type === 'PREPAID' ? 'POSTPAID' : 'PREPAID' });
+                                    setShowSwitchDialog(true);
+                                  }}
+                                >
+                                  <ArrowRightLeft className="h-3 w-3" />
+                                  {wallet.type === 'PREPAID' ? 'Chuyển PS' : 'Chuyển TT'}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant={wallet.status === 'ACTIVE' ? 'destructive' : 'success'}
+                                  className="text-xs h-7 gap-1"
+                                  onClick={() => handleToggleStatus(wallet)}
+                                >
+                                  {wallet.status === 'ACTIVE' ? (
+                                    <><Lock className="h-3 w-3" /> Đình chỉ</>
+                                  ) : (
+                                    <><Unlock className="h-3 w-3" /> Kích hoạt</>
+                                  )}
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </>
+                  )
+                }
               </TableBody>
             </Table>
+          )}
+
+          {filteredWallets.length > 0 && (
+            <TablePagination
+              pageSize={pageSize}
+              onPageSizeChange={(nextSize) => {
+                setPageSize(nextSize);
+                setCurrentPage(1);
+              }}
+              onPrevious={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              onNext={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+              hasPrevious={hasPrevious}
+              hasNext={hasNext}
+              summaryText={`${filteredWallets.length} bản ghi trong hệ thống`}
+              pageSizeOptions={[5, 10, 20, 50]}
+            />
           )}
         </CardContent>
       </Card>

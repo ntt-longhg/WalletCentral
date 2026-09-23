@@ -35,6 +35,10 @@ interface ServiceState {
 
   // Pricing Plans
   pricingPlans: PricingPlanResponse[];
+  pricingPlansNextCursor: string | null;
+  pricingPlansHasNext: boolean;
+  pricingPlansCount: number;
+  pricingPlansSize: number;
   plansLoading: boolean;
   plansError: string | null;
 
@@ -57,7 +61,7 @@ interface ServiceState {
   deleteTier: (priceId: string, tierId: string) => Promise<void>;
 
   // Pricing Plan actions
-  fetchPricingPlans: () => Promise<void>;
+  fetchPricingPlans: (params?: { cursor?: string | null; size?: number }) => Promise<void>;
   createPricingPlan: (data: PricingPlanCreateRequest) => Promise<PricingPlanResponse>;
   updatePricingPlan: (id: string, data: PricingPlanUpdateRequest) => Promise<PricingPlanResponse>;
   updatePricingPlanStatus: (id: string, data: PricingPlanStatusRequest) => Promise<PricingPlanResponse>;
@@ -76,6 +80,10 @@ export const useServiceStore = create<ServiceState>((set) => ({
   tiersLoading: false,
 
   pricingPlans: [],
+  pricingPlansNextCursor: null,
+  pricingPlansHasNext: false,
+  pricingPlansCount: 0,
+  pricingPlansSize: 20,
   plansLoading: false,
   plansError: null,
 
@@ -215,11 +223,23 @@ export const useServiceStore = create<ServiceState>((set) => ({
 
   // ─── Pricing Plan Actions ─────────────────────────────────────────────────────
 
-  fetchPricingPlans: async () => {
+  fetchPricingPlans: async (params) => {
     set({ plansLoading: true, plansError: null });
     try {
-      const res = await pricingPlanService.getAll();
-      set({ pricingPlans: res.data?.data?.items ?? [] });
+      const size = params?.size;
+      const cursor = params?.cursor ?? undefined;
+      const res = await pricingPlanService.getAll(cursor ?? undefined, size);
+      const data: any = res.data?.data ?? {};
+      const meta = data.meta ?? {};
+      const items = data.items ?? [];
+
+      set({
+        pricingPlans: items,
+        pricingPlansNextCursor: data.nextCursor ?? meta.nextCursor ?? null,
+        pricingPlansHasNext: data.hasNext ?? meta.hasNext ?? false,
+        pricingPlansCount: data.count ?? meta.count ?? items.length,
+        pricingPlansSize: data.size ?? meta.size ?? size ?? 20,
+      });
     } catch (err: any) {
       set({ plansError: err.response?.data?.message ?? 'Không thể tải danh sách gói cước.' });
     } finally {
