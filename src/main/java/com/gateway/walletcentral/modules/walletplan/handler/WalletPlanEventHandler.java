@@ -1,8 +1,9 @@
 package com.gateway.walletcentral.modules.walletplan.handler;
 
+import com.gateway.walletcentral.core.event.NotificationEvent;
+import com.gateway.walletcentral.core.event.WalletPlanApprovedEvent;
 import com.gateway.walletcentral.modules.walletplan.dto.WalletPlanEvent;
 import com.gateway.walletcentral.core.exception.ResourceNotFoundException;
-import com.gateway.walletcentral.core.rabbitmq.MessageProducer;
 import com.gateway.walletcentral.modules.creditadjustment.model.CreditAdjustment;
 import com.gateway.walletcentral.modules.creditadjustment.model.CreditAdjustmentType;
 import com.gateway.walletcentral.modules.creditadjustment.repository.CreditAdjustmentRepository;
@@ -17,6 +18,7 @@ import com.gateway.walletcentral.modules.walletplan.repository.WalletPlanReposit
 import com.rabbitmq.client.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,16 +37,16 @@ public class WalletPlanEventHandler {
     private final WalletPlanRepository walletPlanRepository;
     private final WalletRepository walletRepository;
     private final CreditAdjustmentRepository creditAdjustmentRepository;
-    private final MessageProducer messageProducer;
+    private final ApplicationEventPublisher eventPublisher;
 
     public WalletPlanEventHandler(WalletPlanRepository walletPlanRepository,
             WalletRepository walletRepository,
             CreditAdjustmentRepository creditAdjustmentRepository,
-            MessageProducer messageProducer) {
+            ApplicationEventPublisher eventPublisher) {
         this.walletPlanRepository = walletPlanRepository;
         this.walletRepository = walletRepository;
         this.creditAdjustmentRepository = creditAdjustmentRepository;
-        this.messageProducer = messageProducer;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -90,8 +92,9 @@ public class WalletPlanEventHandler {
             log.info("Wallet updated: balance {} -> {}, creditLimit {} -> {}",
                     balanceBefore, newBalance, creditLimitBefore, newCreditLimit);
 
-            // Publish event for Transaction handler to create DEPOSIT transaction
-            WalletPlanEvent walletPlanEvent = WalletPlanEvent.builder()
+            // Publish event for Transaction handler to create DEPOSIT transaction (after DB
+            // commit)
+            WalletPlanApprovedEvent walletPlanApprovedEvent = WalletPlanApprovedEvent.builder()
                     .walletPlanId(walletPlanId)
                     .tenantId(walletPlan.getTenant().getId().toString())
                     .walletId(wallet.getId().toString())
@@ -102,14 +105,10 @@ public class WalletPlanEventHandler {
                     .availableBalanceAfter(newAvailable)
                     .description("Mua gói dịch vụ " + plan.getName() + " (Khuyến mãi thêm: " + bonusAmount + ")")
                     .approvedBy(walletPlan.getApprovedBy())
-                    .referenceFrom("WALLET_PLAN")
-                    .referenceId(walletPlanId)
+                    .pricingPlanName(plan.getName())
                     .build();
-            Map<String, Object> txnEvent = new HashMap<>();
-            txnEvent.put("event", "WALLET_PLAN");
-            txnEvent.put("payload", walletPlanEvent);
-            messageProducer.publishTransaction(txnEvent);
-            log.info("Published WALLET_PLAN event for wallet={}", wallet.getId());
+            eventPublisher.publishEvent(walletPlanApprovedEvent);
+            log.info("Published WalletPlanApprovedEvent after commit for wallet={}", wallet.getId());
 
             // Create CreditAdjustment (if credit limit changed)
             BigDecimal creditDiff = newCreditLimit.subtract(creditLimitBefore);
@@ -141,15 +140,16 @@ public class WalletPlanEventHandler {
             walletPlanRepository.save(walletPlan);
             log.info("Wallet plan snapshots updated for id: {}", walletPlanId);
 
-            // Notification event
-            Map<String, Object> notificationEvent = new HashMap<>();
-            notificationEvent.put("tenantId", walletPlan.getTenant().getId().toString());
-            notificationEvent.put("type", "WALLET_PLAN");
-            notificationEvent.put("title", "Gói dịch vụ được duyệt");
-            notificationEvent.put("message", String.format("Gói dịch vụ %s đã được duyệt thành công", plan.getName()));
-            notificationEvent.put("referenceType", "WALLET_PLAN");
-            notificationEvent.put("referenceId", walletPlanId);
-            messageProducer.publishNotification(notificationEvent);
+            // Notification event (after DB commit)
+            NotificationEvent notificationEvent = NotificationEvent.builder()
+                    .tenantId(walletPlan.getTenant().getId().toString())
+                    .type("WALLET_PLAN")
+                    .title("Gói dịch vụ được duyệt")
+                    .message(String.format("Gói dịch vụ %s đã được duyệt thành công", plan.getName()))
+                    .referenceType("WALLET_PLAN")
+                    .referenceId(walletPlanId)
+                    .build();
+            eventPublisher.publishEvent(notificationEvent);
 
             log.info("========== WALLET PLAN HANDLER APPROVE END ========== SUCCESS plan={}", walletPlanId);
             channel.basicAck(deliveryTag, false);
@@ -176,15 +176,16 @@ public class WalletPlanEventHandler {
 
             PricingPlan plan = walletPlan.getPricingPlan();
 
-            // Notification event
-            Map<String, Object> notificationEvent = new HashMap<>();
-            notificationEvent.put("tenantId", walletPlan.getTenant().getId().toString());
-            notificationEvent.put("type", "WALLET_PLAN");
-            notificationEvent.put("title", "Gói dịch vụ bị từ chối");
-            notificationEvent.put("message", String.format("Gói dịch vụ %s đã bị từ chối", plan.getName()));
-            notificationEvent.put("referenceType", "WALLET_PLAN");
-            notificationEvent.put("referenceId", walletPlanId);
-            messageProducer.publishNotification(notificationEvent);
+            // Notification event (after DB commit)
+            NotificationEvent notificationEvent = NotificationEvent.builder()
+                    .tenantId(walletPlan.getTenant().getId().toString())
+                    .type("WALLET_PLAN")
+                    .title("Gói dịch vụ bị từ chối")
+                    .message(String.format("Gói dịch vụ %s đã bị từ chối", plan.getName()))
+                    .referenceType("WALLET_PLAN")
+                    .referenceId(walletPlanId)
+                    .build();
+            eventPublisher.publishEvent(notificationEvent);
 
             log.info("========== WALLET PLAN HANDLER REJECT END ========== SUCCESS plan={}", walletPlanId);
             channel.basicAck(deliveryTag, false);

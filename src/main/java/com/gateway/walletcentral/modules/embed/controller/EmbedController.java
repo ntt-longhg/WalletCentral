@@ -13,6 +13,9 @@ import com.gateway.walletcentral.modules.pricingplan.model.PricingPlan;
 import com.gateway.walletcentral.modules.pricingplan.model.PricingPlanStatus;
 import com.gateway.walletcentral.modules.pricingplan.model.PricingPlanType;
 import com.gateway.walletcentral.modules.pricingplan.repository.PricingPlanRepository;
+import com.gateway.walletcentral.modules.refund.dto.RefundCreateRequest;
+import com.gateway.walletcentral.modules.refund.dto.RefundResponse;
+import com.gateway.walletcentral.modules.refund.service.RefundRequestService;
 import com.gateway.walletcentral.modules.tenant.model.Tenant;
 import com.gateway.walletcentral.modules.tenant.repository.TenantRepository;
 import com.gateway.walletcentral.modules.transaction.dto.TransactionResponse;
@@ -57,6 +60,7 @@ public class EmbedController {
     private final CreditAdjustmentService creditAdjustmentService;
     private final WalletPlanService walletPlanService;
     private final PricingPlanRepository pricingPlanRepository;
+    private final RefundRequestService refundRequestService;
 
     public EmbedController(TenantRepository tenantRepository,
                            WalletRepository walletRepository,
@@ -66,7 +70,8 @@ public class EmbedController {
                            UsageLogService usageLogService,
                            CreditAdjustmentService creditAdjustmentService,
                            WalletPlanService walletPlanService,
-                           PricingPlanRepository pricingPlanRepository) {
+                           PricingPlanRepository pricingPlanRepository,
+                           RefundRequestService refundRequestService) {
         this.tenantRepository = tenantRepository;
         this.walletRepository = walletRepository;
         this.walletService = walletService;
@@ -76,6 +81,7 @@ public class EmbedController {
         this.creditAdjustmentService = creditAdjustmentService;
         this.walletPlanService = walletPlanService;
         this.pricingPlanRepository = pricingPlanRepository;
+        this.refundRequestService = refundRequestService;
     }
 
     @GetMapping("/tenant-info")
@@ -179,6 +185,60 @@ public class EmbedController {
         WalletPlanResponse response = walletPlanService.create(planRequest);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok(response, "Wallet plan created successfully"));
+    }
+
+    @PostMapping("/refund-requests")
+    @Operation(summary = "Create a refund request for a CHARGE transaction")
+    public ResponseEntity<ApiResponse<RefundResponse>> createRefundRequest(
+            HttpServletRequest request,
+            @RequestBody RefundCreateRequest refundRequest) {
+        Tenant tenant = extractTenant(request);
+        Wallet wallet = walletRepository.findByTenantId(tenant.getId())
+                .orElseThrow(() -> new com.gateway.walletcentral.core.exception.ResourceNotFoundException("Wallet", "tenantId", tenant.getId()));
+
+        var transaction = transactionService.getById(refundRequest.getTransactionId());
+        if (!transaction.getWalletId().equals(wallet.getId())) {
+            throw new com.gateway.walletcentral.core.exception.BusinessException("INVALID_WALLET", "Transaction does not belong to this tenant's wallet");
+        }
+
+        RefundCreateRequest createRequest = RefundCreateRequest.builder()
+                .transactionId(refundRequest.getTransactionId())
+                .reason(refundRequest.getReason())
+                .requestedBy("embed:" + tenant.getClientId())
+                .build();
+        RefundResponse response = refundRequestService.createRefundRequest(createRequest);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.ok(response, "Refund request created successfully"));
+    }
+
+    @GetMapping("/refund-requests")
+    @Operation(summary = "List refund requests for the current tenant")
+    public ResponseEntity<ApiResponse<CursorPage<RefundResponse>>> listRefundRequests(
+            HttpServletRequest request,
+            @ModelAttribute CursorParams params) {
+        Tenant tenant = extractTenant(request);
+        CursorPage<RefundResponse> response = refundRequestService.list(tenant.getId(), null, params);
+        return ResponseEntity.ok(ApiResponse.ok(response));
+    }
+
+    @GetMapping("/refund-requests/pending")
+    @Operation(summary = "List pending refund requests for the current tenant")
+    public ResponseEntity<ApiResponse<CursorPage<RefundResponse>>> listPendingRefundRequests(
+            HttpServletRequest request,
+            @ModelAttribute CursorParams params) {
+        Tenant tenant = extractTenant(request);
+        CursorPage<RefundResponse> response = refundRequestService.listPendingByTenant(tenant.getId(), params);
+        return ResponseEntity.ok(ApiResponse.ok(response));
+    }
+
+    @GetMapping("/wallet-plans/pending")
+    @Operation(summary = "List pending wallet plan requests for the current tenant")
+    public ResponseEntity<ApiResponse<CursorPage<WalletPlanResponse>>> listPendingWalletPlans(
+            HttpServletRequest request,
+            @ModelAttribute CursorParams params) {
+        Tenant tenant = extractTenant(request);
+        CursorPage<WalletPlanResponse> response = walletPlanService.listPendingByTenant(tenant.getId(), params);
+        return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
     private Tenant extractTenant(HttpServletRequest request) {

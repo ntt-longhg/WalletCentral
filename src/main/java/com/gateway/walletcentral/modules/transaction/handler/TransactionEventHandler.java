@@ -1,9 +1,9 @@
 package com.gateway.walletcentral.modules.transaction.handler;
 
+import com.gateway.walletcentral.core.event.NotificationEvent;
 import com.gateway.walletcentral.modules.billing.dto.BillingEvent;
 import com.gateway.walletcentral.modules.walletplan.dto.WalletPlanEvent;
 import com.gateway.walletcentral.core.exception.BusinessException;
-import com.gateway.walletcentral.core.rabbitmq.MessageProducer;
 import com.gateway.walletcentral.modules.transaction.model.Transaction;
 import com.gateway.walletcentral.modules.transaction.model.TransactionStatus;
 import com.gateway.walletcentral.modules.transaction.model.TransactionType;
@@ -13,6 +13,7 @@ import com.gateway.walletcentral.modules.wallet.repository.WalletRepository;
 import com.rabbitmq.client.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,14 +34,14 @@ public class TransactionEventHandler {
 
         private final TransactionRepository transactionRepository;
         private final WalletRepository walletRepository;
-        private final MessageProducer messageProducer;
+        private final ApplicationEventPublisher eventPublisher;
 
         public TransactionEventHandler(TransactionRepository transactionRepository,
                         WalletRepository walletRepository,
-                        MessageProducer messageProducer) {
+                        ApplicationEventPublisher eventPublisher) {
                 this.transactionRepository = transactionRepository;
                 this.walletRepository = walletRepository;
-                this.messageProducer = messageProducer;
+                this.eventPublisher = eventPublisher;
         }
 
         @Transactional
@@ -172,20 +173,21 @@ public class TransactionEventHandler {
                                 transaction.getAmount(), transaction.getBalanceBefore(), transaction.getBalanceAfter(),
                                 transaction.getStatus(), transaction.getReferenceFrom(), transaction.getReferenceId());
 
-                // Large transaction alert
+                // Large transaction alert (after DB commit)
                 if (transaction.getAmount().compareTo(LARGE_TRANSACTION_THRESHOLD) > 0) {
                         log.warn("LARGE TRANSACTION ALERT: id={} amount={} wallet={} tenant={}",
                                         transaction.getId(), transaction.getAmount(),
                                         wallet.getId(), wallet.getTenant().getName());
-                        Map<String, Object> notificationEvent = new HashMap<>();
-                        notificationEvent.put("tenantId", wallet.getTenant().getId().toString());
-                        notificationEvent.put("type", "TRANSACTION");
-                        notificationEvent.put("title", "Cảnh báo giao dịch lớn");
-                        notificationEvent.put("message", String.format("Giao dịch %s với số tiền %s VND trên ví %s",
-                                        transaction.getId(), transaction.getAmount(), wallet.getId()));
-                        notificationEvent.put("referenceType", "TRANSACTION");
-                        notificationEvent.put("referenceId", transaction.getId().toString());
-                        messageProducer.publishNotification(notificationEvent);
+                        NotificationEvent notificationEvent = NotificationEvent.builder()
+                                        .tenantId(wallet.getTenant().getId().toString())
+                                        .type("TRANSACTION")
+                                        .title("Cảnh báo giao dịch lớn")
+                                        .message(String.format("Giao dịch %s với số tiền %s VND trên ví %s",
+                                                        transaction.getId(), transaction.getAmount(), wallet.getId()))
+                                        .referenceType("TRANSACTION")
+                                        .referenceId(transaction.getId().toString())
+                                        .build();
+                        eventPublisher.publishEvent(notificationEvent);
                 }
 
                 // Transaction status verification

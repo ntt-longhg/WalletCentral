@@ -56,6 +56,9 @@ importers:
       lucide-react:
         specifier: ^1.44.0
         version: 1.45.0(react@19.3.0)
+      page-mascot:
+        specifier: ^0.1.0
+        version: 0.1.0(react@19.3.0)
       react:
         specifier: ^19.2.8
         version: 19.3.0
@@ -1248,6 +1251,12 @@ packages:
       vite-plus:
         optional: true
 
+  page-mascot@0.1.0:
+    resolution: {integrity: sha512-sw/BIqRKJ7nUfaxAGtmwQqm534I+lb2ZiXLDWZNexR1VF1RkmRl6BLVtj7hH+PrsiCPKtxHhA3IpVkXEm72FeA==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      react: '>=18'
+
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
 
@@ -2400,6 +2409,10 @@ snapshots:
       '@oxlint/binding-win32-arm64-msvc': 1.82.0
       '@oxlint/binding-win32-ia32-msvc': 1.82.0
       '@oxlint/binding-win32-x64-msvc': 1.82.0
+
+  page-mascot@0.1.0(react@19.3.0):
+    dependencies:
+      react: 19.3.0
 
   picocolors@1.1.1: {}
 
