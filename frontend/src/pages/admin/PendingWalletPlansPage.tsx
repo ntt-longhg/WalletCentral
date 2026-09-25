@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,22 +10,39 @@ import { TablePagination } from '@/components/ui/pagination';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Clock, CheckCircle2, XCircle, RefreshCw, Loader2 } from 'lucide-react';
 import { formatCurrency, formatDate, getStatusConfig } from '@/lib/utils';
+import { useCursorPagination } from '@/hooks/useCursorPagination';
 import { useBillingStore } from '@/stores';
 
 export const PendingWalletPlansPage: React.FC = () => {
   const { addToast } = useToast();
-  const { pendingPlans, plansLoading: loading, fetchPendingWalletPlans, approveWalletPlan, rejectWalletPlan } = useBillingStore();
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
+  const {
+    pendingPlans,
+    pendingPlansNextCursor,
+    pendingPlansHasNext,
+    pendingPlansCount,
+    plansLoading: loading,
+    fetchPendingWalletPlans,
+    approveWalletPlan,
+    rejectWalletPlan,
+  } = useBillingStore();
 
-  const totalPages = Math.max(1, Math.ceil(pendingPlans.length / pageSize));
-  const hasPrevious = currentPage > 1;
-  const hasNext = currentPage < totalPages;
+  const handleFetchPage = useCallback(
+    ({ cursor, size }: { cursor: string | null; size: number }) => fetchPendingWalletPlans({ cursor, size }),
+    [fetchPendingWalletPlans]
+  );
 
-  const paginatedPendingPlans = useMemo(() => {
-    const startIndex = (currentPage - 1) * pageSize;
-    return pendingPlans.slice(startIndex, startIndex + pageSize);
-  }, [pendingPlans, currentPage, pageSize]);
+  const {
+    pageSize,
+    hasPrevious,
+    initialize,
+    changePageSize,
+    goNext,
+    goPrevious,
+    refresh,
+  } = useCursorPagination({
+    initialPageSize: 5,
+    onFetchPage: handleFetchPage,
+  });
 
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -33,22 +50,13 @@ export const PendingWalletPlansPage: React.FC = () => {
   const [rejectSubmitting, setRejectSubmitting] = useState(false);
 
   useEffect(() => {
-    fetchPendingWalletPlans();
-  }, []);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [pendingPlans.length, pageSize]);
-
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
-  }, [currentPage, totalPages]);
+    initialize();
+  }, [initialize]);
 
   const handleApprove = async (id: string) => {
     try {
       await approveWalletPlan(id, { approvedBy: 'admin' });
+      await refresh();
       addToast({ variant: 'success', message: 'Đã phê duyệt gói cước thành công!' });
     } catch (err: any) {
       addToast({ variant: 'destructive', message: err.response?.data?.message || 'Không thể duyệt gói cước.' });
@@ -70,6 +78,7 @@ export const PendingWalletPlansPage: React.FC = () => {
     setRejectSubmitting(true);
     try {
       await rejectWalletPlan(selectedId, { approvedBy: 'admin', rejectReason: rejectReason.trim() });
+      await refresh();
       addToast({ variant: 'success', message: 'Đã từ chối đăng ký gói cước.' });
       setRejectDialogOpen(false);
       setSelectedId(null);
@@ -142,7 +151,7 @@ export const PendingWalletPlansPage: React.FC = () => {
             Phê duyệt hoặc từ chối các yêu cầu nạp tiền / mua gói trả trước từ các Tenant trong hệ thống.
           </p>
         </div>
-        <Button variant="outline" onClick={() => fetchPendingWalletPlans()} disabled={loading} className="gap-2 self-start sm:self-auto">
+        <Button variant="outline" onClick={refresh} disabled={loading} className="gap-2 self-start sm:self-auto">
           <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           Làm mới
         </Button>
@@ -153,14 +162,12 @@ export const PendingWalletPlansPage: React.FC = () => {
           <CardTitle className="text-base font-semibold flex items-center gap-2">
             <Clock className="h-4 w-4 text-amber-600" /> Yêu cầu chờ duyệt
           </CardTitle>
-          <CardDescription>Danh sách các yêu cầu đăng ký gói cước đang chờ xử lý</CardDescription>
+          <CardDescription>
+            Danh sách các yêu cầu đăng ký gói cước đang chờ xử lý ({pendingPlansCount} kết quả)
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          {pendingPlans.length === 0 ? (
-            <div className="text-center py-10 text-slate-400 text-sm">
-              Không có yêu cầu đăng ký gói cước nào đang chờ duyệt.
-            </div>
-          ) : (
+          {loading && pendingPlans.length === 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -172,73 +179,81 @@ export const PendingWalletPlansPage: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {
-                  loading ? (
-                    <TableSkeleton columns={columns.length} rows={pageSize} />
-                  ) : (
-                    <>
-                      {paginatedPendingPlans.map((wp) => (
-                        <TableRow key={wp.id}>
-                          <TableCell className="font-medium text-slate-900">{wp.tenantName}</TableCell>
-                          <TableCell>
-                            <div className="font-semibold text-slate-800">{wp.pricingPlanName}</div>
-                          </TableCell>
-                          <TableCell className="font-semibold">{formatCurrency(wp.price)}</TableCell>
-                          <TableCell className="text-emerald-600 font-semibold">
-                            +{formatCurrency(wp.creditedAmount)}
-                          </TableCell>
-                          {/* <TableCell className="text-sm">
-                            {formatCurrency(wp.balanceBefore)} &rarr;{' '}
-                            <span className="font-semibold text-slate-800">{formatCurrency(wp.balanceAfter)}</span>
-                          </TableCell>
-                          <TableCell className="text-sm">
-                            {formatCurrency(wp.creditLimitBefore)} &rarr;{' '}
-                            <span className="font-semibold text-slate-800">{formatCurrency(wp.creditLimitAfter)}</span>
-                          </TableCell> */}
-                          <TableCell>
-                            <Badge variant="warning">{wp.status}</Badge>
-                          </TableCell>
-                          <TableCell className="text-xs text-slate-500">{formatDate(wp.createdAt)}</TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Button
-                                size="sm"
-                                className="bg-emerald-600 hover:bg-emerald-700 h-7 text-xs gap-1"
-                                onClick={() => handleApprove(wp.id)}
-                              >
-                                <CheckCircle2 className="h-3.5 w-3.5" /> Duyệt
-                              </Button>
-                           <Button
-                              size="sm"
-                              variant="destructive"
-                              className="h-7 text-xs gap-1"
-                              onClick={() => openRejectDialog(wp.id)}
-                            >
-                              <XCircle className="h-3.5 w-3.5" /> Từ chối
-                            </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </>
-                  )
-                }
+                <TableSkeleton columns={columns.length} rows={pageSize} />
+              </TableBody>
+            </Table>
+          ) : pendingPlans.length === 0 ? (
+            <div className="text-center py-10 text-slate-400 text-sm">
+              Không có yêu cầu đăng ký gói cước nào đang chờ duyệt.
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  {columns.map((col) => (
+                    <TableHead key={col.accessor} className={col.widthClass}>
+                      {col.header}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {pendingPlans.map((wp) => (
+                  <TableRow key={wp.id}>
+                    <TableCell className="font-medium text-slate-900">{wp.tenantName}</TableCell>
+                    <TableCell>
+                      <div className="font-semibold text-slate-800">{wp.pricingPlanName}</div>
+                    </TableCell>
+                    <TableCell className="font-semibold">{formatCurrency(wp.price)}</TableCell>
+                    <TableCell className="text-emerald-600 font-semibold">
+                      +{formatCurrency(wp.creditedAmount)}
+                    </TableCell>
+                    {/* <TableCell className="text-sm">
+                      {formatCurrency(wp.balanceBefore)} &rarr;{' '}
+                      <span className="font-semibold text-slate-800">{formatCurrency(wp.balanceAfter)}</span>
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {formatCurrency(wp.creditLimitBefore)} &rarr;{' '}
+                      <span className="font-semibold text-slate-800">{formatCurrency(wp.creditLimitAfter)}</span>
+                    </TableCell> */}
+                    <TableCell>
+                      <Badge variant="warning">{wp.status}</Badge>
+                    </TableCell>
+                    <TableCell className="text-xs text-slate-500">{formatDate(wp.createdAt)}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          className="bg-emerald-600 hover:bg-emerald-700 h-7 text-xs gap-1"
+                          onClick={() => handleApprove(wp.id)}
+                        >
+                          <CheckCircle2 className="h-3.5 w-3.5" /> Duyệt
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="h-7 text-xs gap-1"
+                          onClick={() => openRejectDialog(wp.id)}
+                        >
+                          <XCircle className="h-3.5 w-3.5" /> Từ chối
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           )}
 
-          {pendingPlans.length > 0 && (
+          {pendingPlansCount > 0 && (
             <TablePagination
               pageSize={pageSize}
-              onPageSizeChange={(nextSize) => {
-                setPageSize(nextSize);
-                setCurrentPage(1);
-              }}
-              onPrevious={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-              onNext={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+              onPageSizeChange={changePageSize}
+              onPrevious={goPrevious}
+              onNext={() => goNext(pendingPlansNextCursor)}
               hasPrevious={hasPrevious}
-              hasNext={hasNext}
-              summaryText={`${pendingPlans.length} yêu cầu đang chờ duyệt`}
+              hasNext={pendingPlansHasNext}
+              summaryText={`${pendingPlansCount} yêu cầu đang chờ duyệt`}
               pageSizeOptions={[5, 10, 20, 50]}
             />
           )}

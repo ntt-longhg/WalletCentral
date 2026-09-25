@@ -24,7 +24,7 @@ import { useNavigate } from 'react-router-dom';
 
 export const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { tenants, wallets, pendingPlans, pendingRefunds, fetchTenants, fetchWallets, fetchPendingWalletPlans, fetchPendingRefunds, tenantsLoading } = useBillingStore();
+  const { tenants, wallets, pendingPlansCount, pendingRefunds, fetchTenants, fetchWallets, fetchPendingWalletPlans, fetchPendingRefunds, tenantsLoading } = useBillingStore();
   const { services, fetchServices } = useServiceStore();
   const { transactions, fetchTransactions, transactionsLoading } = useTransactionStore();
 
@@ -123,9 +123,9 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-amber-600">{pendingPlans.length}</div>
+            <div className="text-2xl font-bold text-amber-600">{pendingPlansCount}</div>
             <p className="text-xs text-slate-500 mt-1">
-              {pendingPlans.length > 0 ? (
+              {pendingPlansCount > 0 ? (
                 <span className="text-amber-600 font-medium">Cần xử lý</span>
               ) : (
                 'Không có yêu cầu chờ'

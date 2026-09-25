@@ -48,7 +48,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; tenantI
   const [pendingWalletPlanCount, setPendingWalletPlanCount] = useState(0);
   const [pendingRefundCount, setPendingRefundCount] = useState(0);
   const { addToast } = useToast();
-   const { pendingPlans, plansLoading: loading, fetchPendingWalletPlans } = useBillingStore();
+  const { pendingPlansCount, fetchPendingWalletPlans } = useBillingStore();
 
   const handleNotification = useCallback((notification: Notification) => {
     setNotifications(prev => [notification, ...prev].slice(0, 100));
@@ -62,7 +62,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; tenantI
       });
 
       if (notification.type === 'WALLET_PLAN' || notification.referenceType === 'WALLET_PLAN') {
-        // setPendingWalletPlanCount(prev => prev + 1);
+        // Refresh the shared store so admin screens and counters stay in sync.
         fetchPendingWalletPlans();
       }
       if (notification.type === 'REFUND' || notification.referenceType === 'REFUND_REQUEST') {
@@ -90,9 +90,11 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; tenantI
   const refreshPendingCount = useCallback(async () => {
     if (!admin) return;
     try {
-      const res = await walletPlanService.getPending();
-      if (res.data.success && res.data?.data?.items) {
-        setPendingWalletPlanCount(res.data.data.items.length);
+      const res = await walletPlanService.getPending(undefined, 1);
+      if (res.data.success && res.data?.data) {
+        const data: any = res.data.data;
+        const meta = data.meta ?? {};
+        setPendingWalletPlanCount(data.count ?? meta.count ?? data.items?.length ?? 0);
       }
     } catch {
       // ignore
@@ -109,9 +111,9 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; tenantI
 
   useEffect(() => {
     if (admin) {
-      setPendingWalletPlanCount(pendingPlans.length);
+      setPendingWalletPlanCount(pendingPlansCount);
     }
-  }, [admin, pendingPlans]);
+  }, [admin, pendingPlansCount]);
 
 
   const addNotification = useCallback((notification: Notification) => {

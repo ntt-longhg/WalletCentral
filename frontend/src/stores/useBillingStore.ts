@@ -36,6 +36,9 @@ interface BillingState {
   // Wallet Plans
   walletPlans: WalletPlanResponse[];
   pendingPlans: WalletPlanResponse[];
+  pendingPlansNextCursor: string | null;
+  pendingPlansHasNext: boolean;
+  pendingPlansCount: number;
   plansLoading: boolean;
   plansError: string | null;
 
@@ -81,6 +84,9 @@ export const useBillingStore = create<BillingState>((set) => ({
 
   walletPlans: [],
   pendingPlans: [],
+  pendingPlansNextCursor: null,
+  pendingPlansHasNext: false,
+  pendingPlansCount: 0,
   plansLoading: false,
   plansError: null,
 
@@ -176,11 +182,32 @@ export const useBillingStore = create<BillingState>((set) => ({
     }
   },
 
-  fetchPendingWalletPlans: async () => {
+  fetchPendingWalletPlans: async (params) => {
     set({ plansLoading: true, plansError: null });
     try {
-      const res = await walletPlanService.getPending();
-      set({ pendingPlans: res.data?.data?.items ?? [] });
+      const size = params?.size;
+      const cursor = params?.cursor ?? undefined;
+      const res = await walletPlanService.getPending(cursor, size);
+      const data: any = res.data?.data ?? {};
+      const meta = data.meta ?? {};
+      const items = data.items ?? [];
+
+      set((state) => {
+        const nextState = {
+          pendingPlansNextCursor: data.nextCursor ?? meta.nextCursor ?? null,
+          pendingPlansHasNext: data.hasNext ?? meta.hasNext ?? false,
+          pendingPlansCount: data.count ?? meta.count ?? items.length,
+        };
+
+        if (params) {
+          return {
+            ...nextState,
+            pendingPlans: items,
+          };
+        }
+
+        return nextState;
+      });
     } catch (err: any) {
       set({ plansError: err.response?.data?.message ?? 'Không thể tải pending plans.' });
     } finally {
@@ -198,6 +225,7 @@ export const useBillingStore = create<BillingState>((set) => ({
     const updated = res.data.data!;
     set((state) => ({
       pendingPlans: state.pendingPlans.filter((p) => p.id !== id),
+      pendingPlansCount: Math.max(0, state.pendingPlansCount - 1),
       walletPlans: state.walletPlans.map((p) => (p.id === id ? updated : p)),
     }));
     return updated;
@@ -208,6 +236,7 @@ export const useBillingStore = create<BillingState>((set) => ({
     const updated = res.data.data!;
     set((state) => ({
       pendingPlans: state.pendingPlans.filter((p) => p.id !== id),
+      pendingPlansCount: Math.max(0, state.pendingPlansCount - 1),
       walletPlans: state.walletPlans.map((p) => (p.id === id ? updated : p)),
     }));
     return updated;
