@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 
 @Service
 @Transactional
@@ -43,7 +43,7 @@ public class PricingPlanService {
                 .creditLimitAction(request.getCreditLimitAction())
                 .creditLimitValue(request.getCreditLimitValue())
                 .status(PricingPlanStatus.ACTIVE)
-                .createdAt(OffsetDateTime.now())
+                .createdAt(LocalDateTime.now())
                 .build();
 
         var saved = pricingPlanRepository.save(plan);
@@ -95,7 +95,7 @@ public class PricingPlanService {
         if (request.getCreditLimitValue() != null)
             plan.setCreditLimitValue(request.getCreditLimitValue());
 
-        plan.setUpdatedAt(OffsetDateTime.now());
+        plan.setUpdatedAt(LocalDateTime.now());
 
         var saved = pricingPlanRepository.save(plan);
         return toResponse(saved);
@@ -105,7 +105,7 @@ public class PricingPlanService {
         var plan = pricingPlanRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("PricingPlan", "id", id));
         plan.setStatus(request.getStatus());
-        plan.setUpdatedAt(OffsetDateTime.now());
+        plan.setUpdatedAt(LocalDateTime.now());
         var saved = pricingPlanRepository.save(plan);
         return toResponse(saved);
     }

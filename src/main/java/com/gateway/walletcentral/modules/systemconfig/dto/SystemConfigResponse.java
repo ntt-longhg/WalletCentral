@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -30,5 +30,5 @@ public class SystemConfigResponse {
     private String description;
 
     @Schema(description = "Last updated timestamp")
-    private OffsetDateTime updatedAt;
+    private LocalDateTime updatedAt;
 }

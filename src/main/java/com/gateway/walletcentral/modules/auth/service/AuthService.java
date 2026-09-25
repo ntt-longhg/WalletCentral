@@ -22,7 +22,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -87,7 +87,7 @@ public class AuthService {
         AdminOtp adminOtp = AdminOtp.builder()
                 .email(email)
                 .otpCode(otpCode)
-                .expiresAt(OffsetDateTime.now().plusMinutes(expiryMinutes))
+                .expiresAt(LocalDateTime.now().plusMinutes(expiryMinutes))
                 .used(false)
                 .build();
         otpRepository.save(adminOtp);
@@ -99,7 +99,7 @@ public class AuthService {
         AdminOtp adminOtp = otpRepository.findTopByEmailAndUsedFalseOrderByCreatedAtDesc(email)
                 .orElseThrow(() -> new BusinessException("OTP_NOT_FOUND", "No OTP found. Please request a new code."));
 
-        if (adminOtp.getExpiresAt().isBefore(OffsetDateTime.now())) {
+        if (adminOtp.getExpiresAt().isBefore(LocalDateTime.now())) {
             throw new BusinessException("OTP_EXPIRED", "OTP has expired. Please request a new code.");
         }
 
@@ -121,7 +121,7 @@ public class AuthService {
             return adminUserRepository.save(newUser);
         });
 
-        adminUser.setLastLoginAt(OffsetDateTime.now());
+        adminUser.setLastLoginAt(LocalDateTime.now());
         adminUserRepository.save(adminUser);
 
         String roleName;
@@ -150,7 +150,7 @@ public class AuthService {
         AdminToken adminToken = AdminToken.builder()
                 .token(UUID.randomUUID().toString())
                 .email(email)
-                .expiresAt(OffsetDateTime.now().plusHours(tokenExpiryHours))
+                .expiresAt(LocalDateTime.now().plusHours(tokenExpiryHours))
                 .build();
         tokenRepository.save(adminToken);
 
@@ -174,7 +174,7 @@ public class AuthService {
 
     @Transactional(readOnly = true)
     public boolean isValidAdminToken(String token) {
-        return tokenRepository.existsByTokenAndExpiresAtAfter(token, OffsetDateTime.now());
+        return tokenRepository.existsByTokenAndExpiresAtAfter(token, LocalDateTime.now());
     }
 
     @Transactional(readOnly = true)
@@ -185,11 +185,11 @@ public class AuthService {
     }
 
     public int cleanupExpiredOtps() {
-        return otpRepository.deleteExpired(OffsetDateTime.now());
+        return otpRepository.deleteExpired(LocalDateTime.now());
     }
 
     public int cleanupExpiredTokens() {
-        return tokenRepository.deleteExpired(OffsetDateTime.now());
+        return tokenRepository.deleteExpired(LocalDateTime.now());
     }
 
     private String extractDisplayName(String email) {

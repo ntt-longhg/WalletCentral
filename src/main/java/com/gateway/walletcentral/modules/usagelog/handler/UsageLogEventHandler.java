@@ -1,26 +1,27 @@
 package com.gateway.walletcentral.modules.usagelog.handler;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gateway.walletcentral.core.event.NotificationEvent;
 import com.gateway.walletcentral.core.exception.BusinessException;
-import com.gateway.walletcentral.core.rabbitmq.MessageProducer;
 import com.gateway.walletcentral.modules.billing.dto.BillingEvent;
 import com.gateway.walletcentral.modules.servicecatalog.model.Service;
 import com.gateway.walletcentral.modules.servicecatalog.repository.ServiceRepository;
 import com.gateway.walletcentral.modules.tenant.model.Tenant;
 import com.gateway.walletcentral.modules.tenant.repository.TenantRepository;
+import com.gateway.walletcentral.modules.usagelog.model.FeeBreakdownStructure;
 import com.gateway.walletcentral.modules.usagelog.model.UsageLog;
 import com.gateway.walletcentral.modules.wallet.model.WalletType;
 import com.gateway.walletcentral.modules.usagelog.repository.UsageLogRepository;
 import com.gateway.walletcentral.modules.wallet.model.Wallet;
 import com.gateway.walletcentral.modules.wallet.repository.WalletRepository;
-import com.rabbitmq.client.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
-import java.util.HashMap;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 
@@ -36,22 +37,25 @@ public class UsageLogEventHandler {
     private final WalletRepository walletRepository;
     private final TenantRepository tenantRepository;
     private final ServiceRepository serviceRepository;
-    private final MessageProducer messageProducer;
+    private final ApplicationEventPublisher eventPublisher;
+    private final ObjectMapper objectMapper;
 
     public UsageLogEventHandler(UsageLogRepository usageLogRepository,
             WalletRepository walletRepository,
             TenantRepository tenantRepository,
             ServiceRepository serviceRepository,
-            MessageProducer messageProducer) {
+            ApplicationEventPublisher eventPublisher,
+            ObjectMapper objectMapper) {
         this.usageLogRepository = usageLogRepository;
         this.walletRepository = walletRepository;
         this.tenantRepository = tenantRepository;
         this.serviceRepository = serviceRepository;
-        this.messageProducer = messageProducer;
+        this.eventPublisher = eventPublisher;
+        this.objectMapper = objectMapper;
     }
 
-    public void handleBillingUsageLog(Map<String, Object> message, Channel channel, long deliveryTag)
-            throws IOException {
+    @Transactional
+    public void handleBillingUsageLog(Map<String, Object> message) {
         String event = (String) message.get("event");
         Map<String, Object> payload = (Map<String, Object>) message.get("payload");
         BillingEvent billingEvent = convertToBillingEvent(payload);
@@ -63,7 +67,6 @@ public class UsageLogEventHandler {
             // Idempotency check
             if (usageLogRepository.existsByReferenceId(referenceId)) {
                 log.info("UsageLog already exists for referenceId: {} - skipping", referenceId);
-                channel.basicAck(deliveryTag, false);
                 return;
             }
 
@@ -85,7 +88,7 @@ public class UsageLogEventHandler {
                     .feeBreakdown(billingEvent.getFeeBreakdown())
                     .referenceFrom(billingEvent.getReferenceFrom())
                     .referenceId(referenceId)
-                    .createdAt(billingEvent.getCreatedAt() != null ? billingEvent.getCreatedAt() : OffsetDateTime.now())
+                    .createdAt(billingEvent.getCreatedAt() != null ? billingEvent.getCreatedAt() : LocalDateTime.now())
                     .build();
             usageLogRepository.save(usageLog);
             log.info("Created UsageLog: id={} totalCharged={} for tenant={}",
@@ -93,8 +96,6 @@ public class UsageLogEventHandler {
 
             // Post-processing: audit logging, fee breakdown logging, low balance alert
             processUsageLogPostProcessing(usageLog, billingEvent);
-
-            channel.basicAck(deliveryTag, false);
         } catch (Exception e) {
             log.error("BILLING_WEBHOOK usage log handler error: referenceId={}", referenceId, e);
             throw new BusinessException("BILLING_WEBHOOK usage log handler error: " + e.getMessage());
@@ -117,20 +118,21 @@ public class UsageLogEventHandler {
                     usageLog.getFeeBreakdown().getSubsequentFeeApplied());
         }
 
-        // Low balance alert
+        // Low balance alert (published after DB commit via NotificationEventPublisher)
         Wallet wallet = walletRepository.findByTenantId(UUID.fromString(event.getTenantId())).orElse(null);
         if (wallet != null && wallet.getBalance().compareTo(LOW_BALANCE_THRESHOLD) < 0) {
             log.warn("LOW BALANCE ALERT: tenant={} wallet={} balance={}",
                     event.getTenantId(), wallet.getId(), wallet.getBalance());
-            Map<String, Object> notificationEvent = new HashMap<>();
-            notificationEvent.put("tenantId", event.getTenantId());
-            notificationEvent.put("type", "BILLING");
-            notificationEvent.put("title", "Cảnh báo số dư thấp");
-            notificationEvent.put("message", String.format("Ví %s số dư còn lại: %s VND",
-                    wallet.getId(), wallet.getBalance()));
-            notificationEvent.put("referenceType", "WALLET");
-            notificationEvent.put("referenceId", wallet.getId().toString());
-            messageProducer.publishNotification(notificationEvent);
+            NotificationEvent notificationEvent = NotificationEvent.builder()
+                    .tenantId(event.getTenantId())
+                    .type("BILLING")
+                    .title("Cảnh báo số dư thấp")
+                    .message(String.format("Ví %s số dư còn lại: %s VND",
+                            wallet.getId(), wallet.getBalance()))
+                    .referenceType("WALLET")
+                    .referenceId(wallet.getId().toString())
+                    .build();
+            eventPublisher.publishEvent(notificationEvent);
         }
     }
 
@@ -140,7 +142,7 @@ public class UsageLogEventHandler {
                 .serviceId((String) map.get("serviceId"))
                 .serviceCode((String) map.get("serviceCode"))
                 .serviceName((String) map.get("serviceName"))
-                .usageUnits((Integer) map.get("usageUnits"))
+                .usageUnits(toInteger(map.get("usageUnits")))
                 .totalFee(new BigDecimal(map.get("totalFee").toString()))
                 .walletId((String) map.get("walletId"))
                 .walletType((String) map.get("walletType"))
@@ -148,11 +150,43 @@ public class UsageLogEventHandler {
                 .balanceAfter(new BigDecimal(map.get("balanceAfter").toString()))
                 .creditLimit(new BigDecimal(map.get("creditLimit").toString()))
                 .availableBalanceAfter(new BigDecimal(map.get("availableBalanceAfter").toString()))
+                .feeBreakdown(toFeeBreakdown(map.get("feeBreakdown")))
                 .referenceFrom((String) map.get("referenceFrom"))
                 .referenceId((String) map.get("referenceId"))
                 .description((String) map.get("description"))
+                .createdAt(toLocalDateTime(map.get("createdAt")))
                 .webhookUrl((String) map.get("webhookUrl"))
                 .webhookAuth((String) map.get("webhookAuth"))
                 .build();
+    }
+
+    private Integer toInteger(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Number number) {
+            return number.intValue();
+        }
+        return Integer.valueOf(value.toString());
+    }
+
+    private LocalDateTime toLocalDateTime(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof LocalDateTime dateTime) {
+            return dateTime;
+        }
+        return LocalDateTime.parse(value.toString());
+    }
+
+    private FeeBreakdownStructure toFeeBreakdown(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof FeeBreakdownStructure structure) {
+            return structure;
+        }
+        return objectMapper.convertValue(value, FeeBreakdownStructure.class);
     }
 }

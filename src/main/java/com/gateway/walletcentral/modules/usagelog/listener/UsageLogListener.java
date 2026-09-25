@@ -28,6 +28,7 @@ public class UsageLogListener {
     @RabbitListener(queues = RabbitMQConfig.QUEUE_USAGE, executor = "virtualThreadExecutor")
     public void handleUsageLogEvent(Map<String, Object> message,
             @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag,
+            @Header(value = AmqpHeaders.REDELIVERED, required = false) Boolean redelivered,
             Channel channel) throws IOException {
 
         String requestId = (String) message.get("requestId");
@@ -46,16 +47,19 @@ public class UsageLogListener {
         try {
             switch (event) {
                 case "BILLING_WEBHOOK":
-                    usageLogEventHandler.handleBillingUsageLog(message, channel, deliveryTag);
+                    usageLogEventHandler.handleBillingUsageLog(message);
                     break;
                 default:
                     log.error("Unknown usage log event: {}", event);
-                    channel.basicAck(deliveryTag, false);
                     break;
             }
+            // Handler returned => its transaction committed => safe to ack
+            channel.basicAck(deliveryTag, false);
         } catch (Exception e) {
-            log.error("UsageLog listener error: {}", e.getMessage(), e);
-            channel.basicNack(deliveryTag, false, false);
+            // First failure => requeue for one retry; redelivered failure => DLQ
+            boolean requeue = !Boolean.TRUE.equals(redelivered);
+            log.error("UsageLog listener error: redelivered={} requeue={}", redelivered, requeue, e);
+            channel.basicNack(deliveryTag, false, requeue);
         } finally {
             log.info("========== USAGE LOG LISTENER END ==========");
             MDC.clear();

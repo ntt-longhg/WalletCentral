@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
 
@@ -39,8 +39,8 @@ public class AdminUserResponse {
     private Set<String> permissions;
 
     @Schema(description = "Last login timestamp")
-    private OffsetDateTime lastLoginAt;
+    private LocalDateTime lastLoginAt;
 
     @Schema(description = "Account creation timestamp")
-    private OffsetDateTime createdAt;
+    private LocalDateTime createdAt;
 }

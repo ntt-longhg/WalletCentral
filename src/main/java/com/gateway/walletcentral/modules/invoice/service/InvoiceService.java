@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -72,7 +72,7 @@ public class InvoiceService {
                                 .totalAmount(request.getTotalAmount())
                                 .status(InvoiceStatus.ISSUED)
                                 .dueDate(request.getDueDate())
-                                .createdAt(OffsetDateTime.now())
+                                .createdAt(LocalDateTime.now())
                                 .updatedBy(request.getUpdatedBy())
                                 .build();
 
@@ -116,7 +116,7 @@ public class InvoiceService {
 
                 invoice.setStatus(InvoiceStatus.PAID);
                 invoice.setUpdatedBy(request.getUpdatedBy());
-                invoice.setUpdatedAt(OffsetDateTime.now());
+                invoice.setUpdatedAt(LocalDateTime.now());
 
                 var saved = invoiceRepository.save(invoice);
                 return toResponse(saved);
@@ -137,11 +137,11 @@ public class InvoiceService {
                                 .orElseThrow(() -> new ResourceNotFoundException("Wallet", "tenantId", tenantId));
 
                 YearMonth yearMonth = YearMonth.parse(billingPeriod);
-                OffsetDateTime startOfMonth = OffsetDateTime.now().withYear(yearMonth.getYear())
+                LocalDateTime startOfMonth = LocalDateTime.now().withYear(yearMonth.getYear())
                                 .withMonth(yearMonth.getMonthValue())
                                 .withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
 
-                OffsetDateTime endOfMonth = OffsetDateTime.now().withYear(yearMonth.getYear())
+                LocalDateTime endOfMonth = LocalDateTime.now().withYear(yearMonth.getYear())
                                 .withMonth(yearMonth.getMonthValue())
                                 .withDayOfMonth(yearMonth.atEndOfMonth().getDayOfMonth()).withHour(23).withMinute(59)
                                 .withSecond(59).withNano(0);
@@ -162,13 +162,13 @@ public class InvoiceService {
                         invoice.setTotalAmount(postpaidTotal);
                         invoice.setWallet(wallet);
                         invoice.setUpdatedBy(updatedBy);
-                        invoice.setUpdatedAt(OffsetDateTime.now());
+                        invoice.setUpdatedAt(LocalDateTime.now());
                         var saved = invoiceRepository.save(invoice);
                         log.info("Invoice updated: id={} totalAmount={}", saved.getId(), postpaidTotal);
                         return toResponse(saved);
                 } else {
                         // Create new invoice
-                        OffsetDateTime dueDate = OffsetDateTime.now().plusMonths(1).withDayOfMonth(1).withHour(23)
+                        LocalDateTime dueDate = LocalDateTime.now().plusMonths(1).withDayOfMonth(1).withHour(23)
                                         .withMinute(59).withSecond(59);
 
                         Invoice invoice = Invoice.builder()
@@ -178,7 +178,7 @@ public class InvoiceService {
                                         .totalAmount(postpaidTotal)
                                         .status(InvoiceStatus.ISSUED)
                                         .dueDate(dueDate)
-                                        .createdAt(OffsetDateTime.now())
+                                        .createdAt(LocalDateTime.now())
                                         .updatedBy(updatedBy)
                                         .build();
 

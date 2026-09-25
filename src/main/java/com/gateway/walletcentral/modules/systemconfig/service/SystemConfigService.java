@@ -8,7 +8,7 @@ import com.gateway.walletcentral.modules.systemconfig.repository.SystemConfigRep
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -45,7 +45,7 @@ public class SystemConfigService {
             SystemConfig config = configRepository.findByConfigKey(update.getKey())
                     .orElseThrow(() -> new ResourceNotFoundException("SystemConfig", "key", update.getKey()));
             config.setConfigValue(update.getValue());
-            config.setUpdatedAt(OffsetDateTime.now());
+            config.setUpdatedAt(LocalDateTime.now());
             configRepository.save(config);
             cache.put(update.getKey(), update.getValue());
         }

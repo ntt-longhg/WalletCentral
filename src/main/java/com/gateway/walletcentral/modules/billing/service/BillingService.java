@@ -1,7 +1,6 @@
 package com.gateway.walletcentral.modules.billing.service;
 
 import com.gateway.walletcentral.core.event.BillingProcessedEvent;
-import com.gateway.walletcentral.modules.billing.dto.BillingEvent;
 import com.gateway.walletcentral.core.exception.BusinessException;
 import com.gateway.walletcentral.core.exception.ResourceNotFoundException;
 import com.gateway.walletcentral.modules.billing.dto.BillingWebhookRequest;
@@ -24,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -81,7 +80,7 @@ public class BillingService {
                 // 2. Find active service price
                 List<ServicePrice> activePrices = servicePriceRepository
                                 .findByServiceIdAndIsActiveTrue(service.getId(),
-                                                OffsetDateTime.now(),
+                                                LocalDateTime.now(),
                                                 PageRequest.of(0, 1));
                 if (activePrices.isEmpty()) {
                         log.error("No active price found for service: {}", service.getCode());
@@ -132,34 +131,9 @@ public class BillingService {
                 String refId = UUID.randomUUID().toString();
                 FeeBreakdownStructure feeBreakdownStructure = buildFeeBreakdown(servicePrice, request.getUsageUnits(),
                                 totalFee);
-                OffsetDateTime now = OffsetDateTime.now();
+                LocalDateTime now = LocalDateTime.now();
 
-                // 9. Build BillingEvent for async handlers
-                BillingEvent billingEvent = BillingEvent.builder()
-                                .tenantId(tenant.getId().toString())
-                                .serviceId(service.getId().toString())
-                                .serviceCode(service.getCode())
-                                .serviceName(service.getName())
-                                .usageUnits(request.getUsageUnits())
-                                .totalFee(totalFee)
-                                .walletId(wallet.getId().toString())
-                                .walletType(wallet.getType().name())
-                                .balanceBefore(balanceBefore)
-                                .balanceAfter(newBalance)
-                                .creditLimit(wallet.getCreditLimit())
-                                .availableBalanceAfter(newAvailable)
-                                .feeBreakdown(feeBreakdownStructure)
-                                .referenceFrom("BILLING_WEBHOOK")
-                                .referenceId(refId)
-                                .createdAt(now)
-                                .description(request.getDescription() != null ? request.getDescription()
-                                                : "Thanh toán cước " + service.getCode())
-                                .webhookUrl(request.getWebhookUrl())
-                                .webhookAuth(request.getWebhookAuth())
-                                .metadata(request.getMetadata())
-                                .build();
-
-                // 10. Publish event after DB commit via ApplicationEvent (ensures DB consistency)
+                // 9. Publish event after DB commit via ApplicationEvent (ensures DB consistency)
                 BillingProcessedEvent billingProcessedEvent = BillingProcessedEvent.builder()
                                 .tenantId(tenant.getId().toString())
                                 .serviceId(service.getId().toString())
@@ -186,7 +160,7 @@ public class BillingService {
                 eventPublisher.publishEvent(billingProcessedEvent);
                 log.info("Published BillingProcessedEvent after commit: refId={}", refId);
 
-                // 11. Build response
+                // 10. Build response
                 BillingWebhookResponse.FeeBreakdownDto feeBreakdownDto = BillingWebhookResponse.FeeBreakdownDto
                                 .builder()
                                 .strategy(feeBreakdownStructure.getStrategy())

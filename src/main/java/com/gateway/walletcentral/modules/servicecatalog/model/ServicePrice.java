@@ -3,7 +3,7 @@ package com.gateway.walletcentral.modules.servicecatalog.model;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import org.hibernate.annotations.UuidGenerator;
 import org.hibernate.annotations.ColumnDefault;
 import java.util.UUID;
@@ -65,17 +65,17 @@ public class ServicePrice {
 
     /** Date from which this price becomes effective */
     @Column(name = "effective_date", nullable = false, comment = "Date from which this price becomes effective")
-    private OffsetDateTime effectiveDate;
+    private LocalDateTime effectiveDate;
 
     /** Record creation timestamp */
     @Column(name = "created_at", updatable = false, comment = "Record creation timestamp")
-    private OffsetDateTime createdAt = OffsetDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     /** Record last update timestamp */
     @Column(name = "updated_at", comment = "Record last update timestamp")
-    private OffsetDateTime updatedAt = OffsetDateTime.now();
+    private LocalDateTime updatedAt = LocalDateTime.now();
 
     /** Soft delete timestamp - NULL if not deleted */
     @Column(name = "deleted_at", nullable = true, comment = "Soft delete timestamp - NULL if record is active")
-    private OffsetDateTime deletedAt = null;
+    private LocalDateTime deletedAt = null;
 }

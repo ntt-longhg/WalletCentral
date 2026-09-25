@@ -1,6 +1,5 @@
 package com.gateway.walletcentral.core.event.listener;
 
-import com.gateway.walletcentral.core.event.WalletPlanApprovedEvent;
 import com.gateway.walletcentral.core.rabbitmq.MessageProducer;
 import com.gateway.walletcentral.modules.walletplan.dto.WalletPlanEvent;
 import org.slf4j.Logger;
@@ -24,7 +23,7 @@ public class WalletPlanEventPublisher {
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleWalletPlanApproved(WalletPlanApprovedEvent event) {
+    public void handleWalletPlanApproved(WalletPlanEvent event) {
         log.info("Wallet plan approved event after commit: walletPlanId={}", event.getWalletPlanId());
 
         WalletPlanEvent walletPlanEvent = WalletPlanEvent.builder()

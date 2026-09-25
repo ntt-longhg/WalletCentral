@@ -18,5 +18,9 @@ public class RefundApprovedEvent {
     private String walletId;
     private String tenantId;
     private BigDecimal amount;
+    private BigDecimal balanceBefore;
+    private BigDecimal balanceAfter;
+    private BigDecimal availableBalanceBefore;
+    private BigDecimal availableBalanceAfter;
     private String reviewedBy;
 }

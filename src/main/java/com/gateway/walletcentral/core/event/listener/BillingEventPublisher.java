@@ -47,6 +47,7 @@ public class BillingEventPublisher {
                 .description(event.getDescription())
                 .webhookUrl(event.getWebhookUrl())
                 .webhookAuth(event.getWebhookAuth())
+                .metadata(toStringObjectMap(event.getMetadata()))
                 .build();
 
         Map<String, Object> txnEvent = new HashMap<>();
@@ -55,7 +56,10 @@ public class BillingEventPublisher {
         messageProducer.publishTransaction(txnEvent);
         log.info("Published BILLING_WEBHOOK transaction event after commit: refId={}", event.getReferenceId());
 
-        messageProducer.publishUsageLog(txnEvent);
+        Map<String, Object> usageEvent = new HashMap<>();
+        usageEvent.put("event", "BILLING_WEBHOOK");
+        usageEvent.put("payload", billingEvent);
+        messageProducer.publishUsageLog(usageEvent);
         log.info("Published BILLING_WEBHOOK usage event after commit: refId={}", event.getReferenceId());
 
         Map<String, Object> webhookEvent = new HashMap<>();
@@ -66,5 +70,13 @@ public class BillingEventPublisher {
         webhookEvent.put("response", billingEvent);
         messageProducer.publishBilling(webhookEvent);
         log.info("Published billing callback event after commit: refId={}", event.getReferenceId());
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> toStringObjectMap(Object metadata) {
+        if (metadata instanceof Map) {
+            return new HashMap<>((Map<String, Object>) metadata);
+        }
+        return null;
     }
 }

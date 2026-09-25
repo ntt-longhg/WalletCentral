@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,6 +26,6 @@ public interface ServicePriceRepository extends JpaRepository<ServicePrice, UUID
             "AND sp.effectiveDate <= :now " +
             "ORDER BY sp.effectiveDate DESC, sp.createdAt DESC, sp.id DESC")
     List<ServicePrice> findByServiceIdAndIsActiveTrue(@Param("serviceId") UUID serviceId,
-            @Param("now") OffsetDateTime now,
+            @Param("now") LocalDateTime now,
             org.springframework.data.domain.Pageable pageable);
 }

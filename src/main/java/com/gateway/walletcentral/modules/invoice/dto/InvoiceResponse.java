@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -39,14 +39,14 @@ public class InvoiceResponse {
     private String status;
 
     @Schema(description = "Invoice due date")
-    private OffsetDateTime dueDate;
+    private LocalDateTime dueDate;
 
     @Schema(description = "Updated by")
     private String updatedBy;
 
     @Schema(description = "Created timestamp")
-    private OffsetDateTime createdAt;
+    private LocalDateTime createdAt;
 
     @Schema(description = "Last updated timestamp")
-    private OffsetDateTime updatedAt;
+    private LocalDateTime updatedAt;
 }

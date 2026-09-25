@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.slf4j.MDC;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -32,7 +32,7 @@ public class ApiResponse<T> {
 
     @Schema(description = "Response timestamp")
     @Builder.Default
-    private OffsetDateTime timestamp = OffsetDateTime.now();
+    private LocalDateTime timestamp = LocalDateTime.now();
 
     public static <T> ApiResponse<T> ok(T data) {
         return ApiResponse.<T>builder()

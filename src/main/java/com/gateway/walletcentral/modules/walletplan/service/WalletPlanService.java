@@ -5,7 +5,6 @@ import com.gateway.walletcentral.core.cursor.CursorParams;
 import com.gateway.walletcentral.core.cursor.CursorUtil;
 import com.gateway.walletcentral.core.exception.BusinessException;
 import com.gateway.walletcentral.core.exception.ResourceNotFoundException;
-import com.gateway.walletcentral.core.event.NotificationEvent;
 import com.gateway.walletcentral.core.event.WalletPlanApprovedEvent;
 import com.gateway.walletcentral.core.event.WalletPlanCreatedEvent;
 import com.gateway.walletcentral.core.event.WalletPlanRejectedEvent;
@@ -27,9 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
-import java.util.HashMap;
-import java.util.Map;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -77,7 +74,7 @@ public class WalletPlanService {
                 .creditedAmount(creditedAmount)
                 .status(WalletPlanStatus.PENDING)
                 .createdBy(request.getCreatedBy())
-                .createdAt(OffsetDateTime.now())
+                .createdAt(LocalDateTime.now())
                 .build();
 
         var saved = walletPlanRepository.save(walletPlan);
@@ -134,7 +131,7 @@ public class WalletPlanService {
         }
 
         walletPlan.setStatus(WalletPlanStatus.APPROVED);
-        walletPlan.setApprovedAt(OffsetDateTime.now());
+        walletPlan.setApprovedAt(LocalDateTime.now());
         walletPlan.setApprovedBy(request.getApprovedBy());
 
         var saved = walletPlanRepository.save(walletPlan);
@@ -161,7 +158,7 @@ public class WalletPlanService {
         }
 
         walletPlan.setStatus(WalletPlanStatus.REJECTED);
-        walletPlan.setApprovedAt(OffsetDateTime.now());
+        walletPlan.setApprovedAt(LocalDateTime.now());
         walletPlan.setApprovedBy(request.getApprovedBy());
 
         var saved = walletPlanRepository.save(walletPlan);
@@ -218,15 +215,6 @@ public class WalletPlanService {
         }
         return BigDecimal.ZERO;
     }
-
-    // private BigDecimal calculateNewCreditLimit(PricingPlan plan, BigDecimal
-    // currentCreditLimit) {
-    // return switch (plan.getCreditLimitAction()) {
-    // case INCREASE -> currentCreditLimit.add(plan.getCreditLimitValue());
-    // case SET -> plan.getCreditLimitValue();
-    // case NONE -> currentCreditLimit;
-    // };
-    // }
 
     private WalletPlanResponse toResponse(WalletPlan wp) {
         return WalletPlanResponse.builder()

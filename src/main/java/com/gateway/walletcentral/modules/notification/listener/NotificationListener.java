@@ -28,6 +28,7 @@ public class NotificationListener {
     @RabbitListener(queues = RabbitMQConfig.QUEUE_NOTIFICATION, executor = "virtualThreadExecutor")
     public void handleNotificationEvent(Map<String, Object> message,
             @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag,
+            @Header(value = AmqpHeaders.REDELIVERED, required = false) Boolean redelivered,
             Channel channel) throws IOException {
 
         String requestId = (String) message.get("requestId");
@@ -42,10 +43,13 @@ public class NotificationListener {
 
         try {
             log.info("Notification listener payload: {} | thread: {}", payload, Thread.currentThread());
-            notificationEventHandler.handleNotification(payload, channel, deliveryTag);
+            notificationEventHandler.handleNotification(payload);
+            channel.basicAck(deliveryTag, false);
         } catch (Exception e) {
-            log.error("Notification listener error: {}", e.getMessage(), e);
-            channel.basicNack(deliveryTag, false, false);
+            // First failure => requeue for one retry; redelivered failure => DLQ
+            boolean requeue = !Boolean.TRUE.equals(redelivered);
+            log.error("Notification listener error: redelivered={} requeue={}", redelivered, requeue, e);
+            channel.basicNack(deliveryTag, false, requeue);
         } finally {
             log.info("========== NOTIFICATION LISTENER END ==========");
             MDC.clear();

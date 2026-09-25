@@ -7,7 +7,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import org.hibernate.annotations.UuidGenerator;
 import java.util.UUID;
 
@@ -66,7 +66,7 @@ public class WalletPlan {
 
     /** Timestamp when the plan was approved/rejected */
     @Column(name = "approved_at", nullable = true, comment = "Timestamp when the plan was approved/rejected - NULL if pending")
-    private OffsetDateTime approvedAt = null;
+    private LocalDateTime approvedAt = null;
 
     /** Admin user who approved/rejected the plan */
     @Column(name = "approved_by", nullable = true, length = 100, comment = "Admin user who approved/rejected the plan - NULL if pending")
@@ -74,7 +74,7 @@ public class WalletPlan {
 
     /** Record creation timestamp */
     @Column(name = "created_at", updatable = false, comment = "Record creation timestamp")
-    private OffsetDateTime createdAt = OffsetDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     /** User who created this record */
     @Column(name = "created_by", nullable = false, comment = "User who created this record")
@@ -82,7 +82,7 @@ public class WalletPlan {
 
     /** Record last update timestamp */
     @Column(name = "updated_at", comment = "Record last update timestamp")
-    private OffsetDateTime updatedAt = OffsetDateTime.now();
+    private LocalDateTime updatedAt = LocalDateTime.now();
 
     /** User who last updated this record */
     @Column(name = "updated_by", nullable = true, comment = "User who last updated this record - NULL if never updated")
@@ -90,5 +90,5 @@ public class WalletPlan {
 
     /** Soft delete timestamp - NULL if not deleted */
     @Column(name = "deleted_at", nullable = true, comment = "Soft delete timestamp - NULL if record is active")
-    private OffsetDateTime deletedAt = null;
+    private LocalDateTime deletedAt = null;
 }

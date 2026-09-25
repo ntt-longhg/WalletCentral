@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import org.hibernate.annotations.UuidGenerator;
 import java.util.UUID;
 
@@ -73,7 +73,7 @@ public class CreditAdjustment {
 
     /** Record creation timestamp */
     @Column(name = "created_at", updatable = false, comment = "Record creation timestamp")
-    private OffsetDateTime createdAt = OffsetDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     /** User or system that performed the adjustment */
     @Column(name = "created_by", nullable = false, length = 100, comment = "User or system that performed the adjustment")

@@ -10,17 +10,14 @@ import com.gateway.walletcentral.modules.transaction.model.TransactionType;
 import com.gateway.walletcentral.modules.transaction.repository.TransactionRepository;
 import com.gateway.walletcentral.modules.wallet.model.Wallet;
 import com.gateway.walletcentral.modules.wallet.repository.WalletRepository;
-import com.rabbitmq.client.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
-import java.util.HashMap;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 
@@ -45,8 +42,7 @@ public class TransactionEventHandler {
         }
 
         @Transactional
-        public void handleWalletPlanDeposit(Map<String, Object> message, Channel channel, long deliveryTag)
-                        throws IOException {
+        public void handleWalletPlanDeposit(Map<String, Object> message) {
                 String event = (String) message.get("event");
                 Map<String, Object> payload = (Map<String, Object>) message.get("payload");
                 WalletPlanEvent walletPlanEvent = convertToWalletPlanEvent(payload);
@@ -58,7 +54,6 @@ public class TransactionEventHandler {
                         // Idempotency check
                         if (transactionRepository.existsByReferenceId(referenceId)) {
                                 log.info("Transaction already exists for referenceId: {} - skipping", referenceId);
-                                channel.basicAck(deliveryTag, false);
                                 return;
                         }
 
@@ -80,7 +75,7 @@ public class TransactionEventHandler {
                                         .description(walletPlanEvent.getDescription())
                                         .referenceFrom(walletPlanEvent.getReferenceFrom())
                                         .referenceId(referenceId)
-                                        .createdAt(OffsetDateTime.now())
+                                        .createdAt(LocalDateTime.now())
                                         .build();
                         transactionRepository.save(transaction);
                         log.info("Created DEPOSIT transaction: {} amount={} for wallet={}",
@@ -89,8 +84,6 @@ public class TransactionEventHandler {
 
                         // Post-processing: reconciliation, audit, alerts
                         processTransactionPostProcessing(transaction, wallet);
-
-                        channel.basicAck(deliveryTag, false);
                 } catch (Exception e) {
                         log.error("WALLET_PLAN handler error: referenceId={}", referenceId, e);
                         throw new BusinessException("WALLET_PLAN handler error: " + e.getMessage());
@@ -98,8 +91,57 @@ public class TransactionEventHandler {
         }
 
         @Transactional
-        public void handleBillingCharge(Map<String, Object> message, Channel channel, long deliveryTag)
-                        throws IOException {
+        public void handleRefundDeposit(Map<String, Object> message) {
+                String event = (String) message.get("event");
+                Map<String, Object> payload = (Map<String, Object>) message.get("payload");
+                String referenceId = (String) payload.get("referenceId");
+                String walletId = (String) payload.get("walletId");
+                log.info("Handling {} refund - referenceId: {} | walletId: {}",
+                                event, referenceId, walletId);
+
+                try {
+                        // Idempotency check
+                        if (transactionRepository.existsByReferenceId(referenceId)) {
+                                log.info("Transaction already exists for referenceId: {} - skipping", referenceId);
+                                return;
+                        }
+
+                        Wallet wallet = walletRepository
+                                        .findByIdWithTenant(UUID.fromString(walletId))
+                                        .orElseThrow(() -> new RuntimeException(
+                                                        "Wallet not found: " + walletId));
+
+                        // Create Transaction (REFUND)
+                        Transaction transaction = Transaction.builder()
+                                        .wallet(wallet)
+                                        .amount(new BigDecimal(payload.get("amount").toString()))
+                                        .type(TransactionType.REFUND)
+                                        .balanceBefore(new BigDecimal(payload.get("balanceBefore").toString()))
+                                        .balanceAfter(new BigDecimal(payload.get("balanceAfter").toString()))
+                                        .availableBalanceBefore(
+                                                        new BigDecimal(payload.get("availableBalanceBefore").toString()))
+                                        .availableBalanceAfter(
+                                                        new BigDecimal(payload.get("availableBalanceAfter").toString()))
+                                        .status(TransactionStatus.SUCCESS)
+                                        .description((String) payload.get("description"))
+                                        .referenceFrom("REFUND")
+                                        .referenceId(referenceId)
+                                        .createdAt(LocalDateTime.now())
+                                        .build();
+                        transactionRepository.save(transaction);
+                        log.info("Created REFUND transaction: {} amount={} for wallet={}",
+                                        transaction.getId(), transaction.getAmount(), walletId);
+
+                        // Post-processing: reconciliation, audit, alerts
+                        processTransactionPostProcessing(transaction, wallet);
+                } catch (Exception e) {
+                        log.error("REFUND handler error: referenceId={}", referenceId, e);
+                        throw new BusinessException("REFUND handler error: " + e.getMessage());
+                }
+        }
+
+        @Transactional
+        public void handleBillingCharge(Map<String, Object> message) {
 
                 String event = (String) message.get("event");
                 Map<String, Object> payload = (Map<String, Object>) message.get("payload");
@@ -112,7 +154,6 @@ public class TransactionEventHandler {
                         // Idempotency check
                         if (transactionRepository.existsByReferenceId(referenceId)) {
                                 log.info("Transaction already exists for referenceId: {} - skipping", referenceId);
-                                channel.basicAck(deliveryTag, false);
                                 return;
                         }
 
@@ -135,7 +176,7 @@ public class TransactionEventHandler {
                                         .referenceFrom(billingEvent.getReferenceFrom())
                                         .referenceId(referenceId)
                                         .createdAt(billingEvent.getCreatedAt() != null ? billingEvent.getCreatedAt()
-                                                        : OffsetDateTime.now())
+                                                        : LocalDateTime.now())
                                         .build();
                         transactionRepository.save(transaction);
                         log.info("Created CHARGE transaction: {} amount={} for wallet={}",
@@ -143,8 +184,6 @@ public class TransactionEventHandler {
 
                         // Post-processing: reconciliation, audit, alerts
                         processTransactionPostProcessing(transaction, wallet);
-
-                        channel.basicAck(deliveryTag, false);
                 } catch (Exception e) {
                         log.error("BILLING_WEBHOOK handler error: referenceId={}", referenceId, e);
                         throw new BusinessException("BILLING_WEBHOOK handler error: " + e.getMessage());
@@ -220,7 +259,7 @@ public class TransactionEventHandler {
                                 .serviceId((String) map.get("serviceId"))
                                 .serviceCode((String) map.get("serviceCode"))
                                 .serviceName((String) map.get("serviceName"))
-                                .usageUnits((Integer) map.get("usageUnits"))
+                                .usageUnits(toInteger(map.get("usageUnits")))
                                 .totalFee(new BigDecimal(map.get("totalFee").toString()))
                                 .walletId((String) map.get("walletId"))
                                 .walletType((String) map.get("walletType"))
@@ -231,8 +270,29 @@ public class TransactionEventHandler {
                                 .referenceFrom((String) map.get("referenceFrom"))
                                 .referenceId((String) map.get("referenceId"))
                                 .description((String) map.get("description"))
+                                .createdAt(toLocalDateTime(map.get("createdAt")))
                                 .webhookUrl((String) map.get("webhookUrl"))
                                 .webhookAuth((String) map.get("webhookAuth"))
                                 .build();
+        }
+
+        private Integer toInteger(Object value) {
+                if (value == null) {
+                        return null;
+                }
+                if (value instanceof Number number) {
+                        return number.intValue();
+                }
+                return Integer.valueOf(value.toString());
+        }
+
+        private LocalDateTime toLocalDateTime(Object value) {
+                if (value == null) {
+                        return null;
+                }
+                if (value instanceof LocalDateTime dateTime) {
+                        return dateTime;
+                }
+                return LocalDateTime.parse(value.toString());
         }
 }

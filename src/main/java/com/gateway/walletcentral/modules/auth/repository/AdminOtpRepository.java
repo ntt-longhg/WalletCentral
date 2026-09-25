@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -21,5 +21,5 @@ public interface AdminOtpRepository extends JpaRepository<AdminOtp, UUID> {
 
     @Modifying
     @Query("DELETE FROM AdminOtp o WHERE o.expiresAt < :now")
-    int deleteExpired(OffsetDateTime now);
+    int deleteExpired(LocalDateTime now);
 }

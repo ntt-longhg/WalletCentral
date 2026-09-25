@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import org.hibernate.annotations.UuidGenerator;
 import java.util.UUID;
 
@@ -66,15 +66,15 @@ public class Invoice {
 
     /** Payment due date */
     @Column(name = "due_date", updatable = false, comment = "Payment due date")
-    private OffsetDateTime dueDate = OffsetDateTime.now();
+    private LocalDateTime dueDate = LocalDateTime.now();
 
     /** Record creation timestamp */
     @Column(name = "created_at", updatable = false, comment = "Record creation timestamp")
-    private OffsetDateTime createdAt = OffsetDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     /** Record last update timestamp */
     @Column(name = "updated_at", comment = "Record last update timestamp")
-    private OffsetDateTime updatedAt = OffsetDateTime.now();
+    private LocalDateTime updatedAt = LocalDateTime.now();
 
     /** User who last updated this record */
     @Column(name = "updated_by", nullable = false, length = 100, comment = "User who last updated this record")

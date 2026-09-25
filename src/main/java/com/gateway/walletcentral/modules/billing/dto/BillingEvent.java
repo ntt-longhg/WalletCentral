@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @Data
@@ -31,7 +31,7 @@ public class BillingEvent {
     private FeeBreakdownStructure feeBreakdown;
     private String referenceFrom;
     private String referenceId;
-    private OffsetDateTime createdAt;
+    private LocalDateTime createdAt;
     private String description;
 
     // Webhook fields

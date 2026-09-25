@@ -11,7 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -41,7 +41,7 @@ public class InvoiceCreateRequest {
 
     @NotNull(message = "Due date must not be null")
     @Schema(description = "Invoice due date")
-    private OffsetDateTime dueDate;
+    private LocalDateTime dueDate;
 
     @NotBlank(message = "Updated by must not be blank")
     @Schema(description = "Creator identifier", example = "admin")

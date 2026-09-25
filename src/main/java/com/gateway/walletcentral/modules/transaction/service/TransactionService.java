@@ -5,7 +5,7 @@ import com.gateway.walletcentral.core.cursor.CursorParams;
 import com.gateway.walletcentral.core.cursor.CursorUtil;
 import com.gateway.walletcentral.core.exception.BusinessException;
 import com.gateway.walletcentral.core.exception.ResourceNotFoundException;
-import com.gateway.walletcentral.core.rabbitmq.MessageProducer;
+import com.gateway.walletcentral.core.event.TransactionCreatedEvent;
 import com.gateway.walletcentral.modules.transaction.dto.*;
 import com.gateway.walletcentral.modules.transaction.model.Transaction;
 import com.gateway.walletcentral.modules.transaction.model.TransactionStatus;
@@ -13,14 +13,13 @@ import com.gateway.walletcentral.modules.transaction.model.TransactionType;
 import com.gateway.walletcentral.modules.transaction.repository.TransactionRepository;
 import com.gateway.walletcentral.modules.wallet.model.Wallet;
 import com.gateway.walletcentral.modules.wallet.repository.WalletRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
-import java.util.HashMap;
-import java.util.Map;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -29,14 +28,14 @@ public class TransactionService {
 
     private final TransactionRepository transactionRepository;
     private final WalletRepository walletRepository;
-    private final MessageProducer messageProducer;
+    private final ApplicationEventPublisher eventPublisher;
 
     public TransactionService(TransactionRepository transactionRepository,
             WalletRepository walletRepository,
-            MessageProducer messageProducer) {
+            ApplicationEventPublisher eventPublisher) {
         this.transactionRepository = transactionRepository;
         this.walletRepository = walletRepository;
-        this.messageProducer = messageProducer;
+        this.eventPublisher = eventPublisher;
     }
 
     public TransactionResponse create(TransactionCreateRequest request) {
@@ -72,7 +71,7 @@ public class TransactionService {
                 .description(request.getDescription())
                 .referenceFrom(request.getReferenceFrom())
                 .referenceId(request.getReferenceId())
-                .createdAt(OffsetDateTime.now())
+                .createdAt(LocalDateTime.now())
                 .build();
 
         wallet.setBalance(balanceAfter);
@@ -80,13 +79,16 @@ public class TransactionService {
 
         var saved = transactionRepository.save(transaction);
 
-        Map<String, Object> event = new HashMap<>();
-        event.put("transactionId", saved.getId().toString());
-        event.put("walletId", wallet.getId().toString());
-        event.put("type", request.getType().name());
-        event.put("amount", request.getAmount());
-        event.put("balanceAfter", balanceAfter);
-        messageProducer.publishTransaction(event);
+        // Publish Spring event in-tx; TransactionEventPublisher forwards to
+        // RabbitMQ AFTER_COMMIT so the message only goes out on successful commit.
+        TransactionCreatedEvent createdEvent = TransactionCreatedEvent.builder()
+                .transactionId(saved.getId().toString())
+                .walletId(wallet.getId().toString())
+                .type(request.getType().name())
+                .amount(request.getAmount())
+                .balanceAfter(balanceAfter)
+                .build();
+        eventPublisher.publishEvent(createdEvent);
 
         return toResponse(saved);
     }

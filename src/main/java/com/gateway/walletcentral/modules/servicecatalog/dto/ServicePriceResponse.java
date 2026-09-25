@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -42,8 +42,8 @@ public class ServicePriceResponse {
     private Boolean active;
 
     @Schema(description = "Price effective date")
-    private OffsetDateTime effectiveDate;
+    private LocalDateTime effectiveDate;
 
     @Schema(description = "Created timestamp")
-    private OffsetDateTime createdAt;
+    private LocalDateTime createdAt;
 }

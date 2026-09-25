@@ -2,7 +2,6 @@ package com.gateway.walletcentral.modules.billing.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gateway.walletcentral.core.exception.BusinessException;
-import com.rabbitmq.client.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -12,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
 import java.util.Map;
 
 @Component
@@ -28,13 +26,17 @@ public class BillingEventHandler {
         this.objectMapper = objectMapper;
     }
 
-    public void handleBillingCallback(Map<String, Object> payload, Channel channel, long deliveryTag)
-            throws IOException {
+    public void handleBillingCallback(Map<String, Object> payload) {
         String transactionId = (String) payload.get("transactionId");
         String webhookUrl = (String) payload.get("webhookUrl");
         String webhookAuth = (String) payload.get("webhookAuth");
         log.info("Billing handler - transactionId: {} | webhookUrl: {} | thread: {}", transactionId, webhookUrl,
                 Thread.currentThread());
+
+        if (webhookUrl == null || webhookUrl.isBlank()) {
+            log.info("No webhook URL for transaction: {} - skipping callback", transactionId);
+            return;
+        }
 
         try {
             Object responseObj = payload.get("response");
@@ -53,8 +55,6 @@ public class BillingEventHandler {
 
             log.info("Webhook callback response: status={} body={}", webhookResponse.getStatusCode(),
                     webhookResponse.getBody());
-
-            channel.basicAck(deliveryTag, false);
         } catch (Exception e) {
             log.error("Failed to call webhook URL: {} for transaction: {}", webhookUrl, transactionId, e);
             throw new BusinessException("Failed to call webhook URL handler error: " + e.getMessage());

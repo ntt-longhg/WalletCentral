@@ -28,6 +28,7 @@ public class TransactionListener {
     @RabbitListener(queues = RabbitMQConfig.QUEUE_TRANSACTION, executor = "virtualThreadExecutor")
     public void handleTransactionEvent(Map<String, Object> message,
             @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag,
+            @Header(value = AmqpHeaders.REDELIVERED, required = false) Boolean redelivered,
             Channel channel) throws IOException {
 
         String requestId = (String) message.get("requestId");
@@ -46,19 +47,30 @@ public class TransactionListener {
         try {
             switch (event) {
                 case "BILLING_WEBHOOK":
-                    transactionEventHandler.handleBillingCharge(message, channel, deliveryTag);
+                    transactionEventHandler.handleBillingCharge(message);
                     break;
                 case "WALLET_PLAN":
-                    transactionEventHandler.handleWalletPlanDeposit(message, channel, deliveryTag);
+                    transactionEventHandler.handleWalletPlanDeposit(message);
+                    break;
+                case "REFUND":
+                    transactionEventHandler.handleRefundDeposit(message);
+                    break;
+                case "TRANSACTION_CREATED":
+                    // Record was already persisted synchronously by TransactionService;
+                    // no-op, ack to avoid poison message.
+                    log.info("Transaction created event received, already persisted - acking");
                     break;
                 default:
                     log.error("Unknown transaction event: {}", event);
-                    channel.basicAck(deliveryTag, false);
                     break;
             }
+            // Handler returned => its transaction committed => safe to ack
+            channel.basicAck(deliveryTag, false);
         } catch (Exception e) {
-            log.error("Transaction listener error: {}", e.getMessage(), e);
-            channel.basicNack(deliveryTag, false, false);
+            // First failure => requeue for one retry; redelivered failure => DLQ
+            boolean requeue = !Boolean.TRUE.equals(redelivered);
+            log.error("Transaction listener error: redelivered={} requeue={}", redelivered, requeue, e);
+            channel.basicNack(deliveryTag, false, requeue);
         } finally {
             log.info("========== TRANSACTION LISTENER END ==========");
             MDC.clear();

@@ -13,7 +13,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -50,7 +50,7 @@ public class NotificationService {
                 .referenceType(referenceType)
                 .referenceId(referenceId)
                 .isRead(false)
-                .createdAt(OffsetDateTime.now())
+                .createdAt(LocalDateTime.now())
                 .build();
 
         var saved = notificationRepository.save(notification);
@@ -93,7 +93,7 @@ public class NotificationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Notification", "id", id));
 
         notification.setIsRead(true);
-        notification.setReadAt(OffsetDateTime.now());
+        notification.setReadAt(LocalDateTime.now());
 
         var saved = notificationRepository.save(notification);
         return toResponse(saved);

@@ -12,7 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -162,7 +162,7 @@ public class RbacService {
             role.setPermissions(new HashSet<>(permissions));
         }
 
-        role.setUpdatedAt(OffsetDateTime.now());
+        role.setUpdatedAt(LocalDateTime.now());
         var saved = roleRepository.save(role);
         log.info("Role updated: {} (id={})", saved.getName(), saved.getId());
         return toRoleResponse(saved);
