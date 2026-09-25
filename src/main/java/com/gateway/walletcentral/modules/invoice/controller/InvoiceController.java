@@ -56,6 +56,15 @@ public class InvoiceController {
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
+    @GetMapping("/{id}/items")
+    @RequirePermission("INVOICE_VIEW")
+    @Operation(summary = "List billable usage lines of an invoice with cursor pagination (refunded lines flagged)")
+    public ResponseEntity<ApiResponse<CursorPage<InvoiceItemResponse>>> getItems(
+            @PathVariable UUID id,
+            @ModelAttribute CursorParams params) {
+        return ResponseEntity.ok(ApiResponse.ok(invoiceService.getInvoiceItems(id, params)));
+    }
+
     @PatchMapping("/{id}/pay")
     @RequirePermission("INVOICE_PAY")
     @Operation(summary = "Mark invoice as paid")

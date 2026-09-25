@@ -209,7 +209,9 @@ public class WalletPlanService {
 
     @Transactional(readOnly = true)
     public CursorPage<WalletPlanResponse> listPending(CursorParams params) {
-        var items = walletPlanRepository.findByStatusOrderByCreatedAtAsc(WalletPlanStatus.PENDING)
+        UUID cursorId = CursorUtil.parseCursor(params.getCursor());
+        var pageable = PageRequest.of(0, params.getSize() + 1);
+        var items = walletPlanRepository.findByStatusOrderByCreatedAtAsc(cursorId, WalletPlanStatus.PENDING, pageable)
                 .stream()
                 .map(this::toResponse)
                 .toList();

@@ -254,6 +254,7 @@ CREATE TABLE IF NOT EXISTS invoices (
     billing_period VARCHAR(7) NOT NULL,
     total_amount DECIMAL(15,2) NOT NULL DEFAULT 0.00,
     status VARCHAR(10) NOT NULL DEFAULT 'ISSUED',
+    note TEXT NULL DEFAULT NULL,
     due_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -325,11 +326,12 @@ INSERT IGNORE INTO system_configs (id, config_key, config_value, config_group, d
 ('00000000-0000-0000-0000-000000000032', 'invoice.due_month_offset', '1', 'INVOICE', 'Due date month offset from generation month', 'number', NULL),
 ('00000000-0000-0000-0000-000000000033', 'invoice.due_day', '1', 'INVOICE', 'Due date day of month', 'number', NULL),
 ('00000000-0000-0000-0000-000000000034', 'invoice.due_time', '23:59:59', 'INVOICE', 'Due date time of day (HH:mm:ss)', 'time', NULL),
-('00000000-0000-0000-0000-000000000035', 'mq.retry_enabled', 'true', 'MQ', 'Requeue a failed message once for a single retry before DLQ', 'boolean', NULL),
-('00000000-0000-0000-0000-000000000036', 'scheduler.cleanup_cron', '0 */30 * * * *', 'SCHEDULER', 'Cron for expired OTP/token cleanup (sec min hour day month weekday)', 'text', NULL),
-('00000000-0000-0000-0000-000000000037', 'scheduler.cleanup_enabled', 'true', 'SCHEDULER', 'Enable expired OTP/token cleanup', 'boolean', NULL),
-('00000000-0000-0000-0000-000000000038', 'scheduler.invoice_cron', '0 0 2 1 * ?', 'SCHEDULER', 'Cron for monthly invoice generation', 'text', NULL),
-('00000000-0000-0000-0000-000000000039', 'scheduler.invoice_enabled', 'true', 'SCHEDULER', 'Enable monthly invoice generation', 'boolean', NULL);
+('00000000-0000-0000-0000-000000000035', 'invoice.zero_amount_note', 'Không có phát sinh giao dịch trong tháng', 'INVOICE', 'Note set on auto-paid zero-amount invoices', 'text', NULL),
+('00000000-0000-0000-0000-000000000036', 'mq.retry_enabled', 'true', 'MQ', 'Requeue a failed message once for a single retry before DLQ', 'boolean', NULL),
+('00000000-0000-0000-0000-000000000037', 'scheduler.cleanup_cron', '0 */30 * * * *', 'SCHEDULER', 'Cron for expired OTP/token cleanup (sec min hour day month weekday)', 'text', NULL),
+('00000000-0000-0000-0000-000000000038', 'scheduler.cleanup_enabled', 'true', 'SCHEDULER', 'Enable expired OTP/token cleanup', 'boolean', NULL),
+('00000000-0000-0000-0000-000000000039', 'scheduler.invoice_cron', '0 0 2 1 * ?', 'SCHEDULER', 'Cron for monthly invoice generation', 'text', NULL),
+('00000000-0000-0000-0000-000000000040', 'scheduler.invoice_enabled', 'true', 'SCHEDULER', 'Enable monthly invoice generation', 'boolean', NULL);
 
 -- =============================================
 -- 13. Admin OTPs (no FK dependencies)

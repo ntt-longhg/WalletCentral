@@ -39,4 +39,14 @@ public interface RefundRequestRepository extends JpaRepository<RefundRequest, UU
     @Query("SELECT CASE WHEN COUNT(rr) > 0 THEN true ELSE false END FROM RefundRequest rr WHERE rr.transaction.id = :transactionId AND rr.status IN (:statuses) AND rr.deletedAt IS NULL")
     boolean existsByTransactionIdAndStatusIn(@Param("transactionId") UUID transactionId,
                                              @Param("statuses") List<RefundRequestStatus> statuses);
+
+    /**
+     * Reference IDs of the original transactions that were refunded (APPROVED).
+     * Used to exclude refunded usage from invoices.
+     */
+    @Query("SELECT t.referenceId FROM RefundRequest rr JOIN rr.transaction t WHERE rr.tenant.id = :tenantId AND rr.status = :status AND rr.deletedAt IS NULL")
+    List<String> findTransactionReferenceIdsByTenantAndStatus(@Param("tenantId") UUID tenantId,
+                                                              @Param("status") RefundRequestStatus status);
+
+    long countByStatusAndDeletedAtIsNull(RefundRequestStatus status);
 }

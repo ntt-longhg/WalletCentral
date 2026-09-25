@@ -317,6 +317,7 @@ export interface InvoiceResponse {
   billingPeriod: string;  // Billing period format "yyyy-MM" (e.g. "2024-01")
   totalAmount: number;    // Total invoice amount
   status: 'ISSUED' | 'PAID' | 'CANCELLED' | 'OVERDUE' | string;
+  note?: string;          // Note, e.g. zero-amount auto-payment reason
   dueDate: string;        // Required OffsetDateTime (ISO)
   updatedBy?: string;     // Person last updating invoice
   createdAt: string;      // OffsetDateTime (ISO)
@@ -334,6 +335,28 @@ export interface InvoiceCreateRequest {
 
 export interface InvoicePayRequest {
   updatedBy: string;      // Required, NotBlank (e.g. "admin")
+}
+
+export interface InvoiceItemResponse {
+  usageLogId: string;     // UUID
+  serviceName?: string;
+  serviceCode?: string;
+  totalUsage: number;
+  totalCharged: number;
+  referenceId?: string;
+  refunded: boolean;      // Excluded from total when true
+  transactionId?: string;
+  transactionStatus?: string;
+  createdAt: string;
+}
+
+export interface DashboardSummaryResponse {
+  tenantCount: number;
+  walletCount: number;
+  serviceCount: number;
+  transactionCount: number;
+  pendingPlanCount: number;
+  pendingRefundCount: number;
 }
 
 // 9. Usage Log Module DTOs

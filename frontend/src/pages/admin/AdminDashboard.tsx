@@ -19,25 +19,24 @@ import {
   LayoutDashboard,
   ArrowDownLeft,
 } from 'lucide-react';
-import { useBillingStore, useServiceStore, useTransactionStore } from '@/stores';
+import { useBillingStore, useTransactionStore, useDashboardStore } from '@/stores';
 import { useNavigate } from 'react-router-dom';
 
 export const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { tenants, wallets, pendingPlansCount, pendingRefunds, fetchTenants, fetchWallets, fetchPendingWalletPlans, fetchPendingRefunds, tenantsLoading } = useBillingStore();
-  const { services, fetchServices } = useServiceStore();
+  const { fetchPendingWalletPlans, fetchPendingRefunds } = useBillingStore();
   const { transactions, fetchTransactions, transactionsLoading } = useTransactionStore();
+  const { summary, summaryLoading, fetchSummary } = useDashboardStore();
 
-  const loading = tenantsLoading || transactionsLoading;
+  const loading = summaryLoading || transactionsLoading;
 
   const fetchDashboardData = async () => {
     await Promise.allSettled([
-      fetchTenants(),
-      fetchServices(),
+      fetchSummary(),
+      // Refresh store lists so badges/other pages stay in sync (counts come from summary)
       fetchPendingWalletPlans(),
       fetchPendingRefunds(),
       fetchTransactions(),
-      fetchWallets(),
     ]);
   };
 
@@ -46,6 +45,12 @@ export const AdminDashboard: React.FC = () => {
   }, []);
 
   const recentTransactions = transactions.slice(0, 5);
+  const tenantCount = summary?.tenantCount ?? 0;
+  const serviceCount = summary?.serviceCount ?? 0;
+  const walletCount = summary?.walletCount ?? 0;
+  const pendingPlanCount = summary?.pendingPlanCount ?? 0;
+  const pendingRefundCount = summary?.pendingRefundCount ?? 0;
+  const transactionCount = summary?.transactionCount ?? 0;
 
   return (
     <div className="space-y-6">
@@ -81,7 +86,7 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-900">{tenants.length}</div>
+            <div className="text-2xl font-bold text-slate-900">{tenantCount}</div>
             <p className="text-xs text-slate-500 mt-1">Đối tác đang kết nối</p>
           </CardContent>
         </Card>
@@ -94,7 +99,7 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-900">{services.length}</div>
+            <div className="text-2xl font-bold text-slate-900">{serviceCount}</div>
             <p className="text-xs text-slate-500 mt-1">Dịch vụ đang hoạt động</p>
           </CardContent>
         </Card>
@@ -107,7 +112,7 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-900">{wallets.length}</div>
+            <div className="text-2xl font-bold text-slate-900">{walletCount}</div>
             <p className="text-xs text-slate-500 mt-1">Ví trả trước & trả sau</p>
           </CardContent>
         </Card>
@@ -123,9 +128,9 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-amber-600">{pendingPlansCount}</div>
+            <div className="text-2xl font-bold text-amber-600">{pendingPlanCount}</div>
             <p className="text-xs text-slate-500 mt-1">
-              {pendingPlansCount > 0 ? (
+              {pendingPlanCount > 0 ? (
                 <span className="text-amber-600 font-medium">Cần xử lý</span>
               ) : (
                 'Không có yêu cầu chờ'
@@ -145,9 +150,9 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{pendingRefunds.length}</div>
+            <div className="text-2xl font-bold text-orange-600">{pendingRefundCount}</div>
             <p className="text-xs text-slate-500 mt-1">
-              {pendingRefunds.length > 0 ? (
+              {pendingRefundCount > 0 ? (
                 <span className="text-orange-600 font-medium">Cần xử lý</span>
               ) : (
                 'Không có yêu cầu chờ'
@@ -164,7 +169,7 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-900">{transactions.length}</div>
+            <div className="text-2xl font-bold text-slate-900">{transactionCount}</div>
             <p className="text-xs text-slate-500 mt-1">Ghi nhận từ hệ thống</p>
           </CardContent>
         </Card>

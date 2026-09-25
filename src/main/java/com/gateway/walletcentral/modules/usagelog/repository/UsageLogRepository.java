@@ -32,5 +32,29 @@ public interface UsageLogRepository extends JpaRepository<UsageLog, UUID> {
                         @Param("startOfMonth") LocalDateTime startOfMonth,
                         @Param("endOfMonth") LocalDateTime endOfMonth);
 
+        /**
+         * Same as above but excludes refunded usage (by reference ID).
+         * Only call when the exclusion list is non-empty (empty NOT IN is invalid JPQL).
+         */
+        @Query("SELECT COALESCE(SUM(ul.totalCharged), 0) FROM UsageLog ul WHERE ul.tenant.id = :tenantId AND ul.walletTypeSnapshot = :walletType AND ul.createdAt >= :startOfMonth AND ul.createdAt <= :endOfMonth AND ul.referenceId NOT IN :excludedReferenceIds")
+        BigDecimal sumChargedByTenantAndPeriodExcluding(@Param("tenantId") UUID tenantId,
+                        @Param("walletType") WalletType walletType,
+                        @Param("startOfMonth") LocalDateTime startOfMonth,
+                        @Param("endOfMonth") LocalDateTime endOfMonth,
+                        @Param("excludedReferenceIds") List<String> excludedReferenceIds);
+
+        /**
+         * Usage logs comprising an invoice (POSTPAID in period), with service fetched.
+         * UUID v7 IDs are time-ordered, so id ASC matches chronological order
+         * and supports cursor pagination like other list queries.
+         */
+        @Query("SELECT ul FROM UsageLog ul LEFT JOIN FETCH ul.service WHERE ul.tenant.id = :tenantId AND ul.walletTypeSnapshot = :walletType AND ul.createdAt >= :startOfMonth AND ul.createdAt <= :endOfMonth AND (:cursor IS NULL OR ul.id > :cursor) ORDER BY ul.id ASC")
+        List<UsageLog> findByTenantAndPeriod(@Param("tenantId") UUID tenantId,
+                        @Param("walletType") WalletType walletType,
+                        @Param("startOfMonth") LocalDateTime startOfMonth,
+                        @Param("endOfMonth") LocalDateTime endOfMonth,
+                        @Param("cursor") UUID cursor,
+                        org.springframework.data.domain.Pageable pageable);
+
         boolean existsByReferenceId(String referenceId);
 }
