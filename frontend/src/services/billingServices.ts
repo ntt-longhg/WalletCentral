@@ -114,7 +114,10 @@ export const walletPlanService = {
   create: (data: WalletPlanCreateRequest) => api.post<ApiResponse<WalletPlanResponse>>('/wallet-plans', data),
   getAll: () => api.get<ApiResponse<PaginatedResponse<WalletPlanResponse>>>('/wallet-plans'),
   getById: (id: string) => api.get<ApiResponse<WalletPlanResponse>>(`/wallet-plans/${id}`),
-  getPending: () => api.get<ApiResponse<PaginatedResponse<WalletPlanResponse>>>('/wallet-plans/pending'),
+  getPending: (cursor?: string, size?: number) =>
+    api.get<ApiResponse<PaginatedResponse<WalletPlanResponse>>>('/wallet-plans/pending', {
+      params: { cursor, size },
+    }),
   approve: (id: string, data: WalletPlanApproveRequest) =>
     api.post<ApiResponse<WalletPlanResponse>>(`/wallet-plans/${id}/approve`, data),
   reject: (id: string, data: WalletPlanRejectRequest) =>
