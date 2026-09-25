@@ -26,7 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -82,8 +82,8 @@ public class RefundRequestService {
                 .status(RefundRequestStatus.PENDING)
                 .reason(request.getReason())
                 .requestedBy(request.getRequestedBy() != null ? request.getRequestedBy() : "system")
-                .createdAt(OffsetDateTime.now())
-                .updatedAt(OffsetDateTime.now())
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
                 .build();
 
         var saved = refundRequestRepository.save(refundRequest);
@@ -112,13 +112,13 @@ public class RefundRequestService {
         BigDecimal newAvailable = newBalance.add(wallet.getCreditLimit());
 
         wallet.setBalance(newBalance);
-        wallet.setUpdatedAt(OffsetDateTime.now());
+        wallet.setUpdatedAt(LocalDateTime.now());
         walletRepository.save(wallet);
 
         refundRequest.setStatus(RefundRequestStatus.APPROVED);
         refundRequest.setReviewedBy(request.getReviewedBy());
-        refundRequest.setReviewedAt(OffsetDateTime.now());
-        refundRequest.setUpdatedAt(OffsetDateTime.now());
+        refundRequest.setReviewedAt(LocalDateTime.now());
+        refundRequest.setUpdatedAt(LocalDateTime.now());
         var saved = refundRequestRepository.save(refundRequest);
 
         RefundApprovedEvent refundEvent = RefundApprovedEvent.builder()
@@ -127,6 +127,10 @@ public class RefundRequestService {
                 .walletId(wallet.getId().toString())
                 .tenantId(wallet.getTenant().getId().toString())
                 .amount(saved.getAmount())
+                .balanceBefore(balanceBefore)
+                .balanceAfter(newBalance)
+                .availableBalanceBefore(availableBefore)
+                .availableBalanceAfter(newAvailable)
                 .reviewedBy(request.getReviewedBy())
                 .build();
         eventPublisher.publishEvent(refundEvent);
@@ -159,10 +163,31 @@ public class RefundRequestService {
 
         refundRequest.setStatus(RefundRequestStatus.REJECTED);
         refundRequest.setReviewedBy(request.getReviewedBy());
-        refundRequest.setReviewedAt(OffsetDateTime.now());
+        refundRequest.setReviewedAt(LocalDateTime.now());
         refundRequest.setRejectReason(request.getRejectReason());
-        refundRequest.setUpdatedAt(OffsetDateTime.now());
+        refundRequest.setUpdatedAt(LocalDateTime.now());
         var saved = refundRequestRepository.save(refundRequest);
+
+        // Record a FAILED transaction in the ledger so the tenant can see
+        // why the refund never happened. Balances are unchanged (no money moved).
+        Wallet wallet = saved.getWallet();
+        Transaction failedTxn = Transaction.builder()
+                .wallet(wallet)
+                .amount(saved.getAmount())
+                .type(TransactionType.REFUND)
+                .balanceBefore(wallet.getBalance())
+                .balanceAfter(wallet.getBalance())
+                .availableBalanceBefore(wallet.getAvailableBalance())
+                .availableBalanceAfter(wallet.getAvailableBalance())
+                .status(TransactionStatus.FAILED)
+                .description("Yêu cầu hoàn tiền cho giao dịch " + saved.getTransaction().getId()
+                        + " bị từ chối: " + request.getRejectReason())
+                .referenceFrom("REFUND")
+                .referenceId(saved.getId().toString())
+                .createdAt(LocalDateTime.now())
+                .build();
+        transactionRepository.save(failedTxn);
+        log.info("Recorded FAILED transaction {} for rejected refund request {}", failedTxn.getId(), id);
 
         RefundRejectedEvent refundEvent = RefundRejectedEvent.builder()
                 .refundRequestId(saved.getId().toString())

@@ -2,7 +2,7 @@ package com.gateway.walletcentral.modules.auth.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import org.hibernate.annotations.UuidGenerator;
 import java.util.HashSet;
 import java.util.Set;
@@ -48,8 +48,8 @@ public class Role {
     private Set<Permission> permissions = new HashSet<>();
 
     @Column(name = "created_at", updatable = false, comment = "Record creation timestamp")
-    private OffsetDateTime createdAt = OffsetDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "updated_at", comment = "Record last update timestamp")
-    private OffsetDateTime updatedAt = OffsetDateTime.now();
+    private LocalDateTime updatedAt = LocalDateTime.now();
 }

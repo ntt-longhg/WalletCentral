@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -65,7 +65,7 @@ public class UsageLogService {
                                 .availableBalanceSnapshot(wallet.getAvailableBalance())
                                 .referenceFrom(request.getReferenceFrom())
                                 .referenceId(request.getReferenceId())
-                                .createdAt(OffsetDateTime.now())
+                                .createdAt(LocalDateTime.now())
                                 .build();
 
                 var saved = usageLogRepository.save(usageLog);

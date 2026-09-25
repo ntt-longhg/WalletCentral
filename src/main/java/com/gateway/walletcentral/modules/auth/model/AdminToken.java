@@ -2,7 +2,7 @@ package com.gateway.walletcentral.modules.auth.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import org.hibernate.annotations.UuidGenerator;
 import java.util.UUID;
 
@@ -34,8 +34,8 @@ public class AdminToken {
     private String email;
 
     @Column(name = "expires_at", nullable = false, comment = "Token expiration timestamp")
-    private OffsetDateTime expiresAt;
+    private LocalDateTime expiresAt;
 
     @Column(name = "created_at", updatable = false, comment = "Record creation timestamp")
-    private OffsetDateTime createdAt = OffsetDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now();
 }

@@ -1,12 +1,10 @@
 package com.gateway.walletcentral.modules.notification.handler;
 
 import com.gateway.walletcentral.modules.notification.service.NotificationService;
-import com.rabbitmq.client.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 
@@ -21,7 +19,7 @@ public class NotificationEventHandler {
         this.notificationService = notificationService;
     }
 
-    public void handleNotification(Map<String, Object> payload, Channel channel, long deliveryTag) throws IOException {
+    public void handleNotification(Map<String, Object> payload) {
         String tenantId = (String) payload.get("tenantId");
         String type = (String) payload.get("type");
         String title = (String) payload.get("title");
@@ -39,11 +37,10 @@ public class NotificationEventHandler {
                     message,
                     referenceType,
                     referenceId);
-
-            channel.basicAck(deliveryTag, false);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
+            // Rethrow so the listener can nack (with one retry); saveAndPush already rolled back
             log.error("Notification handler error: tenantId={}", tenantId, e);
-            channel.basicNack(deliveryTag, false, false);
+            throw e;
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.gateway.walletcentral.modules.walletplan.listener;
 
 import com.gateway.walletcentral.config.RabbitMQConfig;
+import com.gateway.walletcentral.modules.systemconfig.service.SystemConfigService;
 import com.gateway.walletcentral.modules.walletplan.handler.WalletPlanEventHandler;
 import com.gateway.walletcentral.modules.walletplan.model.WalletPlanStatus;
 import com.rabbitmq.client.Channel;
@@ -21,14 +22,18 @@ public class WalletPlanListener {
     private static final Logger log = LoggerFactory.getLogger(WalletPlanListener.class);
 
     private final WalletPlanEventHandler walletPlanEventHandler;
+    private final SystemConfigService configService;
 
-    public WalletPlanListener(WalletPlanEventHandler walletPlanEventHandler) {
+    public WalletPlanListener(WalletPlanEventHandler walletPlanEventHandler,
+            SystemConfigService configService) {
         this.walletPlanEventHandler = walletPlanEventHandler;
+        this.configService = configService;
     }
 
     @RabbitListener(queues = RabbitMQConfig.QUEUE_WALLET_PLAN, executor = "virtualThreadExecutor")
     public void handleWalletPlanEvent(Map<String, Object> message,
             @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag,
+            @Header(value = AmqpHeaders.REDELIVERED, required = false) Boolean redelivered,
             Channel channel) throws IOException {
 
         String requestId = (String) message.get("requestId");
@@ -53,17 +58,24 @@ public class WalletPlanListener {
 
             switch (status) {
                 case APPROVED:
-                    walletPlanEventHandler.handlerApproved(payload, channel, deliveryTag);
+                    walletPlanEventHandler.handlerApproved(payload);
                     break;
                 case REJECTED:
-                    walletPlanEventHandler.handlerRejected(payload, channel, deliveryTag);
+                    walletPlanEventHandler.handlerRejected(payload);
                     break;
                 case PENDING:
+                    log.info("Wallet plan PENDING event - nothing to do, acking");
                     break;
             }
+            // Handler returned => its transaction committed => safe to ack
+            channel.basicAck(deliveryTag, false);
         } catch (Exception e) {
-            log.error("Wallet plan listener error processing wallet plan event: {}", event, e);
-            channel.basicNack(deliveryTag, false, false);
+            // First failure => requeue for one retry (if mq.retry_enabled); redelivered failure => DLQ
+            boolean requeue = configService.getBoolean("mq.retry_enabled", true)
+                    && !Boolean.TRUE.equals(redelivered);
+            log.error("Wallet plan listener error processing event: {} redelivered={} requeue={}",
+                    event, redelivered, requeue, e);
+            channel.basicNack(deliveryTag, false, requeue);
         } finally {
             log.info("========== WALLET PLAN LISTENER END ==========");
             MDC.clear();

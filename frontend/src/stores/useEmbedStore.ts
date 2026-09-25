@@ -8,6 +8,8 @@ import type {
   CreditAdjustmentResponse,
   PricingPlanResponse,
   WalletPlanResponse,
+  RefundResponse,
+  RefundCreateRequest,
   PaginatedResponse,
 } from '@/types/api';
 
@@ -42,6 +44,17 @@ interface EmbedState {
   pricingPlansLoading: boolean;
   pricingPlansError: string | null;
 
+  // Pending wallet plans (topup requests awaiting approval)
+  pendingWalletPlans: WalletPlanResponse[];
+  pendingWalletPlansLoading: boolean;
+  pendingWalletPlansError: string | null;
+
+  // Refund requests
+  refunds: RefundResponse[];
+  pendingRefunds: RefundResponse[];
+  refundsLoading: boolean;
+  refundsError: string | null;
+
   // Actions
   fetchWallet: () => Promise<void>;
   fetchTransactions: () => Promise<void>;
@@ -49,7 +62,11 @@ interface EmbedState {
   fetchUsageLogs: () => Promise<void>;
   fetchCreditAdjustments: () => Promise<void>;
   fetchPricingPlans: () => Promise<void>;
+  fetchPendingWalletPlans: () => Promise<void>;
+  fetchRefundRequests: () => Promise<void>;
+  fetchPendingRefundRequests: () => Promise<void>;
   createWalletPlan: (pricingPlanId: string) => Promise<WalletPlanResponse>;
+  createRefundRequest: (data: RefundCreateRequest) => Promise<RefundResponse>;
   payInvoice: (invoiceId: string) => Promise<void>;
 }
 
@@ -78,6 +95,15 @@ export const useEmbedStore = create<EmbedState>((set) => ({
   pricingPlans: [],
   pricingPlansLoading: false,
   pricingPlansError: null,
+
+  pendingWalletPlans: [],
+  pendingWalletPlansLoading: false,
+  pendingWalletPlansError: null,
+
+  refunds: [],
+  pendingRefunds: [],
+  refundsLoading: false,
+  refundsError: null,
 
   // ─── Actions ──────────────────────────────────────────────────────────────────
 
@@ -182,6 +208,64 @@ export const useEmbedStore = create<EmbedState>((set) => ({
   createWalletPlan: async (pricingPlanId) => {
     const res = await embedService.createWalletPlan(pricingPlanId);
     return res.data.data!;
+  },
+
+  fetchPendingWalletPlans: async () => {
+    set({ pendingWalletPlansLoading: true, pendingWalletPlansError: null });
+    try {
+      const res = await embedService.getPendingWalletPlans();
+      if (res.data.success && res.data.data?.items) {
+        set({ pendingWalletPlans: res.data.data.items });
+      } else {
+        set({ pendingWalletPlansError: 'Không thể tải yêu cầu nạp gói đang chờ.' });
+      }
+    } catch (err: any) {
+      set({ pendingWalletPlansError: err.response?.data?.message ?? 'Lỗi kết nối đến server.' });
+    } finally {
+      set({ pendingWalletPlansLoading: false });
+    }
+  },
+
+  fetchRefundRequests: async () => {
+    set({ refundsLoading: true, refundsError: null });
+    try {
+      const res = await embedService.getRefundRequests();
+      if (res.data.success && res.data.data?.items) {
+        set({ refunds: res.data.data.items });
+      } else {
+        set({ refundsError: 'Không thể tải danh sách yêu cầu hoàn tiền.' });
+      }
+    } catch (err: any) {
+      set({ refundsError: err.response?.data?.message ?? 'Lỗi kết nối đến server.' });
+    } finally {
+      set({ refundsLoading: false });
+    }
+  },
+
+  fetchPendingRefundRequests: async () => {
+    set({ refundsLoading: true, refundsError: null });
+    try {
+      const res = await embedService.getPendingRefundRequests();
+      if (res.data.success && res.data.data?.items) {
+        set({ pendingRefunds: res.data.data.items });
+      } else {
+        set({ refundsError: 'Không thể tải yêu cầu hoàn tiền đang chờ.' });
+      }
+    } catch (err: any) {
+      set({ refundsError: err.response?.data?.message ?? 'Lỗi kết nối đến server.' });
+    } finally {
+      set({ refundsLoading: false });
+    }
+  },
+
+  createRefundRequest: async (data) => {
+    const res = await embedService.createRefundRequest(data);
+    const created = res.data.data!;
+    set((state) => ({
+      refunds: [created, ...state.refunds],
+      pendingRefunds: created.status === 'PENDING' ? [created, ...state.pendingRefunds] : state.pendingRefunds,
+    }));
+    return created;
   },
 
   payInvoice: async (invoiceId) => {

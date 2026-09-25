@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Wallet,
+  ClipboardList,
   History,
   FileText,
   BarChart3,
@@ -54,6 +55,14 @@ const demoPages = [
     icon: BarChart3,
     color: 'text-purple-600',
     bgColor: 'bg-purple-50',
+    height: 600,
+  },
+  {
+    path: '/embed/requests',
+    name: 'Yêu cầu chờ duyệt',
+    icon: ClipboardList,
+    color: 'text-amber-600',
+    bgColor: 'bg-amber-50',
     height: 600,
   },
 ];

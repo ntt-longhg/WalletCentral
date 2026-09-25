@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 
 @Service
 @Transactional
@@ -46,7 +46,7 @@ public class ServiceService {
                 .code(request.getCode())
                 .name(request.getName())
                 .description(request.getDescription())
-                .createdAt(OffsetDateTime.now())
+                .createdAt(LocalDateTime.now())
                 .build();
 
         var saved = serviceRepository.save(service);
@@ -92,7 +92,7 @@ public class ServiceService {
             service.setName(request.getName());
         if (request.getDescription() != null)
             service.setDescription(request.getDescription());
-        service.setUpdatedAt(OffsetDateTime.now());
+        service.setUpdatedAt(LocalDateTime.now());
 
         var saved = serviceRepository.save(service);
         return toServiceResponse(saved);
@@ -101,7 +101,7 @@ public class ServiceService {
     public void deleteService(UUID id) {
         var service = serviceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Service", "id", id));
-        service.setDeletedAt(OffsetDateTime.now());
+        service.setDeletedAt(LocalDateTime.now());
         serviceRepository.save(service);
     }
 
@@ -119,7 +119,7 @@ public class ServiceService {
                 .subsequentFee(request.getSubsequentFee())
                 .isActive(true)
                 .effectiveDate(request.getEffectiveDate())
-                .createdAt(OffsetDateTime.now())
+                .createdAt(LocalDateTime.now())
                 .build();
 
         var saved = servicePriceRepository.save(price);
@@ -166,7 +166,7 @@ public class ServiceService {
         if (request.getEffectiveDate() != null)
             price.setEffectiveDate(request.getEffectiveDate());
 
-        price.setUpdatedAt(OffsetDateTime.now());
+        price.setUpdatedAt(LocalDateTime.now());
 
         var saved = servicePriceRepository.save(price);
         return toPriceResponse(saved);
@@ -176,7 +176,7 @@ public class ServiceService {
         var price = servicePriceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("ServicePrice", "id", id));
         price.setIsActive(!Boolean.TRUE.equals(price.getIsActive()));
-        price.setUpdatedAt(OffsetDateTime.now());
+        price.setUpdatedAt(LocalDateTime.now());
         var saved = servicePriceRepository.save(price);
         return toPriceResponse(saved);
     }

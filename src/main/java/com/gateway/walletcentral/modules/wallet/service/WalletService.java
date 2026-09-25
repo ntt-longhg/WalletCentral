@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 
 @Service
 @Transactional
@@ -45,7 +45,7 @@ public class WalletService {
                 .balance(java.math.BigDecimal.ZERO)
                 .creditLimit(java.math.BigDecimal.ZERO)
                 .status(WalletStatus.ACTIVE)
-                .createdAt(OffsetDateTime.now())
+                .createdAt(LocalDateTime.now())
                 .build();
 
         Wallet saved = walletRepository.save(wallet);
@@ -89,7 +89,7 @@ public class WalletService {
         Wallet wallet = walletRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Wallet", "id", id));
         wallet.setStatus(request.getStatus());
-        wallet.setUpdatedAt(OffsetDateTime.now());
+        wallet.setUpdatedAt(LocalDateTime.now());
         Wallet saved = walletRepository.save(wallet);
         return toResponse(saved);
     }

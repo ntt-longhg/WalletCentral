@@ -2,7 +2,7 @@ package com.gateway.walletcentral.modules.auth.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import org.hibernate.annotations.UuidGenerator;
 import java.util.UUID;
 
@@ -36,12 +36,15 @@ public class AdminUser {
     @Builder.Default
     private Boolean isActive = true;
 
+    @Column(name = "password_hash", length = 255, comment = "BCrypt password hash for password login (NULL = not set)")
+    private String passwordHash;
+
     @Column(name = "last_login_at", comment = "Last login timestamp")
-    private OffsetDateTime lastLoginAt;
+    private LocalDateTime lastLoginAt;
 
     @Column(name = "created_at", updatable = false, comment = "Record creation timestamp")
-    private OffsetDateTime createdAt = OffsetDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "updated_at", comment = "Record last update timestamp")
-    private OffsetDateTime updatedAt = OffsetDateTime.now();
+    private LocalDateTime updatedAt = LocalDateTime.now();
 }

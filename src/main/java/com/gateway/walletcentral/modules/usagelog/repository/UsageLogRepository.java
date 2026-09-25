@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,8 +29,8 @@ public interface UsageLogRepository extends JpaRepository<UsageLog, UUID> {
         @Query("SELECT COALESCE(SUM(ul.totalCharged), 0) FROM UsageLog ul WHERE ul.tenant.id = :tenantId AND ul.walletTypeSnapshot = :walletType AND ul.createdAt >= :startOfMonth AND ul.createdAt <= :endOfMonth")
         BigDecimal sumChargedByTenantAndPeriod(@Param("tenantId") UUID tenantId,
                         @Param("walletType") WalletType walletType,
-                        @Param("startOfMonth") OffsetDateTime startOfMonth,
-                        @Param("endOfMonth") OffsetDateTime endOfMonth);
+                        @Param("startOfMonth") LocalDateTime startOfMonth,
+                        @Param("endOfMonth") LocalDateTime endOfMonth);
 
         boolean existsByReferenceId(String referenceId);
 }

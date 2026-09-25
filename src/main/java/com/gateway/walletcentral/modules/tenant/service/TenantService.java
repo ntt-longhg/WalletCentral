@@ -13,7 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -37,7 +37,7 @@ public class TenantService {
                 .clientSecret(request.getClientSecret())
                 .allowedDomains(request.getAllowedDomains())
                 .status(TenantStatus.ACTIVE)
-                .createdAt(OffsetDateTime.now())
+                .createdAt(LocalDateTime.now())
                 .build();
 
         Tenant saved = tenantRepository.save(tenant);
@@ -86,7 +86,7 @@ public class TenantService {
             tenant.setClientSecret(request.getClientSecret());
         if (request.getAllowedDomains() != null)
             tenant.setAllowedDomains(request.getAllowedDomains());
-        tenant.setUpdatedAt(OffsetDateTime.now());
+        tenant.setUpdatedAt(LocalDateTime.now());
         Tenant saved = tenantRepository.save(tenant);
         return toResponse(saved);
     }
@@ -95,7 +95,7 @@ public class TenantService {
         Tenant tenant = tenantRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Tenant", "id", id));
         tenant.setStatus(request.getStatus());
-        tenant.setUpdatedAt(OffsetDateTime.now());
+        tenant.setUpdatedAt(LocalDateTime.now());
         Tenant saved = tenantRepository.save(tenant);
         return toResponse(saved);
     }
@@ -103,7 +103,7 @@ public class TenantService {
     public void delete(UUID id) {
         Tenant tenant = tenantRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Tenant", "id", id));
-        tenant.setDeletedAt(OffsetDateTime.now());
+        tenant.setDeletedAt(LocalDateTime.now());
         tenantRepository.save(tenant);
     }
 

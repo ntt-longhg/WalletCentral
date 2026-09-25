@@ -22,6 +22,11 @@ import {
   WalletPlanResponse,
   WalletPlanCreateRequest,
   WalletPlanApproveRequest,
+  WalletPlanRejectRequest,
+  RefundResponse,
+  RefundCreateRequest,
+  RefundApproveRequest,
+  RefundRejectRequest,
   WalletResponse,
   WalletCreateRequest,
   WalletStatusRequest,
@@ -35,6 +40,8 @@ import {
   CreditAdjustmentResponse,
   CreditAdjustmentCreateRequest,
   AuthResponse,
+  LoginConfigResponse,
+  ConfigReloadResponse,
   SystemConfigResponse,
   SystemConfigUpdateRequest,
   RoleResponse,
@@ -108,8 +115,17 @@ export const walletPlanService = {
   getPending: () => api.get<ApiResponse<PaginatedResponse<WalletPlanResponse>>>('/wallet-plans/pending'),
   approve: (id: string, data: WalletPlanApproveRequest) =>
     api.post<ApiResponse<WalletPlanResponse>>(`/wallet-plans/${id}/approve`, data),
-  reject: (id: string, data: WalletPlanApproveRequest) =>
+  reject: (id: string, data: WalletPlanRejectRequest) =>
     api.post<ApiResponse<WalletPlanResponse>>(`/wallet-plans/${id}/reject`, data),
+};
+
+// 4b. Refund Service (admin)
+export const refundService = {
+  getPending: () => api.get<ApiResponse<PaginatedResponse<RefundResponse>>>('/refund-requests/pending'),
+  approve: (id: string, data: RefundApproveRequest) =>
+    api.post<ApiResponse<RefundResponse>>(`/refund-requests/${id}/approve`, data),
+  reject: (id: string, data: RefundRejectRequest) =>
+    api.post<ApiResponse<RefundResponse>>(`/refund-requests/${id}/reject`, data),
 };
 
 // 5. Wallet Service
@@ -161,12 +177,20 @@ export const creditAdjustmentService = {
   getById: (id: string) => api.get<ApiResponse<CreditAdjustmentResponse>>(`/credit-adjustments/${id}`),
 };
 
-// 10. Auth Service (OTP-based admin login)
+// 10. Auth Service (OTP + password admin login)
 export const authService = {
   sendOtp: (email: string) =>
     api.post<ApiResponse<{ email: string; message: string }>>('/auth/otp/send', { email }),
   verifyOtp: (email: string, otp: string) =>
     api.post<ApiResponse<AuthResponse>>('/auth/otp/verify', { email, otp }),
+  getLoginConfig: () =>
+    api.get<ApiResponse<LoginConfigResponse>>('/auth/login-config'),
+  loginWithPassword: (email: string, password: string) =>
+    api.post<ApiResponse<AuthResponse>>('/auth/password/login', { email, password }),
+  setupPassword: (email: string, newPassword: string) =>
+    api.post<ApiResponse<AuthResponse>>('/auth/password/setup', { email, newPassword }),
+  changePassword: (oldPassword: string, newPassword: string) =>
+    api.post<ApiResponse<{ message: string }>>('/auth/password/change', { oldPassword, newPassword }),
   logout: () =>
     api.post<ApiResponse<null>>('/auth/logout'),
 };
@@ -176,7 +200,9 @@ export const systemConfigService = {
   getAll: (group?: string) =>
     api.get<ApiResponse<SystemConfigResponse[]>>('/system-configs', { params: group ? { group } : {} }),
   update: (configs: SystemConfigUpdateRequest[]) =>
-    api.put<ApiResponse<null>>('/system-configs', { configs }),
+    api.put<ApiResponse<{ savedCount: number }>>('/system-configs', { configs }),
+  reload: () =>
+    api.post<ApiResponse<ConfigReloadResponse>>('/system-configs/reload'),
 };
 
 // 12. Embed Service (tenant-scoped endpoints for embedded views)
@@ -194,6 +220,14 @@ export const embedService = {
   getPricingPlans: () => api.get<ApiResponse<PricingPlanResponse[]>>('/embed/pricing-plans'),
   createWalletPlan: (pricingPlanId: string) =>
     api.post<ApiResponse<WalletPlanResponse>>('/embed/wallet-plans', pricingPlanId),
+  getPendingWalletPlans: () =>
+    api.get<ApiResponse<PaginatedResponse<WalletPlanResponse>>>('/embed/wallet-plans/pending'),
+  createRefundRequest: (data: RefundCreateRequest) =>
+    api.post<ApiResponse<RefundResponse>>('/embed/refund-requests', data),
+  getRefundRequests: () =>
+    api.get<ApiResponse<PaginatedResponse<RefundResponse>>>('/embed/refund-requests'),
+  getPendingRefundRequests: () =>
+    api.get<ApiResponse<PaginatedResponse<RefundResponse>>>('/embed/refund-requests/pending'),
 };
 
 // 13. RBAC Service (admin only)

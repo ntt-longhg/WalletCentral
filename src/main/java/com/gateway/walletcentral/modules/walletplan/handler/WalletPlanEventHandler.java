@@ -1,7 +1,6 @@
 package com.gateway.walletcentral.modules.walletplan.handler;
 
 import com.gateway.walletcentral.core.event.NotificationEvent;
-import com.gateway.walletcentral.core.event.WalletPlanApprovedEvent;
 import com.gateway.walletcentral.modules.walletplan.dto.WalletPlanEvent;
 import com.gateway.walletcentral.core.exception.ResourceNotFoundException;
 import com.gateway.walletcentral.modules.creditadjustment.model.CreditAdjustment;
@@ -9,23 +8,21 @@ import com.gateway.walletcentral.modules.creditadjustment.model.CreditAdjustment
 import com.gateway.walletcentral.modules.creditadjustment.repository.CreditAdjustmentRepository;
 import com.gateway.walletcentral.modules.pricingplan.model.BonusType;
 import com.gateway.walletcentral.modules.pricingplan.model.PricingPlan;
+import com.gateway.walletcentral.modules.transaction.repository.TransactionRepository;
 import com.gateway.walletcentral.modules.wallet.model.Wallet;
 import com.gateway.walletcentral.modules.wallet.model.WalletType;
 import com.gateway.walletcentral.modules.wallet.repository.WalletRepository;
 import com.gateway.walletcentral.modules.walletplan.model.WalletPlan;
 import com.gateway.walletcentral.modules.walletplan.model.WalletPlanStatus;
 import com.gateway.walletcentral.modules.walletplan.repository.WalletPlanRepository;
-import com.rabbitmq.client.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
-import java.util.HashMap;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 
@@ -37,24 +34,34 @@ public class WalletPlanEventHandler {
     private final WalletPlanRepository walletPlanRepository;
     private final WalletRepository walletRepository;
     private final CreditAdjustmentRepository creditAdjustmentRepository;
+    private final TransactionRepository transactionRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     public WalletPlanEventHandler(WalletPlanRepository walletPlanRepository,
             WalletRepository walletRepository,
             CreditAdjustmentRepository creditAdjustmentRepository,
+            TransactionRepository transactionRepository,
             ApplicationEventPublisher eventPublisher) {
         this.walletPlanRepository = walletPlanRepository;
         this.walletRepository = walletRepository;
         this.creditAdjustmentRepository = creditAdjustmentRepository;
+        this.transactionRepository = transactionRepository;
         this.eventPublisher = eventPublisher;
     }
 
     @Transactional
-    public void handlerApproved(Map<String, Object> payload, Channel channel, long deliveryTag) throws IOException {
+    public void handlerApproved(Map<String, Object> payload) {
         log.info("========== WALLET PLAN HANDLER APPROVE START ==========");
         String walletPlanId = payload.get("id") != null ? payload.get("id").toString() : null;
         try {
             log.info("Wallet plan handler approve payload: {} | thread: {}", payload, Thread.currentThread());
+
+            // Idempotency: skip if the downstream DEPOSIT transaction was already created
+            // (covers redelivery after a previous successful run)
+            if (walletPlanId != null && transactionRepository.existsByReferenceId(walletPlanId)) {
+                log.info("Transaction already exists for walletPlanId: {} - skipping", walletPlanId);
+                return;
+            }
 
             WalletPlan walletPlan = walletPlanRepository.findByIdWithRelations(UUID.fromString(walletPlanId))
                     .orElseThrow(() -> new ResourceNotFoundException("WalletPlan", "id", walletPlanId));
@@ -87,14 +94,14 @@ public class WalletPlanEventHandler {
             // Update wallet
             wallet.setBalance(newBalance);
             wallet.setCreditLimit(newCreditLimit);
-            wallet.setUpdatedAt(OffsetDateTime.now());
+            wallet.setUpdatedAt(LocalDateTime.now());
             walletRepository.save(wallet);
             log.info("Wallet updated: balance {} -> {}, creditLimit {} -> {}",
                     balanceBefore, newBalance, creditLimitBefore, newCreditLimit);
 
             // Publish event for Transaction handler to create DEPOSIT transaction (after DB
-            // commit)
-            WalletPlanApprovedEvent walletPlanApprovedEvent = WalletPlanApprovedEvent.builder()
+            // commit via WalletPlanEventPublisher AFTER_COMMIT listener)
+            WalletPlanEvent walletPlanEvent = WalletPlanEvent.builder()
                     .walletPlanId(walletPlanId)
                     .tenantId(walletPlan.getTenant().getId().toString())
                     .walletId(wallet.getId().toString())
@@ -105,10 +112,11 @@ public class WalletPlanEventHandler {
                     .availableBalanceAfter(newAvailable)
                     .description("Mua gói dịch vụ " + plan.getName() + " (Khuyến mãi thêm: " + bonusAmount + ")")
                     .approvedBy(walletPlan.getApprovedBy())
-                    .pricingPlanName(plan.getName())
+                    .referenceFrom("WALLET_PLAN")
+                    .referenceId(walletPlanId)
                     .build();
-            eventPublisher.publishEvent(walletPlanApprovedEvent);
-            log.info("Published WalletPlanApprovedEvent after commit for wallet={}", wallet.getId());
+            eventPublisher.publishEvent(walletPlanEvent);
+            log.info("Published WalletPlanEvent for wallet={}", wallet.getId());
 
             // Create CreditAdjustment (if credit limit changed)
             BigDecimal creditDiff = newCreditLimit.subtract(creditLimitBefore);
@@ -127,7 +135,7 @@ public class WalletPlanEventHandler {
                         .referenceFrom("WALLET_PLAN")
                         .referenceId(walletPlanId)
                         .createdBy(walletPlan.getApprovedBy())
-                        .createdAt(OffsetDateTime.now())
+                        .createdAt(LocalDateTime.now())
                         .build();
                 creditAdjustmentRepository.save(adjustment);
                 log.info("Created CreditAdjustment: {} type={} amount={}",
@@ -152,14 +160,15 @@ public class WalletPlanEventHandler {
             eventPublisher.publishEvent(notificationEvent);
 
             log.info("========== WALLET PLAN HANDLER APPROVE END ========== SUCCESS plan={}", walletPlanId);
-            channel.basicAck(deliveryTag, false);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
+            // Rethrow to roll back the transaction; the listener will nack (with one retry)
             log.error("========== WALLET PLAN HANDLER APPROVE END ========== FAILED plan={}", walletPlanId, e);
-            channel.basicNack(deliveryTag, false, false);
+            throw e;
         }
     }
 
-    public void handlerRejected(Map<String, Object> payload, Channel channel, long deliveryTag) throws IOException {
+    @Transactional
+    public void handlerRejected(Map<String, Object> payload) {
         log.info("========== WALLET PLAN HANDLER REJECT START ==========");
         String walletPlanId = payload.get("id") != null ? payload.get("id").toString() : null;
         try {
@@ -170,28 +179,30 @@ public class WalletPlanEventHandler {
 
             if (walletPlan.getStatus() != WalletPlanStatus.REJECTED) {
                 log.warn("Wallet plan status is not REJECTED: {} - skipping", walletPlan.getStatus());
-                channel.basicAck(deliveryTag, false);
                 return;
             }
 
             PricingPlan plan = walletPlan.getPricingPlan();
 
             // Notification event (after DB commit)
+            String rejectReason = walletPlan.getRejectReason();
             NotificationEvent notificationEvent = NotificationEvent.builder()
                     .tenantId(walletPlan.getTenant().getId().toString())
                     .type("WALLET_PLAN")
                     .title("Gói dịch vụ bị từ chối")
-                    .message(String.format("Gói dịch vụ %s đã bị từ chối", plan.getName()))
+                    .message(rejectReason != null && !rejectReason.isBlank()
+                            ? String.format("Gói dịch vụ %s đã bị từ chối. Lý do: %s", plan.getName(), rejectReason)
+                            : String.format("Gói dịch vụ %s đã bị từ chối", plan.getName()))
                     .referenceType("WALLET_PLAN")
                     .referenceId(walletPlanId)
                     .build();
             eventPublisher.publishEvent(notificationEvent);
 
             log.info("========== WALLET PLAN HANDLER REJECT END ========== SUCCESS plan={}", walletPlanId);
-            channel.basicAck(deliveryTag, false);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
+            // Rethrow to roll back the transaction; the listener will nack (with one retry)
             log.error("========== WALLET PLAN HANDLER REJECT END ========== FAILED plan={}", walletPlanId, e);
-            channel.basicNack(deliveryTag, false, false);
+            throw e;
         }
     }
 

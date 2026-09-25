@@ -3,7 +3,7 @@ package com.gateway.walletcentral.modules.notification.model;
 import com.gateway.walletcentral.modules.tenant.model.Tenant;
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import org.hibernate.annotations.UuidGenerator;
 import java.util.UUID;
 
@@ -54,8 +54,8 @@ public class Notification {
     private Boolean isRead = false;
 
     @Column(name = "read_at", comment = "Timestamp when notification was read")
-    private OffsetDateTime readAt;
+    private LocalDateTime readAt;
 
     @Column(name = "created_at", updatable = false, comment = "Record creation timestamp")
-    private OffsetDateTime createdAt = OffsetDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now();
 }

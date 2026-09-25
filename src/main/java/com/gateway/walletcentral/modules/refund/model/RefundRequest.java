@@ -8,7 +8,7 @@ import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -68,14 +68,14 @@ public class RefundRequest {
     private String reviewedBy;
 
     @Column(name = "reviewed_at", nullable = true, comment = "Timestamp when refund was reviewed - NULL if pending")
-    private OffsetDateTime reviewedAt;
+    private LocalDateTime reviewedAt;
 
     @Column(name = "created_at", updatable = false, comment = "Record creation timestamp")
-    private OffsetDateTime createdAt = OffsetDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "updated_at", comment = "Record last update timestamp")
-    private OffsetDateTime updatedAt = OffsetDateTime.now();
+    private LocalDateTime updatedAt = LocalDateTime.now();
 
     @Column(name = "deleted_at", nullable = true, comment = "Soft delete timestamp - NULL if record is active")
-    private OffsetDateTime deletedAt = null;
+    private LocalDateTime deletedAt = null;
 }

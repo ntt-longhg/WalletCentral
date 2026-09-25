@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @Data
@@ -47,7 +47,7 @@ public class BillingWebhookResponse {
     private String status;
 
     @Schema(description = "Transaction creation timestamp")
-    private OffsetDateTime createdAt;
+    private LocalDateTime createdAt;
 
     @Schema(description = "Reference ID from request")
     private String referenceId;

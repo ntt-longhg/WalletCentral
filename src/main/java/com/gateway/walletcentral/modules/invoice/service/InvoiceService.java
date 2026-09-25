@@ -9,6 +9,7 @@ import com.gateway.walletcentral.modules.invoice.dto.*;
 import com.gateway.walletcentral.modules.invoice.model.Invoice;
 import com.gateway.walletcentral.modules.invoice.model.InvoiceStatus;
 import com.gateway.walletcentral.modules.invoice.repository.InvoiceRepository;
+import com.gateway.walletcentral.modules.systemconfig.service.SystemConfigService;
 import com.gateway.walletcentral.modules.tenant.model.Tenant;
 import com.gateway.walletcentral.modules.tenant.repository.TenantRepository;
 import com.gateway.walletcentral.modules.usagelog.model.UsageLog;
@@ -23,7 +24,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -39,15 +41,18 @@ public class InvoiceService {
         private final TenantRepository tenantRepository;
         private final WalletRepository walletRepository;
         private final UsageLogRepository usageLogRepository;
+        private final SystemConfigService configService;
 
         public InvoiceService(InvoiceRepository invoiceRepository,
                         TenantRepository tenantRepository,
                         WalletRepository walletRepository,
-                        UsageLogRepository usageLogRepository) {
+                        UsageLogRepository usageLogRepository,
+                        SystemConfigService configService) {
                 this.invoiceRepository = invoiceRepository;
                 this.tenantRepository = tenantRepository;
                 this.walletRepository = walletRepository;
                 this.usageLogRepository = usageLogRepository;
+                this.configService = configService;
         }
 
         public InvoiceResponse create(InvoiceCreateRequest request) {
@@ -72,7 +77,7 @@ public class InvoiceService {
                                 .totalAmount(request.getTotalAmount())
                                 .status(InvoiceStatus.ISSUED)
                                 .dueDate(request.getDueDate())
-                                .createdAt(OffsetDateTime.now())
+                                .createdAt(LocalDateTime.now())
                                 .updatedBy(request.getUpdatedBy())
                                 .build();
 
@@ -116,7 +121,7 @@ public class InvoiceService {
 
                 invoice.setStatus(InvoiceStatus.PAID);
                 invoice.setUpdatedBy(request.getUpdatedBy());
-                invoice.setUpdatedAt(OffsetDateTime.now());
+                invoice.setUpdatedAt(LocalDateTime.now());
 
                 var saved = invoiceRepository.save(invoice);
                 return toResponse(saved);
@@ -137,11 +142,11 @@ public class InvoiceService {
                                 .orElseThrow(() -> new ResourceNotFoundException("Wallet", "tenantId", tenantId));
 
                 YearMonth yearMonth = YearMonth.parse(billingPeriod);
-                OffsetDateTime startOfMonth = OffsetDateTime.now().withYear(yearMonth.getYear())
+                LocalDateTime startOfMonth = LocalDateTime.now().withYear(yearMonth.getYear())
                                 .withMonth(yearMonth.getMonthValue())
                                 .withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
 
-                OffsetDateTime endOfMonth = OffsetDateTime.now().withYear(yearMonth.getYear())
+                LocalDateTime endOfMonth = LocalDateTime.now().withYear(yearMonth.getYear())
                                 .withMonth(yearMonth.getMonthValue())
                                 .withDayOfMonth(yearMonth.atEndOfMonth().getDayOfMonth()).withHour(23).withMinute(59)
                                 .withSecond(59).withNano(0);
@@ -162,14 +167,13 @@ public class InvoiceService {
                         invoice.setTotalAmount(postpaidTotal);
                         invoice.setWallet(wallet);
                         invoice.setUpdatedBy(updatedBy);
-                        invoice.setUpdatedAt(OffsetDateTime.now());
+                        invoice.setUpdatedAt(LocalDateTime.now());
                         var saved = invoiceRepository.save(invoice);
                         log.info("Invoice updated: id={} totalAmount={}", saved.getId(), postpaidTotal);
                         return toResponse(saved);
                 } else {
-                        // Create new invoice
-                        OffsetDateTime dueDate = OffsetDateTime.now().plusMonths(1).withDayOfMonth(1).withHour(23)
-                                        .withMinute(59).withSecond(59);
+                        // Create new invoice (due date is dynamic via system_config)
+                        LocalDateTime dueDate = calculateDueDate();
 
                         Invoice invoice = Invoice.builder()
                                         .tenant(tenant)
@@ -178,7 +182,7 @@ public class InvoiceService {
                                         .totalAmount(postpaidTotal)
                                         .status(InvoiceStatus.ISSUED)
                                         .dueDate(dueDate)
-                                        .createdAt(OffsetDateTime.now())
+                                        .createdAt(LocalDateTime.now())
                                         .updatedBy(updatedBy)
                                         .build();
 
@@ -225,5 +229,33 @@ public class InvoiceService {
                                 .createdAt(i.getCreatedAt())
                                 .updatedAt(i.getUpdatedAt())
                                 .build();
+        }
+
+        /**
+         * Due date from system_config (invoice.due_month_offset / due_day / due_time).
+         * Day is clamped to the target month length so short months never fail.
+         */
+        private LocalDateTime calculateDueDate() {
+                int monthOffset = configService.getInt("invoice.due_month_offset", 1);
+                int dueDay = configService.getInt("invoice.due_day", 1);
+                LocalTime dueTime = parseDueTime(configService.getValue("invoice.due_time", "23:59:59"));
+
+                LocalDateTime base = LocalDateTime.now().plusMonths(monthOffset);
+                int maxDay = YearMonth.of(base.getYear(), base.getMonthValue()).lengthOfMonth();
+                int day = Math.min(Math.max(dueDay, 1), maxDay);
+                return base.withDayOfMonth(day)
+                                .withHour(dueTime.getHour())
+                                .withMinute(dueTime.getMinute())
+                                .withSecond(dueTime.getSecond())
+                                .withNano(0);
+        }
+
+        private LocalTime parseDueTime(String value) {
+                try {
+                        return LocalTime.parse(value.trim());
+                } catch (Exception e) {
+                        log.warn("Invalid invoice.due_time '{}', using 23:59:59", value);
+                        return LocalTime.of(23, 59, 59);
+                }
         }
 }

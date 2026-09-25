@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
 
@@ -36,8 +36,8 @@ public class RoleResponse {
     private Set<String> permissionCodes;
 
     @Schema(description = "Created timestamp")
-    private OffsetDateTime createdAt;
+    private LocalDateTime createdAt;
 
     @Schema(description = "Last updated timestamp")
-    private OffsetDateTime updatedAt;
+    private LocalDateTime updatedAt;
 }

@@ -10,7 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -41,5 +41,5 @@ public class ServicePriceCreateRequest {
 
     @NotNull(message = "Effective date must not be null")
     @Schema(description = "Price effective date")
-    private OffsetDateTime effectiveDate;
+    private LocalDateTime effectiveDate;
 }

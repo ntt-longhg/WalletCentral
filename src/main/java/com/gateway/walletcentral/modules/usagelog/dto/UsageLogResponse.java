@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 
@@ -58,5 +58,5 @@ public class UsageLogResponse {
     private String referenceId;
 
     @Schema(description = "Created timestamp")
-    private OffsetDateTime createdAt;
+    private LocalDateTime createdAt;
 }

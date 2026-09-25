@@ -96,6 +96,14 @@ public class SecurityConfig {
                     return;
                 }
 
+                // Skip auth for public password-login endpoints (mode-gated in AuthService)
+                if (path.equals("/api/v1/auth/login-config")
+                        || path.equals("/api/v1/auth/password/login")
+                        || path.equals("/api/v1/auth/password/setup")) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+
                 String apiKey = request.getHeader(API_KEY_HEADER);
                 if (apiKey == null || apiKey.isBlank()) {
                     response.setStatus(HttpStatus.UNAUTHORIZED.value());

@@ -27,12 +27,17 @@ public class TransactionEventPublisher {
         log.info("Transaction created event received after commit: transactionId={} type={}",
                 event.getTransactionId(), event.getType());
 
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("transactionId", event.getTransactionId());
+        payload.put("walletId", event.getWalletId());
+        payload.put("type", event.getType());
+        payload.put("amount", event.getAmount());
+        payload.put("balanceAfter", event.getBalanceAfter());
+        payload.put("metadata", event.getMetadata());
+
         Map<String, Object> txnEvent = new HashMap<>();
-        txnEvent.put("transactionId", event.getTransactionId());
-        txnEvent.put("walletId", event.getWalletId());
-        txnEvent.put("type", event.getType());
-        txnEvent.put("amount", event.getAmount());
-        txnEvent.put("balanceAfter", event.getBalanceAfter());
+        txnEvent.put("event", "TRANSACTION_CREATED");
+        txnEvent.put("payload", payload);
         messageProducer.publishTransaction(txnEvent);
     }
 }

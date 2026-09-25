@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { useSearchParams } from 'react-router-dom';
 import { setApiToken } from '../api/api';
 import { authService } from '../services/billingServices';
+import type { AuthResponse } from '../types/api';
 
 interface AuthContextType {
   token: string | null;
@@ -14,10 +15,18 @@ interface AuthContextType {
   setToken: (token: string | null) => void;
   adminSendOtp: (email: string) => Promise<void>;
   adminVerifyOtp: (email: string, otp: string) => Promise<boolean>;
+  adminLoginWithPassword: (email: string, password: string) => Promise<AuthResult>;
+  adminSetupPassword: (email: string, newPassword: string) => Promise<AuthResult>;
   adminLogout: () => void;
   validateEmbedToken: () => boolean;
   hasPermission: (code: string) => boolean;
   hasAnyPermission: (...codes: string[]) => boolean;
+}
+
+interface AuthResult {
+  ok: boolean;
+  code?: string;
+  message?: string;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -31,6 +40,8 @@ const AuthContext = createContext<AuthContextType>({
   setToken: () => {},
   adminSendOtp: async () => {},
   adminVerifyOtp: async () => false,
+  adminLoginWithPassword: async () => ({ ok: false }),
+  adminSetupPassword: async () => ({ ok: false }),
   adminLogout: () => {},
   validateEmbedToken: () => false,
   hasPermission: () => false,
@@ -103,30 +114,60 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await authService.sendOtp(email);
   }, []);
 
+  const saveSession = useCallback((data: AuthResponse) => {
+    const { token: newToken, email: userEmail, permissions: perms, roleName: role } = data;
+    setToken(newToken);
+    setAdminEmail(userEmail);
+    localStorage.setItem(ADMIN_EMAIL_KEY, userEmail);
+    if (perms) {
+      const permSet = new Set(perms);
+      setPermissions(permSet);
+      localStorage.setItem(ADMIN_PERMISSIONS_KEY, JSON.stringify([...permSet]));
+    }
+    if (role) {
+      setRoleName(role);
+      localStorage.setItem(ADMIN_ROLE_KEY, role);
+    }
+  }, [setToken]);
+
   const adminVerifyOtp = useCallback(async (email: string, otp: string): Promise<boolean> => {
     try {
       const res = await authService.verifyOtp(email, otp);
       if (res.data.success && res.data.data) {
-        const { token: newToken, email: userEmail, permissions: perms, roleName: role } = res.data.data;
-        setToken(newToken);
-        setAdminEmail(userEmail);
-        localStorage.setItem(ADMIN_EMAIL_KEY, userEmail);
-        if (perms) {
-          const permSet = new Set(perms);
-          setPermissions(permSet);
-          localStorage.setItem(ADMIN_PERMISSIONS_KEY, JSON.stringify([...permSet]));
-        }
-        if (role) {
-          setRoleName(role);
-          localStorage.setItem(ADMIN_ROLE_KEY, role);
-        }
+        saveSession(res.data.data);
         return true;
       }
       return false;
     } catch {
       return false;
     }
-  }, [setToken]);
+  }, [saveSession]);
+
+  const adminLoginWithPassword = useCallback(async (email: string, password: string): Promise<AuthResult> => {
+    try {
+      const res = await authService.loginWithPassword(email, password);
+      if (res.data.success && res.data.data) {
+        saveSession(res.data.data);
+        return { ok: true };
+      }
+      return { ok: false, message: res.data?.message };
+    } catch (err: any) {
+      return { ok: false, code: err.response?.data?.code, message: err.response?.data?.message };
+    }
+  }, [saveSession]);
+
+  const adminSetupPassword = useCallback(async (email: string, newPassword: string): Promise<AuthResult> => {
+    try {
+      const res = await authService.setupPassword(email, newPassword);
+      if (res.data.success && res.data.data) {
+        saveSession(res.data.data);
+        return { ok: true };
+      }
+      return { ok: false, message: res.data?.message };
+    } catch (err: any) {
+      return { ok: false, code: err.response?.data?.code, message: err.response?.data?.message };
+    }
+  }, [saveSession]);
 
   const adminLogout = useCallback(async () => {
     try {
@@ -149,7 +190,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [permissions]);
 
   return (
-    <AuthContext.Provider value={{ token, isAdmin, isEmbed, authReady, adminEmail, permissions, roleName, setToken, adminSendOtp, adminVerifyOtp, adminLogout, validateEmbedToken, hasPermission, hasAnyPermission }}>
+    <AuthContext.Provider value={{ token, isAdmin, isEmbed, authReady, adminEmail, permissions, roleName, setToken, adminSendOtp, adminVerifyOtp, adminLoginWithPassword, adminSetupPassword, adminLogout, validateEmbedToken, hasPermission, hasAnyPermission }}>
       {children}
     </AuthContext.Provider>
   );

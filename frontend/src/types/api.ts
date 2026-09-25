@@ -203,6 +203,7 @@ export interface WalletPlanResponse {
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
   approvedAt?: string;    // OffsetDateTime (ISO)
   approvedBy?: string;    // Identifier
+  rejectReason?: string;  // Rejection reason (set when REJECTED)
   createdBy: string;      // Identifier
   createdAt: string;      // OffsetDateTime (ISO)
 }
@@ -215,6 +216,47 @@ export interface WalletPlanCreateRequest {
 
 export interface WalletPlanApproveRequest {
   approvedBy: string;     // Required, NotBlank (e.g. "admin")
+}
+
+export interface WalletPlanRejectRequest {
+  approvedBy: string;     // Required, NotBlank (e.g. "admin")
+  rejectReason: string;   // Required, NotBlank
+}
+
+// 5b. Refund Module DTOs
+export interface RefundResponse {
+  id: string;                 // UUID
+  transactionId: string;      // UUID of the CHARGE transaction
+  transactionAmount: number;
+  transactionType: string;
+  transactionStatus: string;
+  walletId: string;           // UUID
+  tenantId: string;           // UUID
+  tenantName: string;
+  amount: number;             // Refund amount
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | string;
+  reason?: string;
+  rejectReason?: string;
+  requestedBy?: string;
+  reviewedBy?: string;
+  reviewedAt?: string;        // LocalDateTime (ISO)
+  createdAt: string;          // LocalDateTime (ISO)
+  updatedAt?: string;         // LocalDateTime (ISO)
+}
+
+export interface RefundCreateRequest {
+  transactionId: string;      // Required, UUID of a SUCCESS CHARGE transaction
+  reason?: string;            // Refund reason
+  requestedBy?: string;       // Filled by backend for embed (embed:<clientId>)
+}
+
+export interface RefundApproveRequest {
+  reviewedBy: string;         // Required, NotBlank (e.g. "admin")
+}
+
+export interface RefundRejectRequest {
+  reviewedBy: string;         // Required, NotBlank
+  rejectReason: string;       // Required, NotBlank
 }
 
 // 6. Wallet Module DTOs
@@ -361,6 +403,34 @@ export interface AuthResponse {
   expiresInHours: number; // Token expiry in hours
   roleName?: string;      // User role name
   permissions?: string[]; // Effective permissions
+  loginMethod?: string;   // How the user logged in: OTP | PASSWORD
+}
+
+export interface PasswordLoginRequest {
+  email: string;          // Required, valid email format
+  password: string;       // Required
+}
+
+export interface SetupPasswordRequest {
+  email: string;          // Required, valid email format
+  newPassword: string;    // Required, min 8 chars
+}
+
+export interface ChangePasswordRequest {
+  oldPassword: string;    // Required
+  newPassword: string;    // Required, min 8 chars
+}
+
+export interface LoginConfigResponse {
+  loginMode: string;            // otp | password | auto
+  passwordLoginEnabled: boolean;
+  otpLoginEnabled: boolean;
+  passwordSetupOpen: boolean;
+  otpLength?: number;           // OTP code length
+  otpExpiryMinutes?: number;    // OTP expiry in minutes
+  resendCooldownSeconds?: number; // Min seconds between OTP requests
+  passwordMinLength?: number;   // Min password length
+  allowedDomains?: string;      // Comma-separated allowed email domains
 }
 
 // 12. System Config Module DTOs
@@ -370,12 +440,32 @@ export interface SystemConfigResponse {
   value: string;
   group: string;
   description?: string;
+  fieldType?: string;   // text | number | password | textarea | select | radio | boolean | time
+  fieldOptions?: string; // JSON: [{"value":"","label":""}] for select/radio
   updatedAt: string;
 }
 
 export interface SystemConfigUpdateRequest {
   key: string;
   value: string;
+}
+
+export interface ConfigChangeDto {
+  key: string;
+  oldValue: string | null;
+  newValue: string | null;
+  changeType: string; // CHANGED | ADDED | REMOVED
+  secret: boolean;
+}
+
+export interface ConfigReloadResponse {
+  changedCount: number;
+  addedCount: number;
+  removedCount: number;
+  totalChanged: number;
+  totalCount: number;
+  loadedAt: string;
+  changes: ConfigChangeDto[];
 }
 
 // 13. RBAC Module DTOs

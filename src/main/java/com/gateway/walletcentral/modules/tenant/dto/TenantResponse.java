@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -32,8 +32,8 @@ public class TenantResponse {
     private String status;
 
     @Schema(description = "Created timestamp")
-    private OffsetDateTime createdAt;
+    private LocalDateTime createdAt;
 
     @Schema(description = "Last updated timestamp")
-    private OffsetDateTime updatedAt;
+    private LocalDateTime updatedAt;
 }

@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -57,14 +57,17 @@ public class WalletPlanResponse {
     private String status;
 
     @Schema(description = "Approval timestamp")
-    private OffsetDateTime approvedAt;
+    private LocalDateTime approvedAt;
 
     @Schema(description = "Approved by")
     private String approvedBy;
+
+    @Schema(description = "Reject reason (set when REJECTED)")
+    private String rejectReason;
 
     @Schema(description = "Created by")
     private String createdBy;
 
     @Schema(description = "Created timestamp")
-    private OffsetDateTime createdAt;
+    private LocalDateTime createdAt;
 }

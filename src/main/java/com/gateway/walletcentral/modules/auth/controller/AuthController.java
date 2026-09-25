@@ -3,7 +3,11 @@ package com.gateway.walletcentral.modules.auth.controller;
 import com.gateway.walletcentral.config.SecurityConfig;
 import com.gateway.walletcentral.core.response.ApiResponse;
 import com.gateway.walletcentral.modules.auth.dto.AuthResponse;
+import com.gateway.walletcentral.modules.auth.dto.ChangePasswordRequest;
+import com.gateway.walletcentral.modules.auth.dto.LoginConfigResponse;
+import com.gateway.walletcentral.modules.auth.dto.PasswordLoginRequest;
 import com.gateway.walletcentral.modules.auth.dto.SendOtpRequest;
+import com.gateway.walletcentral.modules.auth.dto.SetupPasswordRequest;
 import com.gateway.walletcentral.modules.auth.dto.UserInfoResponse;
 import com.gateway.walletcentral.modules.auth.dto.VerifyOtpRequest;
 import com.gateway.walletcentral.modules.auth.service.AuthService;
@@ -19,7 +23,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/auth")
-@Tag(name = "Auth", description = "Admin OTP authentication operations")
+@Tag(name = "Auth", description = "Admin authentication operations (OTP and password)")
 public class AuthController {
 
     private final AuthService authService;
@@ -48,6 +52,42 @@ public class AuthController {
             @Valid @RequestBody VerifyOtpRequest request) {
         AuthResponse response = authService.verifyOtp(request.getEmail(), request.getOtp());
         return ResponseEntity.ok(ApiResponse.ok(response, "Login successful"));
+    }
+
+    @GetMapping("/login-config")
+    @Operation(summary = "Get public login configuration (available login methods)")
+    public ResponseEntity<ApiResponse<LoginConfigResponse>> getLoginConfig() {
+        return ResponseEntity.ok(ApiResponse.ok(authService.getLoginConfig()));
+    }
+
+    @PostMapping("/password/login")
+    @Operation(summary = "Login with email and password")
+    public ResponseEntity<ApiResponse<AuthResponse>> loginWithPassword(
+            @Valid @RequestBody PasswordLoginRequest request) {
+        AuthResponse response = authService.loginWithPassword(request.getEmail(), request.getPassword());
+        return ResponseEntity.ok(ApiResponse.ok(response, "Login successful"));
+    }
+
+    @PostMapping("/password/setup")
+    @Operation(summary = "First-time password creation without login (once per account)")
+    public ResponseEntity<ApiResponse<AuthResponse>> setupPassword(
+            @Valid @RequestBody SetupPasswordRequest request) {
+        AuthResponse response = authService.setupPassword(request.getEmail(), request.getNewPassword());
+        return ResponseEntity.ok(ApiResponse.ok(response, "Password created successfully"));
+    }
+
+    @PostMapping("/password/change")
+    @Operation(summary = "Change password (authenticated, revokes all sessions)")
+    public ResponseEntity<ApiResponse<Map<String, String>>> changePassword(
+            HttpServletRequest request,
+            @Valid @RequestBody ChangePasswordRequest changeRequest) {
+        String email = (String) request.getAttribute(SecurityConfig.REQUEST_ATTR_EMAIL);
+        if (email == null) {
+            return ResponseEntity.status(401).build();
+        }
+        authService.changePassword(email, changeRequest.getOldPassword(), changeRequest.getNewPassword());
+        return ResponseEntity.ok(ApiResponse.ok(
+                Map.of("message", "Password changed. Please login again."), "Password changed successfully"));
     }
 
     @PostMapping("/logout")

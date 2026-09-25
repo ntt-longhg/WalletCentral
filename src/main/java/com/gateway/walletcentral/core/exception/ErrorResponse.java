@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.slf4j.MDC;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @Data
@@ -34,7 +34,7 @@ public class ErrorResponse {
 
     @Schema(description = "Error timestamp")
     @Builder.Default
-    private OffsetDateTime timestamp = OffsetDateTime.now();
+    private LocalDateTime timestamp = LocalDateTime.now();
 
     public static ErrorResponse of(int status, String code, String message) {
         return ErrorResponse.builder()

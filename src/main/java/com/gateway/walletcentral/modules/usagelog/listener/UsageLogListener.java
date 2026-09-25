@@ -1,6 +1,7 @@
 package com.gateway.walletcentral.modules.usagelog.listener;
 
 import com.gateway.walletcentral.config.RabbitMQConfig;
+import com.gateway.walletcentral.modules.systemconfig.service.SystemConfigService;
 import com.gateway.walletcentral.modules.usagelog.handler.UsageLogEventHandler;
 import com.rabbitmq.client.Channel;
 import org.slf4j.Logger;
@@ -20,14 +21,18 @@ public class UsageLogListener {
     private static final Logger log = LoggerFactory.getLogger(UsageLogListener.class);
 
     private final UsageLogEventHandler usageLogEventHandler;
+    private final SystemConfigService configService;
 
-    public UsageLogListener(UsageLogEventHandler usageLogEventHandler) {
+    public UsageLogListener(UsageLogEventHandler usageLogEventHandler,
+            SystemConfigService configService) {
         this.usageLogEventHandler = usageLogEventHandler;
+        this.configService = configService;
     }
 
     @RabbitListener(queues = RabbitMQConfig.QUEUE_USAGE, executor = "virtualThreadExecutor")
     public void handleUsageLogEvent(Map<String, Object> message,
             @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag,
+            @Header(value = AmqpHeaders.REDELIVERED, required = false) Boolean redelivered,
             Channel channel) throws IOException {
 
         String requestId = (String) message.get("requestId");
@@ -46,16 +51,20 @@ public class UsageLogListener {
         try {
             switch (event) {
                 case "BILLING_WEBHOOK":
-                    usageLogEventHandler.handleBillingUsageLog(message, channel, deliveryTag);
+                    usageLogEventHandler.handleBillingUsageLog(message);
                     break;
                 default:
                     log.error("Unknown usage log event: {}", event);
-                    channel.basicAck(deliveryTag, false);
                     break;
             }
+            // Handler returned => its transaction committed => safe to ack
+            channel.basicAck(deliveryTag, false);
         } catch (Exception e) {
-            log.error("UsageLog listener error: {}", e.getMessage(), e);
-            channel.basicNack(deliveryTag, false, false);
+            // First failure => requeue for one retry (if mq.retry_enabled); redelivered failure => DLQ
+            boolean requeue = configService.getBoolean("mq.retry_enabled", true)
+                    && !Boolean.TRUE.equals(redelivered);
+            log.error("UsageLog listener error: redelivered={} requeue={}", redelivered, requeue, e);
+            channel.basicNack(deliveryTag, false, requeue);
         } finally {
             log.info("========== USAGE LOG LISTENER END ==========");
             MDC.clear();

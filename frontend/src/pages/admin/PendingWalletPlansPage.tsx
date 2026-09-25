@@ -2,10 +2,13 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableSkeleton } from '@/components/ui/table';
 import { TablePagination } from '@/components/ui/pagination';
-import { Clock, CheckCircle2, XCircle, RefreshCw } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Clock, CheckCircle2, XCircle, RefreshCw, Loader2 } from 'lucide-react';
 import { formatCurrency, formatDate, getStatusConfig } from '@/lib/utils';
 import { useBillingStore } from '@/stores';
 
@@ -23,6 +26,11 @@ export const PendingWalletPlansPage: React.FC = () => {
     const startIndex = (currentPage - 1) * pageSize;
     return pendingPlans.slice(startIndex, startIndex + pageSize);
   }, [pendingPlans, currentPage, pageSize]);
+
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [rejectSubmitting, setRejectSubmitting] = useState(false);
 
   useEffect(() => {
     fetchPendingWalletPlans();
@@ -47,12 +55,29 @@ export const PendingWalletPlansPage: React.FC = () => {
     }
   };
 
-  const handleReject = async (id: string) => {
+  const openRejectDialog = (id: string) => {
+    setSelectedId(id);
+    setRejectReason('');
+    setRejectDialogOpen(true);
+  };
+
+  const handleConfirmReject = async () => {
+    if (!selectedId) return;
+    if (!rejectReason.trim()) {
+      addToast({ variant: 'destructive', message: 'Vui lòng nhập lý do từ chối.' });
+      return;
+    }
+    setRejectSubmitting(true);
     try {
-      await rejectWalletPlan(id, { approvedBy: 'admin' });
+      await rejectWalletPlan(selectedId, { approvedBy: 'admin', rejectReason: rejectReason.trim() });
       addToast({ variant: 'success', message: 'Đã từ chối đăng ký gói cước.' });
+      setRejectDialogOpen(false);
+      setSelectedId(null);
+      setRejectReason('');
     } catch (err: any) {
       addToast({ variant: 'destructive', message: err.response?.data?.message || 'Không thể từ chối gói cước.' });
+    } finally {
+      setRejectSubmitting(false);
     }
   };
 
@@ -183,14 +208,14 @@ export const PendingWalletPlansPage: React.FC = () => {
                               >
                                 <CheckCircle2 className="h-3.5 w-3.5" /> Duyệt
                               </Button>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                className="h-7 text-xs gap-1"
-                                onClick={() => handleReject(wp.id)}
-                              >
-                                <XCircle className="h-3.5 w-3.5" /> Từ chối
-                              </Button>
+                           <Button
+                              size="sm"
+                              variant="destructive"
+                              className="h-7 text-xs gap-1"
+                              onClick={() => openRejectDialog(wp.id)}
+                            >
+                              <XCircle className="h-3.5 w-3.5" /> Từ chối
+                            </Button>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -219,6 +244,36 @@ export const PendingWalletPlansPage: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Reject dialog (reason required) */}
+      <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Từ chối yêu cầu đăng ký gói cước</DialogTitle>
+            <DialogDescription>
+              Vui lòng nhập lý do từ chối. Một giao dịch FAILED sẽ được ghi vào sổ cái để tenant nắm được.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            <Label htmlFor="plan-reject-reason">Lý do từ chối</Label>
+            <Input
+              id="plan-reject-reason"
+              placeholder="VD: Gói cước không còn áp dụng, tenant chưa đủ điều kiện..."
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRejectDialogOpen(false)} disabled={rejectSubmitting}>
+              Hủy
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmReject} disabled={rejectSubmitting} className="gap-1">
+              {rejectSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
+              {rejectSubmitting ? 'Đang xử lý...' : 'Xác nhận từ chối'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

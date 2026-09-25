@@ -2,7 +2,7 @@ package com.gateway.walletcentral.modules.auth.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import org.hibernate.annotations.UuidGenerator;
 import java.util.UUID;
 
@@ -35,12 +35,12 @@ public class AdminOtp {
     private String otpCode;
 
     @Column(name = "expires_at", nullable = false, comment = "OTP expiration timestamp")
-    private OffsetDateTime expiresAt;
+    private LocalDateTime expiresAt;
 
     @Column(name = "used", nullable = false, columnDefinition = "TINYINT(1) DEFAULT 0", comment = "Whether OTP has been used (0=unused, 1=used)")
     @Builder.Default
     private Boolean used = false;
 
     @Column(name = "created_at", updatable = false, comment = "Record creation timestamp")
-    private OffsetDateTime createdAt = OffsetDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now();
 }

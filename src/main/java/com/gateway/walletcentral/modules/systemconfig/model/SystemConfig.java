@@ -2,7 +2,7 @@ package com.gateway.walletcentral.modules.systemconfig.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import org.hibernate.annotations.UuidGenerator;
 import java.util.UUID;
 
@@ -41,9 +41,16 @@ public class SystemConfig {
     @Column(name = "description", length = 255, comment = "Configuration description")
     private String description;
 
+    @Column(name = "field_type", nullable = false, length = 20, comment = "UI field type: text, number, password, textarea, select, radio, boolean, time")
+    @Builder.Default
+    private String fieldType = "text";
+
+    @Column(name = "field_options", columnDefinition = "TEXT", comment = "JSON options for select/radio: [{\"value\":\"\",\"label\":\"\"}]")
+    private String fieldOptions;
+
     @Column(name = "created_at", updatable = false, comment = "Record creation timestamp")
-    private OffsetDateTime createdAt = OffsetDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "updated_at", comment = "Record last update timestamp")
-    private OffsetDateTime updatedAt = OffsetDateTime.now();
+    private LocalDateTime updatedAt = LocalDateTime.now();
 }

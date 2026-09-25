@@ -2,6 +2,7 @@ package com.gateway.walletcentral.modules.notification.listener;
 
 import com.gateway.walletcentral.config.RabbitMQConfig;
 import com.gateway.walletcentral.modules.notification.handler.NotificationEventHandler;
+import com.gateway.walletcentral.modules.systemconfig.service.SystemConfigService;
 import com.rabbitmq.client.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,14 +21,18 @@ public class NotificationListener {
     private static final Logger log = LoggerFactory.getLogger(NotificationListener.class);
 
     private final NotificationEventHandler notificationEventHandler;
+    private final SystemConfigService configService;
 
-    public NotificationListener(NotificationEventHandler notificationEventHandler) {
+    public NotificationListener(NotificationEventHandler notificationEventHandler,
+            SystemConfigService configService) {
         this.notificationEventHandler = notificationEventHandler;
+        this.configService = configService;
     }
 
     @RabbitListener(queues = RabbitMQConfig.QUEUE_NOTIFICATION, executor = "virtualThreadExecutor")
     public void handleNotificationEvent(Map<String, Object> message,
             @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag,
+            @Header(value = AmqpHeaders.REDELIVERED, required = false) Boolean redelivered,
             Channel channel) throws IOException {
 
         String requestId = (String) message.get("requestId");
@@ -42,10 +47,14 @@ public class NotificationListener {
 
         try {
             log.info("Notification listener payload: {} | thread: {}", payload, Thread.currentThread());
-            notificationEventHandler.handleNotification(payload, channel, deliveryTag);
+            notificationEventHandler.handleNotification(payload);
+            channel.basicAck(deliveryTag, false);
         } catch (Exception e) {
-            log.error("Notification listener error: {}", e.getMessage(), e);
-            channel.basicNack(deliveryTag, false, false);
+            // First failure => requeue for one retry (if mq.retry_enabled); redelivered failure => DLQ
+            boolean requeue = configService.getBoolean("mq.retry_enabled", true)
+                    && !Boolean.TRUE.equals(redelivered);
+            log.error("Notification listener error: redelivered={} requeue={}", redelivered, requeue, e);
+            channel.basicNack(deliveryTag, false, requeue);
         } finally {
             log.info("========== NOTIFICATION LISTENER END ==========");
             MDC.clear();

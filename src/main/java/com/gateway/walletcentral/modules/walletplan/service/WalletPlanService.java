@@ -5,7 +5,6 @@ import com.gateway.walletcentral.core.cursor.CursorParams;
 import com.gateway.walletcentral.core.cursor.CursorUtil;
 import com.gateway.walletcentral.core.exception.BusinessException;
 import com.gateway.walletcentral.core.exception.ResourceNotFoundException;
-import com.gateway.walletcentral.core.event.NotificationEvent;
 import com.gateway.walletcentral.core.event.WalletPlanApprovedEvent;
 import com.gateway.walletcentral.core.event.WalletPlanCreatedEvent;
 import com.gateway.walletcentral.core.event.WalletPlanRejectedEvent;
@@ -14,6 +13,11 @@ import com.gateway.walletcentral.modules.pricingplan.model.PricingPlan;
 import com.gateway.walletcentral.modules.pricingplan.repository.PricingPlanRepository;
 import com.gateway.walletcentral.modules.tenant.model.Tenant;
 import com.gateway.walletcentral.modules.tenant.repository.TenantRepository;
+import com.gateway.walletcentral.modules.transaction.model.Transaction;
+import com.gateway.walletcentral.modules.transaction.model.TransactionStatus;
+import com.gateway.walletcentral.modules.transaction.model.TransactionType;
+import com.gateway.walletcentral.modules.transaction.repository.TransactionRepository;
+import com.gateway.walletcentral.modules.wallet.model.Wallet;
 import com.gateway.walletcentral.modules.wallet.repository.WalletRepository;
 import com.gateway.walletcentral.modules.walletplan.dto.*;
 import com.gateway.walletcentral.modules.walletplan.model.WalletPlan;
@@ -27,9 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
-import java.util.HashMap;
-import java.util.Map;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -42,17 +44,20 @@ public class WalletPlanService {
     private final TenantRepository tenantRepository;
     private final PricingPlanRepository pricingPlanRepository;
     private final WalletRepository walletRepository;
+    private final TransactionRepository transactionRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     public WalletPlanService(WalletPlanRepository walletPlanRepository,
             TenantRepository tenantRepository,
             PricingPlanRepository pricingPlanRepository,
             WalletRepository walletRepository,
+            TransactionRepository transactionRepository,
             ApplicationEventPublisher eventPublisher) {
         this.walletPlanRepository = walletPlanRepository;
         this.tenantRepository = tenantRepository;
         this.pricingPlanRepository = pricingPlanRepository;
         this.walletRepository = walletRepository;
+        this.transactionRepository = transactionRepository;
         this.eventPublisher = eventPublisher;
     }
 
@@ -77,7 +82,7 @@ public class WalletPlanService {
                 .creditedAmount(creditedAmount)
                 .status(WalletPlanStatus.PENDING)
                 .createdBy(request.getCreatedBy())
-                .createdAt(OffsetDateTime.now())
+                .createdAt(LocalDateTime.now())
                 .build();
 
         var saved = walletPlanRepository.save(walletPlan);
@@ -134,7 +139,7 @@ public class WalletPlanService {
         }
 
         walletPlan.setStatus(WalletPlanStatus.APPROVED);
-        walletPlan.setApprovedAt(OffsetDateTime.now());
+        walletPlan.setApprovedAt(LocalDateTime.now());
         walletPlan.setApprovedBy(request.getApprovedBy());
 
         var saved = walletPlanRepository.save(walletPlan);
@@ -150,7 +155,7 @@ public class WalletPlanService {
         return toResponse(saved);
     }
 
-    public WalletPlanResponse reject(UUID id, WalletPlanApproveRequest request) {
+    public WalletPlanResponse reject(UUID id, WalletPlanRejectRequest request) {
         log.info("Rejecting wallet plan: {}", id);
 
         WalletPlan walletPlan = walletPlanRepository.findByIdForUpdate(id)
@@ -161,16 +166,41 @@ public class WalletPlanService {
         }
 
         walletPlan.setStatus(WalletPlanStatus.REJECTED);
-        walletPlan.setApprovedAt(OffsetDateTime.now());
+        walletPlan.setApprovedAt(LocalDateTime.now());
         walletPlan.setApprovedBy(request.getApprovedBy());
+        walletPlan.setRejectReason(request.getRejectReason());
 
         var saved = walletPlanRepository.save(walletPlan);
+
+        // Record a FAILED transaction in the ledger so the tenant can see
+        // why the topup never happened. Balances are unchanged (no money moved).
+        Wallet wallet = walletRepository.findByTenantId(saved.getTenant().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Wallet", "tenantId",
+                        saved.getTenant().getId()));
+        Transaction failedTxn = Transaction.builder()
+                .wallet(wallet)
+                .amount(saved.getCreditedAmount())
+                .type(TransactionType.DEPOSIT)
+                .balanceBefore(wallet.getBalance())
+                .balanceAfter(wallet.getBalance())
+                .availableBalanceBefore(wallet.getAvailableBalance())
+                .availableBalanceAfter(wallet.getAvailableBalance())
+                .status(TransactionStatus.FAILED)
+                .description("Nạp gói " + saved.getPricingPlan().getName() + " bị từ chối: "
+                        + request.getRejectReason())
+                .referenceFrom("WALLET_PLAN")
+                .referenceId(saved.getId().toString())
+                .createdAt(LocalDateTime.now())
+                .build();
+        transactionRepository.save(failedTxn);
+        log.info("Recorded FAILED transaction {} for rejected wallet plan {}", failedTxn.getId(), id);
 
         WalletPlanRejectedEvent rejectedEvent = WalletPlanRejectedEvent.builder()
                 .walletPlanId(saved.getId().toString())
                 .tenantId(saved.getTenant().getId().toString())
                 .pricingPlanName(saved.getPricingPlan().getName())
                 .approvedBy(request.getApprovedBy())
+                .rejectReason(request.getRejectReason())
                 .build();
         eventPublisher.publishEvent(rejectedEvent);
 
@@ -219,15 +249,6 @@ public class WalletPlanService {
         return BigDecimal.ZERO;
     }
 
-    // private BigDecimal calculateNewCreditLimit(PricingPlan plan, BigDecimal
-    // currentCreditLimit) {
-    // return switch (plan.getCreditLimitAction()) {
-    // case INCREASE -> currentCreditLimit.add(plan.getCreditLimitValue());
-    // case SET -> plan.getCreditLimitValue();
-    // case NONE -> currentCreditLimit;
-    // };
-    // }
-
     private WalletPlanResponse toResponse(WalletPlan wp) {
         return WalletPlanResponse.builder()
                 .id(wp.getId())
@@ -241,6 +262,7 @@ public class WalletPlanService {
                 .status(wp.getStatus().name())
                 .approvedAt(wp.getApprovedAt())
                 .approvedBy(wp.getApprovedBy())
+                .rejectReason(wp.getRejectReason())
                 .createdBy(wp.getCreatedBy())
                 .createdAt(wp.getCreatedAt())
                 .build();

@@ -5,6 +5,7 @@ import {
   Boxes,
   FileSpreadsheet,
   Clock,
+  Undo2,
   Building2,
   Wallet,
   Bell,
@@ -35,14 +36,14 @@ export const AdminLayout: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { adminLogout, adminEmail } = useAuth();
-  const { pendingWalletPlanCount } = useNotifications();
-  
+  const { pendingWalletPlanCount, pendingRefundCount } = useNotifications();
   const menuItems = [
     { path: '/admin', label: 'Tổng quan', icon: LayoutDashboard },
     { path: '/admin/services', label: 'Danh mục dịch vụ', icon: Boxes },
     { path: '/admin/pricing-plans', label: 'Bảng giá Tenant', icon: FileSpreadsheet },
     { path: '/admin/wallets', label: 'Quản lý ví', icon: Wallet },
     { path: '/admin/wallet-plans/pending', label: 'Duyệt gói cước', icon: Clock, badge: pendingWalletPlanCount },
+    { path: '/admin/refunds', label: 'Duyệt hoàn tiền', icon: Undo2, badge: pendingRefundCount },
     { path: '/admin/tenants', label: 'Quản lý Tenant', icon: Building2 },
     { path: '/admin/invoices', label: 'Hóa đơn', icon: FileText },
     { path: '/admin/rbac', label: 'Phân quyền (RBAC)', icon: Shield },
