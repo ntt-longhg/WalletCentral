@@ -2,13 +2,17 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/toast';
 import { useEmbedStore } from '@/stores';
 import { formatCurrency, formatDate } from '@/lib/utils';
-import { ArrowDownLeft, ArrowUpRight, History, RefreshCw, Loader2 } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, History, RefreshCw, Loader2, Undo2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { EmbedAccessDeniedPage } from './EmbedAccessDeniedPage';
+import type { TransactionResponse } from '@/types/api';
 
 export const EmbedTransactionsPage: React.FC = () => {
   const { token } = useAuth();
@@ -18,15 +22,23 @@ export const EmbedTransactionsPage: React.FC = () => {
     transactionsLoading: loading,
     transactionsError: error,
     fetchTransactions,
+    createRefundRequest,
+    refunds,
+    fetchRefundRequests,
   } = useEmbedStore();
 
   const [filterType, setFilterType] = useState<string>('ALL');
+  const [refundDialogOpen, setRefundDialogOpen] = useState(false);
+  const [selectedTxn, setSelectedTxn] = useState<TransactionResponse | null>(null);
+  const [refundReason, setRefundReason] = useState('');
+  const [refundSubmitting, setRefundSubmitting] = useState(false);
 
   useEffect(() => {
     if (token) {
       fetchTransactions();
+      fetchRefundRequests();
     }
-  }, [token, fetchTransactions]);
+  }, [token, fetchTransactions, fetchRefundRequests]);
 
   useEffect(() => {
     if (error) {
@@ -38,6 +50,46 @@ export const EmbedTransactionsPage: React.FC = () => {
     if (filterType === 'ALL') return true;
     return t.type === filterType;
   });
+
+  // Transaction IDs that already have a PENDING or APPROVED refund (backend also guards)
+  const refundedTxnIds = React.useMemo(() => {
+    const ids = new Set<string>();
+    for (const r of refunds) {
+      if ((r.status === 'PENDING' || r.status === 'APPROVED') && r.transactionId) {
+        ids.add(r.transactionId);
+      }
+    }
+    return ids;
+  }, [refunds]);
+
+  const canRefund = useCallback((t: TransactionResponse) => {
+    return t.type === 'CHARGE' && t.status === 'SUCCESS' && !refundedTxnIds.has(t.id);
+  }, [refundedTxnIds]);
+
+  const openRefundDialog = (txn: TransactionResponse) => {
+    setSelectedTxn(txn);
+    setRefundReason('');
+    setRefundDialogOpen(true);
+  };
+
+  const handleConfirmRefund = async () => {
+    if (!selectedTxn) return;
+    setRefundSubmitting(true);
+    try {
+      await createRefundRequest({
+        transactionId: selectedTxn.id,
+        reason: refundReason.trim() || undefined,
+      });
+      addToast({ variant: 'success', message: 'Đã gửi yêu cầu hoàn tiền, chờ phê duyệt.' });
+      setRefundDialogOpen(false);
+      setSelectedTxn(null);
+      setRefundReason('');
+    } catch (err: any) {
+      addToast({ variant: 'destructive', message: err.response?.data?.message || 'Gửi yêu cầu hoàn tiền thất bại.' });
+    } finally {
+      setRefundSubmitting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -109,6 +161,7 @@ export const EmbedTransactionsPage: React.FC = () => {
                   <TableHead>Trạng Thái</TableHead>
                   <TableHead>Nguồn / Reference</TableHead>
                   <TableHead>Thời Gian</TableHead>
+                  <TableHead className="text-right">Thao tác</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -154,6 +207,19 @@ export const EmbedTransactionsPage: React.FC = () => {
                       {txn.referenceFrom}: {txn.referenceId}
                     </TableCell>
                     <TableCell className="text-xs text-slate-500">{formatDate(txn.createdAt)}</TableCell>
+                    <TableCell className="text-right">
+                      {canRefund(txn) && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openRefundDialog(txn)}
+                          className="gap-1 text-xs text-amber-700 border-amber-200 hover:bg-amber-50"
+                        >
+                          <Undo2 className="h-3.5 w-3.5" />
+                          Hoàn tiền
+                        </Button>
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -161,6 +227,42 @@ export const EmbedTransactionsPage: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Refund request dialog */}
+      <Dialog open={refundDialogOpen} onOpenChange={setRefundDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Yêu cầu hoàn tiền</DialogTitle>
+            <DialogDescription>
+              {selectedTxn && (
+                <>
+                  Hoàn tiền giao dịch <span className="font-mono">{selectedTxn.referenceFrom}: {selectedTxn.referenceId}</span>
+                  {' '}với số tiền <strong>{formatCurrency(selectedTxn.amount)}</strong>.
+                  Yêu cầu sẽ được gửi đi và chờ quản trị viên phê duyệt.
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            <Label htmlFor="refund-reason">Lý do hoàn tiền</Label>
+            <Input
+              id="refund-reason"
+              placeholder="VD: Khách hàng khiếu nại trừ phí sai..."
+              value={refundReason}
+              onChange={(e) => setRefundReason(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRefundDialogOpen(false)} disabled={refundSubmitting}>
+              Hủy
+            </Button>
+            <Button onClick={handleConfirmRefund} disabled={refundSubmitting} className="gap-1">
+              {refundSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Undo2 className="h-4 w-4" />}
+              {refundSubmitting ? 'Đang gửi...' : 'Gửi yêu cầu'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

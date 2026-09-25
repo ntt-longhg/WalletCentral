@@ -28,4 +28,7 @@ public class AuthResponse {
 
     @Schema(description = "Effective permissions for this user")
     private Set<String> permissions;
+
+    @Schema(description = "How the user logged in: OTP | PASSWORD", example = "OTP")
+    private String loginMethod;
 }

@@ -10,6 +10,7 @@ import com.gateway.walletcentral.modules.servicecatalog.model.ServicePrice;
 import com.gateway.walletcentral.modules.servicecatalog.repository.PriceTierRepository;
 import com.gateway.walletcentral.modules.servicecatalog.repository.ServicePriceRepository;
 import com.gateway.walletcentral.modules.servicecatalog.repository.ServiceRepository;
+import com.gateway.walletcentral.modules.systemconfig.service.SystemConfigService;
 import com.gateway.walletcentral.modules.transaction.model.TransactionStatus;
 import com.gateway.walletcentral.modules.tenant.model.Tenant;
 import com.gateway.walletcentral.modules.usagelog.model.FeeBreakdownStructure;
@@ -22,7 +23,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -40,17 +40,20 @@ public class BillingService {
         private final PriceTierRepository priceTierRepository;
         private final WalletRepository walletRepository;
         private final ApplicationEventPublisher eventPublisher;
+        private final SystemConfigService configService;
 
         public BillingService(ServiceRepository serviceRepository,
                         ServicePriceRepository servicePriceRepository,
                         PriceTierRepository priceTierRepository,
                         WalletRepository walletRepository,
-                        ApplicationEventPublisher eventPublisher) {
+                        ApplicationEventPublisher eventPublisher,
+                        SystemConfigService configService) {
                 this.serviceRepository = serviceRepository;
                 this.servicePriceRepository = servicePriceRepository;
                 this.priceTierRepository = priceTierRepository;
                 this.walletRepository = walletRepository;
                 this.eventPublisher = eventPublisher;
+                this.configService = configService;
         }
 
         /**
@@ -152,7 +155,9 @@ public class BillingService {
                                 .referenceId(refId)
                                 .createdAt(now)
                                 .description(request.getDescription() != null ? request.getDescription()
-                                                : "Thanh toán cước " + service.getCode())
+                                                : configService.getValue("billing.default_description_template",
+                                                                "Thanh toán cước {0}").replace("{0}",
+                                                                                service.getCode()))
                                 .webhookUrl(request.getWebhookUrl())
                                 .webhookAuth(request.getWebhookAuth())
                                 .metadata(request.getMetadata())

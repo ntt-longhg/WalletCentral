@@ -1,6 +1,7 @@
 package com.gateway.walletcentral.modules.systemconfig.controller;
 
 import com.gateway.walletcentral.core.response.ApiResponse;
+import com.gateway.walletcentral.modules.systemconfig.dto.ConfigReloadResponse;
 import com.gateway.walletcentral.modules.systemconfig.dto.SystemConfigResponse;
 import com.gateway.walletcentral.modules.systemconfig.dto.SystemConfigUpdateRequest;
 import com.gateway.walletcentral.modules.systemconfig.service.SystemConfigService;
@@ -32,15 +33,27 @@ public class SystemConfigController {
     }
 
     @PutMapping
-    @Operation(summary = "Bulk update system configurations")
-    public ResponseEntity<ApiResponse<Map<String, String>>> update(
+    @Operation(summary = "Bulk save system configurations to DB (takes effect after reload)")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> update(
             @RequestBody Map<String, List<SystemConfigUpdateRequest>> body) {
         List<SystemConfigUpdateRequest> configs = body.get("configs");
         if (configs == null || configs.isEmpty()) {
             throw new IllegalArgumentException("Configs list is required");
         }
-        configService.updateConfigs(configs);
-        configService.invalidateCache();
-        return ResponseEntity.ok(ApiResponse.ok(null, "Configurations updated successfully"));
+        int saved = configService.updateConfigs(configs);
+        return ResponseEntity.ok(ApiResponse.ok(
+                Map.<String, Object>of("savedCount", saved),
+                "Saved " + saved + " configuration(s) to database. Press Sync to apply."));
+    }
+
+    @PostMapping("/reload")
+    @Operation(summary = "Reload local config cache from DB and apply immediately (returns the diff)")
+    public ResponseEntity<ApiResponse<ConfigReloadResponse>> reload() {
+        ConfigReloadResponse result = configService.reloadConfigs();
+        String message = result.getTotalChanged() == 0
+                ? "Local config is already up to date."
+                : "Applied " + result.getTotalChanged() + " change(s) (" + result.getChangedCount()
+                        + " changed, " + result.getAddedCount() + " added, " + result.getRemovedCount() + " removed).";
+        return ResponseEntity.ok(ApiResponse.ok(result, message));
     }
 }

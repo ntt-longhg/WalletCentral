@@ -19,6 +19,8 @@ public interface AdminTokenRepository extends JpaRepository<AdminToken, UUID> {
 
     int deleteByToken(String token);
 
+    int deleteByEmail(String email);
+
     boolean existsByEmail(String email);
 
     @Modifying

@@ -1,9 +1,10 @@
 package com.gateway.walletcentral.modules.transaction.handler;
 
 import com.gateway.walletcentral.core.event.NotificationEvent;
-import com.gateway.walletcentral.modules.billing.dto.BillingEvent;
-import com.gateway.walletcentral.modules.walletplan.dto.WalletPlanEvent;
 import com.gateway.walletcentral.core.exception.BusinessException;
+import com.gateway.walletcentral.modules.billing.dto.BillingEvent;
+import com.gateway.walletcentral.modules.systemconfig.service.SystemConfigService;
+import com.gateway.walletcentral.modules.walletplan.dto.WalletPlanEvent;
 import com.gateway.walletcentral.modules.transaction.model.Transaction;
 import com.gateway.walletcentral.modules.transaction.model.TransactionStatus;
 import com.gateway.walletcentral.modules.transaction.model.TransactionType;
@@ -27,18 +28,21 @@ public class TransactionEventHandler {
         private static final Logger log = LoggerFactory.getLogger(TransactionEventHandler.class);
         private static final Logger auditLog = LoggerFactory.getLogger("AUDIT.TRANSACTION");
 
-        private static final BigDecimal LARGE_TRANSACTION_THRESHOLD = new BigDecimal("1000000");
+        private static final BigDecimal DEFAULT_LARGE_TRANSACTION_THRESHOLD = new BigDecimal("1000000");
 
         private final TransactionRepository transactionRepository;
         private final WalletRepository walletRepository;
         private final ApplicationEventPublisher eventPublisher;
+        private final SystemConfigService configService;
 
         public TransactionEventHandler(TransactionRepository transactionRepository,
                         WalletRepository walletRepository,
-                        ApplicationEventPublisher eventPublisher) {
+                        ApplicationEventPublisher eventPublisher,
+                        SystemConfigService configService) {
                 this.transactionRepository = transactionRepository;
                 this.walletRepository = walletRepository;
                 this.eventPublisher = eventPublisher;
+                this.configService = configService;
         }
 
         @Transactional
@@ -212,16 +216,21 @@ public class TransactionEventHandler {
                                 transaction.getAmount(), transaction.getBalanceBefore(), transaction.getBalanceAfter(),
                                 transaction.getStatus(), transaction.getReferenceFrom(), transaction.getReferenceId());
 
-                // Large transaction alert (after DB commit)
-                if (transaction.getAmount().compareTo(LARGE_TRANSACTION_THRESHOLD) > 0) {
+                // Large transaction alert (after DB commit, threshold is dynamic)
+                BigDecimal largeThreshold = configService.getBigDecimal("alert.large_transaction_threshold",
+                                DEFAULT_LARGE_TRANSACTION_THRESHOLD);
+                if (transaction.getAmount().compareTo(largeThreshold) > 0) {
                         log.warn("LARGE TRANSACTION ALERT: id={} amount={} wallet={} tenant={}",
                                         transaction.getId(), transaction.getAmount(),
                                         wallet.getId(), wallet.getTenant().getName());
                         NotificationEvent notificationEvent = NotificationEvent.builder()
                                         .tenantId(wallet.getTenant().getId().toString())
                                         .type("TRANSACTION")
-                                        .title("Cảnh báo giao dịch lớn")
-                                        .message(String.format("Giao dịch %s với số tiền %s VND trên ví %s",
+                                        .title(configService.getValue("alert.large_transaction_title",
+                                                        "Cảnh báo giao dịch lớn"))
+                                        .message(formatTemplate(
+                                                        configService.getValue("alert.large_transaction_message",
+                                                                        "Giao dịch {0} với số tiền {1} VND trên ví {2}"),
                                                         transaction.getId(), transaction.getAmount(), wallet.getId()))
                                         .referenceType("TRANSACTION")
                                         .referenceId(transaction.getId().toString())
@@ -284,6 +293,19 @@ public class TransactionEventHandler {
                         return number.intValue();
                 }
                 return Integer.valueOf(value.toString());
+        }
+
+        /** Replaces {0}, {1}, ... placeholders in a config template. Never throws. */
+        private String formatTemplate(String template, Object... args) {
+                if (template == null) {
+                        return null;
+                }
+                String result = template;
+                for (int i = 0; i < args.length; i++) {
+                        result = result.replace("{" + i + "}",
+                                        args[i] == null ? "" : args[i].toString());
+                }
+                return result;
         }
 
         private LocalDateTime toLocalDateTime(Object value) {

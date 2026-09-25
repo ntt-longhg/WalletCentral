@@ -3,6 +3,7 @@ import { systemConfigService, notificationService } from '@/services/billingServ
 import type {
   SystemConfigResponse,
   SystemConfigUpdateRequest,
+  ConfigReloadResponse,
   NotificationResponse,
 } from '@/types/api';
 
@@ -19,7 +20,8 @@ interface ConfigState {
 
   // Config actions
   fetchConfigs: (group?: string) => Promise<void>;
-  updateConfigs: (updates: SystemConfigUpdateRequest[]) => Promise<void>;
+  updateConfigs: (updates: SystemConfigUpdateRequest[]) => Promise<number>;
+  reloadConfigs: () => Promise<ConfigReloadResponse | null>;
 
   // Notification actions
   fetchNotifications: (params?: { tenantId?: string; isRead?: boolean; cursor?: string; size?: number }) => Promise<void>;
@@ -53,10 +55,16 @@ export const useConfigStore = create<ConfigState>((set) => ({
   },
 
   updateConfigs: async (updates) => {
-    await systemConfigService.update(updates);
-    // Refetch after update to sync with backend
-    const res = await systemConfigService.getAll();
-    set({ configs: res.data?.data ?? [] });
+    const res = await systemConfigService.update(updates);
+    // Refetch to show saved DB values (they take effect after Sync)
+    const all = await systemConfigService.getAll();
+    set({ configs: all.data?.data ?? [] });
+    return res.data?.data?.savedCount ?? updates.length;
+  },
+
+  reloadConfigs: async () => {
+    const res = await systemConfigService.reload();
+    return res.data?.data ?? null;
   },
 
   // ─── Notification Actions ─────────────────────────────────────────────────────

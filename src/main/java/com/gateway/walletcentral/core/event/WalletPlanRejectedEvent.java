@@ -15,4 +15,5 @@ public class WalletPlanRejectedEvent {
     private String tenantId;
     private String pricingPlanName;
     private String approvedBy;
+    private String rejectReason;
 }

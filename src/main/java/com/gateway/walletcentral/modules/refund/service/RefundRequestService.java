@@ -168,6 +168,27 @@ public class RefundRequestService {
         refundRequest.setUpdatedAt(LocalDateTime.now());
         var saved = refundRequestRepository.save(refundRequest);
 
+        // Record a FAILED transaction in the ledger so the tenant can see
+        // why the refund never happened. Balances are unchanged (no money moved).
+        Wallet wallet = saved.getWallet();
+        Transaction failedTxn = Transaction.builder()
+                .wallet(wallet)
+                .amount(saved.getAmount())
+                .type(TransactionType.REFUND)
+                .balanceBefore(wallet.getBalance())
+                .balanceAfter(wallet.getBalance())
+                .availableBalanceBefore(wallet.getAvailableBalance())
+                .availableBalanceAfter(wallet.getAvailableBalance())
+                .status(TransactionStatus.FAILED)
+                .description("Yêu cầu hoàn tiền cho giao dịch " + saved.getTransaction().getId()
+                        + " bị từ chối: " + request.getRejectReason())
+                .referenceFrom("REFUND")
+                .referenceId(saved.getId().toString())
+                .createdAt(LocalDateTime.now())
+                .build();
+        transactionRepository.save(failedTxn);
+        log.info("Recorded FAILED transaction {} for rejected refund request {}", failedTxn.getId(), id);
+
         RefundRejectedEvent refundEvent = RefundRejectedEvent.builder()
                 .refundRequestId(saved.getId().toString())
                 .tenantId(saved.getTenant().getId().toString())

@@ -72,6 +72,10 @@ public class WalletPlan {
     @Column(name = "approved_by", nullable = true, length = 100, comment = "Admin user who approved/rejected the plan - NULL if pending")
     private String approvedBy = null;
 
+    /** Reason for rejection - set when status is REJECTED */
+    @Column(name = "reject_reason", columnDefinition = "TEXT", comment = "Reason for rejection - set when status is REJECTED")
+    private String rejectReason = null;
+
     /** Record creation timestamp */
     @Column(name = "created_at", updatable = false, comment = "Record creation timestamp")
     private LocalDateTime createdAt = LocalDateTime.now();

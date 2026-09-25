@@ -29,6 +29,12 @@ public class SystemConfigResponse {
     @Schema(description = "Configuration description")
     private String description;
 
+    @Schema(description = "UI field type: text, number, password, textarea, select, radio, boolean, time", example = "text")
+    private String fieldType;
+
+    @Schema(description = "JSON options for select/radio fields", example = "[{\"value\":\"auto\",\"label\":\"Auto\"}]")
+    private String fieldOptions;
+
     @Schema(description = "Last updated timestamp")
     private LocalDateTime updatedAt;
 }

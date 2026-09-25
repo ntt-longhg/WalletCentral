@@ -62,6 +62,9 @@ public class WalletPlanResponse {
     @Schema(description = "Approved by")
     private String approvedBy;
 
+    @Schema(description = "Reject reason (set when REJECTED)")
+    private String rejectReason;
+
     @Schema(description = "Created by")
     private String createdBy;
 

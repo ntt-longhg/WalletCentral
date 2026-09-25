@@ -36,6 +36,9 @@ public class AdminUser {
     @Builder.Default
     private Boolean isActive = true;
 
+    @Column(name = "password_hash", length = 255, comment = "BCrypt password hash for password login (NULL = not set)")
+    private String passwordHash;
+
     @Column(name = "last_login_at", comment = "Last login timestamp")
     private LocalDateTime lastLoginAt;
 

@@ -64,7 +64,7 @@ public class WalletPlanController {
     @Operation(summary = "Reject a pending wallet plan")
     public ResponseEntity<ApiResponse<WalletPlanResponse>> reject(
             @PathVariable UUID id,
-            @Valid @RequestBody WalletPlanApproveRequest request) {
+            @Valid @RequestBody WalletPlanRejectRequest request) {
         WalletPlanResponse response = walletPlanService.reject(id, request);
         return ResponseEntity.ok(ApiResponse.ok(response, "Wallet plan rejected"));
     }

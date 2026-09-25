@@ -1,6 +1,7 @@
 package com.gateway.walletcentral.modules.walletplan.listener;
 
 import com.gateway.walletcentral.config.RabbitMQConfig;
+import com.gateway.walletcentral.modules.systemconfig.service.SystemConfigService;
 import com.gateway.walletcentral.modules.walletplan.handler.WalletPlanEventHandler;
 import com.gateway.walletcentral.modules.walletplan.model.WalletPlanStatus;
 import com.rabbitmq.client.Channel;
@@ -21,9 +22,12 @@ public class WalletPlanListener {
     private static final Logger log = LoggerFactory.getLogger(WalletPlanListener.class);
 
     private final WalletPlanEventHandler walletPlanEventHandler;
+    private final SystemConfigService configService;
 
-    public WalletPlanListener(WalletPlanEventHandler walletPlanEventHandler) {
+    public WalletPlanListener(WalletPlanEventHandler walletPlanEventHandler,
+            SystemConfigService configService) {
         this.walletPlanEventHandler = walletPlanEventHandler;
+        this.configService = configService;
     }
 
     @RabbitListener(queues = RabbitMQConfig.QUEUE_WALLET_PLAN, executor = "virtualThreadExecutor")
@@ -66,8 +70,9 @@ public class WalletPlanListener {
             // Handler returned => its transaction committed => safe to ack
             channel.basicAck(deliveryTag, false);
         } catch (Exception e) {
-            // First failure => requeue for one retry; redelivered failure => DLQ
-            boolean requeue = !Boolean.TRUE.equals(redelivered);
+            // First failure => requeue for one retry (if mq.retry_enabled); redelivered failure => DLQ
+            boolean requeue = configService.getBoolean("mq.retry_enabled", true)
+                    && !Boolean.TRUE.equals(redelivered);
             log.error("Wallet plan listener error processing event: {} redelivered={} requeue={}",
                     event, redelivered, requeue, e);
             channel.basicNack(deliveryTag, false, requeue);

@@ -7,13 +7,15 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Clock, CheckCircle2, XCircle, RefreshCw, Loader2 } from 'lucide-react';
-import { formatCurrency, formatDate, getStatusConfig } from '@/lib/utils';
+import { Undo2, CheckCircle2, XCircle, RefreshCw, Loader2 } from 'lucide-react';
+import { formatCurrency, formatDate } from '@/lib/utils';
 import { useBillingStore } from '@/stores';
+import { useAuth } from '@/context/AuthContext';
 
-export const PendingWalletPlansPage: React.FC = () => {
+export const PendingRefundsPage: React.FC = () => {
   const { addToast } = useToast();
-  const { pendingPlans, plansLoading: loading, fetchPendingWalletPlans, approveWalletPlan, rejectWalletPlan } = useBillingStore();
+  const { adminEmail } = useAuth();
+  const { pendingRefunds, refundsLoading: loading, fetchPendingRefunds, approveRefund, rejectRefund } = useBillingStore();
 
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -21,15 +23,15 @@ export const PendingWalletPlansPage: React.FC = () => {
   const [rejectSubmitting, setRejectSubmitting] = useState(false);
 
   useEffect(() => {
-    fetchPendingWalletPlans();
+    fetchPendingRefunds();
   }, []);
 
   const handleApprove = async (id: string) => {
     try {
-      await approveWalletPlan(id, { approvedBy: 'admin' });
-      addToast({ variant: 'success', message: 'Đã phê duyệt gói cước thành công!' });
+      await approveRefund(id, { reviewedBy: adminEmail || 'admin' });
+      addToast({ variant: 'success', message: 'Đã phê duyệt hoàn tiền thành công!' });
     } catch (err: any) {
-      addToast({ variant: 'destructive', message: err.response?.data?.message || 'Không thể duyệt gói cước.' });
+      addToast({ variant: 'destructive', message: err.response?.data?.message || 'Không thể duyệt hoàn tiền.' });
     }
   };
 
@@ -47,13 +49,13 @@ export const PendingWalletPlansPage: React.FC = () => {
     }
     setRejectSubmitting(true);
     try {
-      await rejectWalletPlan(selectedId, { approvedBy: 'admin', rejectReason: rejectReason.trim() });
-      addToast({ variant: 'success', message: 'Đã từ chối đăng ký gói cước.' });
+      await rejectRefund(selectedId, { reviewedBy: adminEmail || 'admin', rejectReason: rejectReason.trim() });
+      addToast({ variant: 'success', message: 'Đã từ chối yêu cầu hoàn tiền.' });
       setRejectDialogOpen(false);
       setSelectedId(null);
       setRejectReason('');
     } catch (err: any) {
-      addToast({ variant: 'destructive', message: err.response?.data?.message || 'Không thể từ chối gói cước.' });
+      addToast({ variant: 'destructive', message: err.response?.data?.message || 'Không thể từ chối hoàn tiền.' });
     } finally {
       setRejectSubmitting(false);
     }
@@ -64,14 +66,14 @@ export const PendingWalletPlansPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <Clock className="h-5 w-5 text-blue-600" />
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Duyệt Yêu cầu Đăng ký Gói cước</h1>
+            <Undo2 className="h-5 w-5 text-blue-600" />
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Duyệt Yêu cầu Hoàn tiền</h1>
           </div>
           <p className="text-sm text-slate-500 mt-1">
-            Phê duyệt hoặc từ chối các yêu cầu nạp tiền / mua gói trả trước từ các Tenant trong hệ thống.
+            Phê duyệt hoặc từ chối các yêu cầu hoàn tiền giao dịch CHARGE từ các Tenant trong hệ thống.
           </p>
         </div>
-        <Button variant="outline" onClick={() => fetchPendingWalletPlans()} disabled={loading} className="gap-2 self-start sm:self-auto">
+        <Button variant="outline" onClick={() => fetchPendingRefunds()} disabled={loading} className="gap-2 self-start sm:self-auto">
           <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           Làm mới
         </Button>
@@ -80,59 +82,54 @@ export const PendingWalletPlansPage: React.FC = () => {
       <Card className="border-slate-200 shadow-sm">
         <CardHeader className="pb-3">
           <CardTitle className="text-base font-semibold flex items-center gap-2">
-            <Clock className="h-4 w-4 text-amber-600" /> Yêu cầu chờ duyệt
+            <Undo2 className="h-4 w-4 text-amber-600" /> Yêu cầu chờ duyệt
           </CardTitle>
-          <CardDescription>Danh sách các yêu cầu đăng ký gói cước đang chờ xử lý</CardDescription>
+          <CardDescription>Danh sách các yêu cầu hoàn tiền đang chờ xử lý</CardDescription>
         </CardHeader>
         <CardContent>
-          {pendingPlans.length === 0 ? (
+          {pendingRefunds.length === 0 ? (
             <div className="text-center py-10 text-slate-400 text-sm">
-              Không có yêu cầu đăng ký gói cước nào đang chờ duyệt.
+              Không có yêu cầu hoàn tiền nào đang chờ duyệt.
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Tenant</TableHead>
-                  <TableHead>Gói cước</TableHead>
-                  <TableHead>Giá</TableHead>
-                  <TableHead>Số tiền nạp</TableHead>
-                  <TableHead>Dư trước &rarr; sau</TableHead>
-                  <TableHead>Hạn mức trước &rarr; sau</TableHead>
+                  <TableHead>Số tiền hoàn</TableHead>
+                  <TableHead>Giao dịch gốc</TableHead>
+                  <TableHead>Lý do</TableHead>
+                  <TableHead>Người yêu cầu</TableHead>
                   <TableHead>Trạng thái</TableHead>
                   <TableHead>Thời gian</TableHead>
                   <TableHead>Thao tác</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {pendingPlans.map((wp) => (
-                  <TableRow key={wp.id}>
-                    <TableCell className="font-medium text-slate-900">{wp.tenantName}</TableCell>
+                {pendingRefunds.map((r) => (
+                  <TableRow key={r.id}>
+                    <TableCell className="font-medium text-slate-900">{r.tenantName}</TableCell>
+                    <TableCell className="text-amber-700 font-semibold">
+                      {formatCurrency(r.amount)}
+                    </TableCell>
+                    <TableCell className="text-xs font-mono text-slate-600">
+                      <div>{r.transactionType}: {formatCurrency(r.transactionAmount)}</div>
+                      <div className="text-slate-400 truncate max-w-40" title={r.transactionId}>{r.transactionId}</div>
+                    </TableCell>
+                    <TableCell className="text-xs text-slate-600 max-w-55">
+                      {r.reason || <span className="text-slate-400">—</span>}
+                    </TableCell>
+                    <TableCell className="text-xs text-slate-500">{r.requestedBy || '—'}</TableCell>
                     <TableCell>
-                      <div className="font-semibold text-slate-800">{wp.pricingPlanName}</div>
+                      <Badge variant="warning">{r.status}</Badge>
                     </TableCell>
-                    <TableCell className="font-semibold">{formatCurrency(wp.price)}</TableCell>
-                    <TableCell className="text-emerald-600 font-semibold">
-                      +{formatCurrency(wp.creditedAmount)}
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      {formatCurrency(wp.balanceBefore)} &rarr;{' '}
-                      <span className="font-semibold text-slate-800">{formatCurrency(wp.balanceAfter)}</span>
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      {formatCurrency(wp.creditLimitBefore)} &rarr;{' '}
-                      <span className="font-semibold text-slate-800">{formatCurrency(wp.creditLimitAfter)}</span>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="warning">{wp.status}</Badge>
-                    </TableCell>
-                    <TableCell className="text-xs text-slate-500">{formatDate(wp.createdAt)}</TableCell>
+                    <TableCell className="text-xs text-slate-500">{formatDate(r.createdAt)}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Button
                           size="sm"
                           className="bg-emerald-600 hover:bg-emerald-700 h-7 text-xs gap-1"
-                          onClick={() => handleApprove(wp.id)}
+                          onClick={() => handleApprove(r.id)}
                         >
                           <CheckCircle2 className="h-3.5 w-3.5" /> Duyệt
                         </Button>
@@ -140,7 +137,7 @@ export const PendingWalletPlansPage: React.FC = () => {
                           size="sm"
                           variant="destructive"
                           className="h-7 text-xs gap-1"
-                          onClick={() => openRejectDialog(wp.id)}
+                          onClick={() => openRejectDialog(r.id)}
                         >
                           <XCircle className="h-3.5 w-3.5" /> Từ chối
                         </Button>
@@ -158,16 +155,16 @@ export const PendingWalletPlansPage: React.FC = () => {
       <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Từ chối yêu cầu đăng ký gói cước</DialogTitle>
+            <DialogTitle>Từ chối yêu cầu hoàn tiền</DialogTitle>
             <DialogDescription>
-              Vui lòng nhập lý do từ chối. Một giao dịch FAILED sẽ được ghi vào sổ cái để tenant nắm được.
+              Vui lòng nhập lý do từ chối. Tenant sẽ nhận được thông báo này.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2 py-2">
-            <Label htmlFor="plan-reject-reason">Lý do từ chối</Label>
+            <Label htmlFor="reject-reason">Lý do từ chối</Label>
             <Input
-              id="plan-reject-reason"
-              placeholder="VD: Gói cước không còn áp dụng, tenant chưa đủ điều kiện..."
+              id="reject-reason"
+              placeholder="VD: Giao dịch đã sử dụng dịch vụ, không đủ điều kiện hoàn..."
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
             />

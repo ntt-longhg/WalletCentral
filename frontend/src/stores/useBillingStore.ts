@@ -3,6 +3,7 @@ import {
   tenantService,
   walletService,
   walletPlanService,
+  refundService,
 } from '@/services/billingServices';
 import type {
   TenantResponse,
@@ -15,6 +16,10 @@ import type {
   WalletPlanResponse,
   WalletPlanCreateRequest,
   WalletPlanApproveRequest,
+  WalletPlanRejectRequest,
+  RefundResponse,
+  RefundApproveRequest,
+  RefundRejectRequest,
 } from '@/types/api';
 
 interface BillingState {
@@ -34,6 +39,11 @@ interface BillingState {
   plansLoading: boolean;
   plansError: string | null;
 
+  // Refund requests
+  pendingRefunds: RefundResponse[];
+  refundsLoading: boolean;
+  refundsError: string | null;
+
   // Tenant actions
   fetchTenants: () => Promise<void>;
   createTenant: (data: TenantCreateRequest) => Promise<TenantResponse>;
@@ -51,7 +61,12 @@ interface BillingState {
   fetchPendingWalletPlans: () => Promise<void>;
   createWalletPlan: (data: WalletPlanCreateRequest) => Promise<WalletPlanResponse>;
   approveWalletPlan: (id: string, data: WalletPlanApproveRequest) => Promise<WalletPlanResponse>;
-  rejectWalletPlan: (id: string, data: WalletPlanApproveRequest) => Promise<WalletPlanResponse>;
+  rejectWalletPlan: (id: string, data: WalletPlanRejectRequest) => Promise<WalletPlanResponse>;
+
+  // Refund actions
+  fetchPendingRefunds: () => Promise<void>;
+  approveRefund: (id: string, data: RefundApproveRequest) => Promise<RefundResponse>;
+  rejectRefund: (id: string, data: RefundRejectRequest) => Promise<RefundResponse>;
 }
 
 export const useBillingStore = create<BillingState>((set) => ({
@@ -68,6 +83,10 @@ export const useBillingStore = create<BillingState>((set) => ({
   pendingPlans: [],
   plansLoading: false,
   plansError: null,
+
+  pendingRefunds: [],
+  refundsLoading: false,
+  refundsError: null,
 
   // ─── Tenant Actions ──────────────────────────────────────────────────────────
 
@@ -190,6 +209,36 @@ export const useBillingStore = create<BillingState>((set) => ({
     set((state) => ({
       pendingPlans: state.pendingPlans.filter((p) => p.id !== id),
       walletPlans: state.walletPlans.map((p) => (p.id === id ? updated : p)),
+    }));
+    return updated;
+  },
+
+  fetchPendingRefunds: async () => {
+    set({ refundsLoading: true, refundsError: null });
+    try {
+      const res = await refundService.getPending();
+      set({ pendingRefunds: res.data?.data?.items ?? [] });
+    } catch (err: any) {
+      set({ refundsError: err.response?.data?.message ?? 'Không thể tải yêu cầu hoàn tiền.' });
+    } finally {
+      set({ refundsLoading: false });
+    }
+  },
+
+  approveRefund: async (id, data) => {
+    const res = await refundService.approve(id, data);
+    const updated = res.data.data!;
+    set((state) => ({
+      pendingRefunds: state.pendingRefunds.filter((r) => r.id !== id),
+    }));
+    return updated;
+  },
+
+  rejectRefund: async (id, data) => {
+    const res = await refundService.reject(id, data);
+    const updated = res.data.data!;
+    set((state) => ({
+      pendingRefunds: state.pendingRefunds.filter((r) => r.id !== id),
     }));
     return updated;
   },

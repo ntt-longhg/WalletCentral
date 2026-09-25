@@ -6,6 +6,7 @@ import com.gateway.walletcentral.core.exception.BusinessException;
 import com.gateway.walletcentral.modules.billing.dto.BillingEvent;
 import com.gateway.walletcentral.modules.servicecatalog.model.Service;
 import com.gateway.walletcentral.modules.servicecatalog.repository.ServiceRepository;
+import com.gateway.walletcentral.modules.systemconfig.service.SystemConfigService;
 import com.gateway.walletcentral.modules.tenant.model.Tenant;
 import com.gateway.walletcentral.modules.tenant.repository.TenantRepository;
 import com.gateway.walletcentral.modules.usagelog.model.FeeBreakdownStructure;
@@ -31,7 +32,7 @@ public class UsageLogEventHandler {
     private static final Logger log = LoggerFactory.getLogger(UsageLogEventHandler.class);
     private static final Logger auditLog = LoggerFactory.getLogger("AUDIT.USAGELOG");
 
-    private static final BigDecimal LOW_BALANCE_THRESHOLD = new BigDecimal("100000");
+    private static final BigDecimal DEFAULT_LOW_BALANCE_THRESHOLD = new BigDecimal("100000");
 
     private final UsageLogRepository usageLogRepository;
     private final WalletRepository walletRepository;
@@ -39,19 +40,22 @@ public class UsageLogEventHandler {
     private final ServiceRepository serviceRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final ObjectMapper objectMapper;
+    private final SystemConfigService configService;
 
     public UsageLogEventHandler(UsageLogRepository usageLogRepository,
             WalletRepository walletRepository,
             TenantRepository tenantRepository,
             ServiceRepository serviceRepository,
             ApplicationEventPublisher eventPublisher,
-            ObjectMapper objectMapper) {
+            ObjectMapper objectMapper,
+            SystemConfigService configService) {
         this.usageLogRepository = usageLogRepository;
         this.walletRepository = walletRepository;
         this.tenantRepository = tenantRepository;
         this.serviceRepository = serviceRepository;
         this.eventPublisher = eventPublisher;
         this.objectMapper = objectMapper;
+        this.configService = configService;
     }
 
     @Transactional
@@ -118,17 +122,21 @@ public class UsageLogEventHandler {
                     usageLog.getFeeBreakdown().getSubsequentFeeApplied());
         }
 
-        // Low balance alert (published after DB commit via NotificationEventPublisher)
+        // Low balance alert (threshold is dynamic, published after DB commit)
+        BigDecimal lowThreshold = configService.getBigDecimal("alert.low_balance_threshold",
+                DEFAULT_LOW_BALANCE_THRESHOLD);
         Wallet wallet = walletRepository.findByTenantId(UUID.fromString(event.getTenantId())).orElse(null);
-        if (wallet != null && wallet.getBalance().compareTo(LOW_BALANCE_THRESHOLD) < 0) {
+        if (wallet != null && wallet.getBalance().compareTo(lowThreshold) < 0) {
             log.warn("LOW BALANCE ALERT: tenant={} wallet={} balance={}",
                     event.getTenantId(), wallet.getId(), wallet.getBalance());
+            String messageTemplate = configService.getValue("alert.low_balance_message",
+                    "Ví {0} số dư còn lại: {1} VND");
             NotificationEvent notificationEvent = NotificationEvent.builder()
                     .tenantId(event.getTenantId())
                     .type("BILLING")
-                    .title("Cảnh báo số dư thấp")
-                    .message(String.format("Ví %s số dư còn lại: %s VND",
-                            wallet.getId(), wallet.getBalance()))
+                    .title(configService.getValue("alert.low_balance_title", "Cảnh báo số dư thấp"))
+                    .message(messageTemplate.replace("{0}", wallet.getId().toString())
+                            .replace("{1}", String.valueOf(wallet.getBalance())))
                     .referenceType("WALLET")
                     .referenceId(wallet.getId().toString())
                     .build();

@@ -12,6 +12,7 @@ import { AdminDashboard } from '../pages/admin/AdminDashboard';
 import { ServiceCatalogPage } from '../pages/admin/ServiceCatalogPage';
 import { PricingPlansPage } from '../pages/admin/PricingPlansPage';
 import { PendingWalletPlansPage } from '../pages/admin/PendingWalletPlansPage';
+import { PendingRefundsPage } from '../pages/admin/PendingRefundsPage';
 import { TenantManagementPage } from '../pages/admin/TenantManagementPage';
 import { WalletManagementPage } from '../pages/admin/WalletManagementPage';
 import { AdminSettingsPage } from '../pages/admin/AdminSettingsPage';
@@ -20,6 +21,7 @@ import { AdminRbacPage } from '../pages/admin/AdminRbacPage';
 
 import { EmbedWalletPage } from '../pages/embed/EmbedWalletPage';
 import { EmbedTransactionsPage } from '../pages/embed/EmbedTransactionsPage';
+import { EmbedRequestsPage } from '../pages/embed/EmbedRequestsPage';
 import { EmbedInvoicesPage } from '../pages/embed/EmbedInvoicesPage';
 import { EmbedReportsPage } from '../pages/embed/EmbedReportsPage';
 import { EmbedDocsPage } from '../pages/embed/EmbedDocsPage';
@@ -104,6 +106,11 @@ export const AppRoutes: React.FC = () => {
                     <PendingWalletPlansPage />
                   </ProtectedRoute>
                 } />
+                <Route path="refunds" element={
+                  <ProtectedRoute permission="REFUND_VIEW">
+                    <PendingRefundsPage />
+                  </ProtectedRoute>
+                } />
                 <Route path="tenants" element={
                   <ProtectedRoute permission="TENANT_VIEW">
                     <TenantManagementPage />
@@ -140,6 +147,7 @@ export const AppRoutes: React.FC = () => {
                 <Route index element={<Navigate to="/embed/wallet" replace />} />
                 <Route path="wallet" element={<EmbedWalletPage />} />
                 <Route path="transactions" element={<EmbedTransactionsPage />} />
+                <Route path="requests" element={<EmbedRequestsPage />} />
                 <Route path="invoices" element={<EmbedInvoicesPage />} />
                 <Route path="reports" element={<EmbedReportsPage />} />
               </Route>

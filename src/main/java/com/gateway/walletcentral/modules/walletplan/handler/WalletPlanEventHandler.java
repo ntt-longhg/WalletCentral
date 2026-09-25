@@ -185,11 +185,14 @@ public class WalletPlanEventHandler {
             PricingPlan plan = walletPlan.getPricingPlan();
 
             // Notification event (after DB commit)
+            String rejectReason = walletPlan.getRejectReason();
             NotificationEvent notificationEvent = NotificationEvent.builder()
                     .tenantId(walletPlan.getTenant().getId().toString())
                     .type("WALLET_PLAN")
                     .title("Gói dịch vụ bị từ chối")
-                    .message(String.format("Gói dịch vụ %s đã bị từ chối", plan.getName()))
+                    .message(rejectReason != null && !rejectReason.isBlank()
+                            ? String.format("Gói dịch vụ %s đã bị từ chối. Lý do: %s", plan.getName(), rejectReason)
+                            : String.format("Gói dịch vụ %s đã bị từ chối", plan.getName()))
                     .referenceType("WALLET_PLAN")
                     .referenceId(walletPlanId)
                     .build();

@@ -41,6 +41,13 @@ public class SystemConfig {
     @Column(name = "description", length = 255, comment = "Configuration description")
     private String description;
 
+    @Column(name = "field_type", nullable = false, length = 20, comment = "UI field type: text, number, password, textarea, select, radio, boolean, time")
+    @Builder.Default
+    private String fieldType = "text";
+
+    @Column(name = "field_options", columnDefinition = "TEXT", comment = "JSON options for select/radio: [{\"value\":\"\",\"label\":\"\"}]")
+    private String fieldOptions;
+
     @Column(name = "created_at", updatable = false, comment = "Record creation timestamp")
     private LocalDateTime createdAt = LocalDateTime.now();
 

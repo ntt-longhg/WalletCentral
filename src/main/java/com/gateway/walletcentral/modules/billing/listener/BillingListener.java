@@ -2,6 +2,7 @@ package com.gateway.walletcentral.modules.billing.listener;
 
 import com.gateway.walletcentral.config.RabbitMQConfig;
 import com.gateway.walletcentral.modules.billing.handler.BillingEventHandler;
+import com.gateway.walletcentral.modules.systemconfig.service.SystemConfigService;
 import com.rabbitmq.client.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,9 +21,12 @@ public class BillingListener {
     private static final Logger log = LoggerFactory.getLogger(BillingListener.class);
 
     private final BillingEventHandler billingEventHandler;
+    private final SystemConfigService configService;
 
-    public BillingListener(BillingEventHandler billingEventHandler) {
+    public BillingListener(BillingEventHandler billingEventHandler,
+            SystemConfigService configService) {
         this.billingEventHandler = billingEventHandler;
+        this.configService = configService;
     }
 
     @RabbitListener(queues = RabbitMQConfig.QUEUE_BILLING, executor = "virtualThreadExecutor")
@@ -46,8 +50,9 @@ public class BillingListener {
             billingEventHandler.handleBillingCallback(payload);
             channel.basicAck(deliveryTag, false);
         } catch (Exception e) {
-            // First failure => requeue for one retry; redelivered failure => DLQ
-            boolean requeue = !Boolean.TRUE.equals(redelivered);
+            // First failure => requeue for one retry (if mq.retry_enabled); redelivered failure => DLQ
+            boolean requeue = configService.getBoolean("mq.retry_enabled", true)
+                    && !Boolean.TRUE.equals(redelivered);
             log.error("Billing listener error: redelivered={} requeue={}", redelivered, requeue, e);
             channel.basicNack(deliveryTag, false, requeue);
         } finally {

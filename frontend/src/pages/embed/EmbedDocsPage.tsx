@@ -15,6 +15,7 @@ import {
   History,
   FileText,
   BarChart3,
+  ClipboardList,
   Info,
   AlertTriangle,
 } from 'lucide-react';
@@ -51,6 +52,14 @@ const embedRoutes = [
     icon: BarChart3,
     color: 'text-purple-600',
     bgColor: 'bg-purple-50',
+  },
+  {
+    path: '/embed/requests',
+    name: 'Yêu cầu chờ duyệt',
+    description: 'Yêu cầu hoàn tiền và nạp gói đang chờ phê duyệt',
+    icon: ClipboardList,
+    color: 'text-amber-600',
+    bgColor: 'bg-amber-50',
   },
 ];
 

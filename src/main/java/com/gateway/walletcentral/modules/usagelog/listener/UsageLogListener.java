@@ -1,6 +1,7 @@
 package com.gateway.walletcentral.modules.usagelog.listener;
 
 import com.gateway.walletcentral.config.RabbitMQConfig;
+import com.gateway.walletcentral.modules.systemconfig.service.SystemConfigService;
 import com.gateway.walletcentral.modules.usagelog.handler.UsageLogEventHandler;
 import com.rabbitmq.client.Channel;
 import org.slf4j.Logger;
@@ -20,9 +21,12 @@ public class UsageLogListener {
     private static final Logger log = LoggerFactory.getLogger(UsageLogListener.class);
 
     private final UsageLogEventHandler usageLogEventHandler;
+    private final SystemConfigService configService;
 
-    public UsageLogListener(UsageLogEventHandler usageLogEventHandler) {
+    public UsageLogListener(UsageLogEventHandler usageLogEventHandler,
+            SystemConfigService configService) {
         this.usageLogEventHandler = usageLogEventHandler;
+        this.configService = configService;
     }
 
     @RabbitListener(queues = RabbitMQConfig.QUEUE_USAGE, executor = "virtualThreadExecutor")
@@ -56,8 +60,9 @@ public class UsageLogListener {
             // Handler returned => its transaction committed => safe to ack
             channel.basicAck(deliveryTag, false);
         } catch (Exception e) {
-            // First failure => requeue for one retry; redelivered failure => DLQ
-            boolean requeue = !Boolean.TRUE.equals(redelivered);
+            // First failure => requeue for one retry (if mq.retry_enabled); redelivered failure => DLQ
+            boolean requeue = configService.getBoolean("mq.retry_enabled", true)
+                    && !Boolean.TRUE.equals(redelivered);
             log.error("UsageLog listener error: redelivered={} requeue={}", redelivered, requeue, e);
             channel.basicNack(deliveryTag, false, requeue);
         } finally {

@@ -9,6 +9,7 @@ import {
   CreditCard,
   Boxes,
   Clock,
+  Undo2,
   ArrowUpRight,
   TrendingUp,
   Activity,
@@ -19,9 +20,11 @@ import {
   ArrowDownLeft,
 } from 'lucide-react';
 import { useBillingStore, useServiceStore, useTransactionStore } from '@/stores';
+import { useNavigate } from 'react-router-dom';
 
 export const AdminDashboard: React.FC = () => {
-  const { tenants, wallets, pendingPlans, fetchTenants, fetchWallets, fetchPendingWalletPlans, tenantsLoading } = useBillingStore();
+  const navigate = useNavigate();
+  const { tenants, wallets, pendingPlans, pendingRefunds, fetchTenants, fetchWallets, fetchPendingWalletPlans, fetchPendingRefunds, tenantsLoading } = useBillingStore();
   const { services, fetchServices } = useServiceStore();
   const { transactions, fetchTransactions, transactionsLoading } = useTransactionStore();
 
@@ -32,6 +35,7 @@ export const AdminDashboard: React.FC = () => {
       fetchTenants(),
       fetchServices(),
       fetchPendingWalletPlans(),
+      fetchPendingRefunds(),
       fetchTransactions(),
       fetchWallets(),
     ]);
@@ -68,7 +72,7 @@ export const AdminDashboard: React.FC = () => {
       </div>
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5">
         <Card className="border-slate-200 shadow-sm hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-slate-600">Tổng Tenant</CardTitle>
@@ -108,9 +112,12 @@ export const AdminDashboard: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+        <Card
+          className="border-slate-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+          onClick={() => navigate('/admin/wallet-plans/pending')}
+        >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">Chờ duyệt</CardTitle>
+            <CardTitle className="text-sm font-medium text-slate-600">Chờ duyệt gói</CardTitle>
             <div className="h-8 w-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600">
               <Clock className="h-4 w-4" />
             </div>
@@ -120,6 +127,28 @@ export const AdminDashboard: React.FC = () => {
             <p className="text-xs text-slate-500 mt-1">
               {pendingPlans.length > 0 ? (
                 <span className="text-amber-600 font-medium">Cần xử lý</span>
+              ) : (
+                'Không có yêu cầu chờ'
+              )}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card
+          className="border-slate-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+          onClick={() => navigate('/admin/refunds')}
+        >
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-slate-600">Chờ duyệt hoàn tiền</CardTitle>
+            <div className="h-8 w-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600">
+              <Undo2 className="h-4 w-4" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-600">{pendingRefunds.length}</div>
+            <p className="text-xs text-slate-500 mt-1">
+              {pendingRefunds.length > 0 ? (
+                <span className="text-orange-600 font-medium">Cần xử lý</span>
               ) : (
                 'Không có yêu cầu chờ'
               )}
