@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect } fr
 import { useWebSocket } from '../hooks/useWebSocket';
 import { useToast } from '../components/ui/toast';
 import { walletPlanService, refundService } from '../services/billingServices';
+import { useBillingStore } from '@/stores/useBillingStore';
 
 interface Notification {
   id: string;
@@ -26,7 +27,7 @@ interface NotificationContextType {
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   clearNotifications: () => void;
-  refreshPendingCount: () => void;
+  // refreshPendingCount: () => void;
 }
 
 const NotificationContext = createContext<NotificationContextType>({
@@ -39,7 +40,7 @@ const NotificationContext = createContext<NotificationContextType>({
   markAsRead: () => { },
   markAllAsRead: () => { },
   clearNotifications: () => { },
-  refreshPendingCount: () => { },
+  // refreshPendingCount: () => { },
 });
 
 export const NotificationProvider: React.FC<{ children: React.ReactNode; tenantId?: string; admin?: boolean }> = ({ children, tenantId, admin }) => {
@@ -47,6 +48,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; tenantI
   const [pendingWalletPlanCount, setPendingWalletPlanCount] = useState(0);
   const [pendingRefundCount, setPendingRefundCount] = useState(0);
   const { addToast } = useToast();
+   const { pendingPlans, plansLoading: loading, fetchPendingWalletPlans } = useBillingStore();
 
   const handleNotification = useCallback((notification: Notification) => {
     setNotifications(prev => [notification, ...prev].slice(0, 100));
@@ -60,7 +62,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; tenantI
       });
 
       if (notification.type === 'WALLET_PLAN' || notification.referenceType === 'WALLET_PLAN') {
-        setPendingWalletPlanCount(prev => prev + 1);
+        // setPendingWalletPlanCount(prev => prev + 1);
+        fetchPendingWalletPlans();
       }
       if (notification.type === 'REFUND' || notification.referenceType === 'REFUND_REQUEST') {
         setPendingRefundCount(prev => prev + 1);
@@ -106,11 +109,10 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode; tenantI
 
   useEffect(() => {
     if (admin) {
-      refreshPendingCount();
-      const interval = setInterval(refreshPendingCount, 30000);
-      return () => clearInterval(interval);
+      setPendingWalletPlanCount(pendingPlans.length);
     }
-  }, [admin, refreshPendingCount]);
+  }, [admin, pendingPlans]);
+
 
   const addNotification = useCallback((notification: Notification) => {
     setNotifications(prev => [notification, ...prev].slice(0, 100));

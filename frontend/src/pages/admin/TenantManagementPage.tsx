@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { TablePagination } from '@/components/ui/pagination';
 import {
   Dialog,
   DialogContent,
@@ -13,7 +14,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/toast';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableSkeleton } from '@/components/ui/table';
 import { Building2, Plus, RefreshCw, Trash2, ToggleLeft, ToggleRight, Search } from 'lucide-react';
 import { TenantResponse } from '@/types/api';
 import { formatDate, getStatusConfig } from '@/lib/utils';
@@ -25,6 +26,8 @@ export const TenantManagementPage: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<TenantResponse | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -37,15 +40,36 @@ export const TenantManagementPage: React.FC = () => {
     fetchTenants();
   }, []);
 
-  const filteredTenants = tenants.filter((t) => {
-    if (!searchTerm) return true;
-    const term = searchTerm.toLowerCase();
-    return (
-      t.name.toLowerCase().includes(term) ||
-      t.clientId.toLowerCase().includes(term) ||
-      t.status.toLowerCase().includes(term)
-    );
-  });
+  const filteredTenants = useMemo(() => {
+    return tenants.filter((t) => {
+      if (!searchTerm) return true;
+      const term = searchTerm.toLowerCase();
+      return (
+        t.name.toLowerCase().includes(term) ||
+        t.clientId.toLowerCase().includes(term) ||
+        t.status.toLowerCase().includes(term)
+      );
+    });
+  }, [tenants, searchTerm]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredTenants.length / pageSize));
+  const hasPrevious = currentPage > 1;
+  const hasNext = currentPage < totalPages;
+
+  const paginatedTenants = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return filteredTenants.slice(startIndex, startIndex + pageSize);
+  }, [filteredTenants, currentPage, pageSize]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, pageSize]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   const handleCreateTenant = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,6 +103,48 @@ export const TenantManagementPage: React.FC = () => {
       addToast({ variant: 'destructive', message: err.response?.data?.message || 'Không thể xóa Tenant.' });
     }
   };
+
+  const handleCancelCreate = () => {
+    setShowCreateModal(false);
+    setFormData({ name: '', clientId: '', clientSecret: '', allowedDomains: '' });
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteConfirm(null);
+  };
+
+  const columns = [
+    {
+      header: 'Tên Tenant',
+      accessor: 'name',
+      widthClass: 'w-[140px]',
+    },
+    {
+      header: 'Client ID',
+      accessor: 'clientId',
+      widthClass: 'w-[140px]',
+    },
+    {
+      header: 'Domains',
+      accessor: 'allowedDomains',
+      widthClass: 'w-[160px]',
+    },
+    {
+      header: 'Trạng thái',
+      accessor: 'status',
+      widthClass: 'w-[100px]',
+    },
+    {
+      header: 'Ngày tạo',
+      accessor: 'createdAt',
+      widthClass: 'w-[140px]',
+    },
+    {
+      header: 'Thao tác',
+      accessor: 'actions',
+      widthClass: 'w-[140px]',
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -130,76 +196,109 @@ export const TenantManagementPage: React.FC = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Tên Tenant</TableHead>
-                  <TableHead>Client ID</TableHead>
-                  <TableHead>Domains</TableHead>
-                  <TableHead>Trạng thái</TableHead>
-                  <TableHead>Ngày tạo</TableHead>
-                  <TableHead>Thao tác</TableHead>
+                  {
+                    columns.map((col) => (
+                      <TableCell key={col.accessor} className={col.widthClass}>
+                        {col.header}
+                      </TableCell>
+                    ))
+                  }
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredTenants.map((tenant) => {
-                  const statusConf = getStatusConfig(tenant.status as any);
-                  return (
-                    <TableRow key={tenant.id}>
-                      <TableCell>
-                        <div className="font-medium text-slate-900">{tenant.name}</div>
-                        <div className="text-xs text-slate-400 font-mono">{tenant.id.slice(0, 8)}...</div>
-                      </TableCell>
-                      <TableCell className="font-mono text-sm">{tenant.clientId}</TableCell>
-                      <TableCell className="text-xs text-slate-600 max-w-[200px] truncate">
-                        {tenant.allowedDomains || 'N/A'}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={statusConf.variant}>
-                          {statusConf.label}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-xs text-slate-500">
-                        {formatDate(tenant.createdAt)}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1.5">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-xs h-7"
-                            onClick={() => handleToggleStatus(tenant)}
-                          >
-                            {tenant.status === 'ACTIVE' ? (
-                              <><ToggleLeft className="h-3.5 w-3.5 mr-1" /> Tắt</>
-                            ) : (
-                              <><ToggleRight className="h-3.5 w-3.5 mr-1" /> Bật</>
-                            )}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            className="text-xs h-7"
-                            onClick={() => setShowDeleteConfirm(tenant)}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                {
+                  loading ? (
+                    <TableSkeleton columns={columns.length} rows={pageSize} />
+                  ) : (
+                    <>
+                      {paginatedTenants.map((tenant) => {
+                        const statusConf = getStatusConfig(tenant.status as any);
+                        return (
+                          <TableRow key={tenant.id}>
+                            <TableCell>
+                              <div className="font-medium text-slate-900">{tenant.name}</div>
+                              <div className="text-xs text-slate-400 font-mono">{tenant.id.slice(0, 8)}...</div>
+                            </TableCell>
+                            <TableCell className="font-mono text-sm">{tenant.clientId}</TableCell>
+                            <TableCell className="text-xs text-slate-600 max-w-[200px] truncate">
+                              {tenant.allowedDomains || 'N/A'}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={statusConf.variant}>
+                                {statusConf.label}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-xs text-slate-500">
+                              {formatDate(tenant.createdAt)}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1.5">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-xs h-7"
+                                  onClick={() => handleToggleStatus(tenant)}
+                                >
+                                  {tenant.status === 'ACTIVE' ? (
+                                    <><ToggleLeft className="h-3.5 w-3.5 mr-1" /> Tắt</>
+                                  ) : (
+                                    <><ToggleRight className="h-3.5 w-3.5 mr-1" /> Bật</>
+                                  )}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  className="text-xs h-7"
+                                  onClick={() => setShowDeleteConfirm(tenant)}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </>
+                  )
+                }
               </TableBody>
             </Table>
+          )}
+
+          {filteredTenants.length > 0 && (
+            <TablePagination
+              pageSize={pageSize}
+              onPageSizeChange={(nextSize) => {
+                setPageSize(nextSize);
+                setCurrentPage(1);
+              }}
+              onPrevious={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              onNext={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+              hasPrevious={hasPrevious}
+              hasNext={hasNext}
+              summaryText={`${filteredTenants.length} tenant trong hệ thống`}
+              pageSizeOptions={[5, 10, 20, 50]}
+            />
           )}
         </CardContent>
       </Card>
 
       {/* Create Tenant Dialog */}
-      <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+      <Dialog
+          open={showCreateModal}
+          onOpenChange={(open) => {
+            setShowCreateModal(open);
+            if (!open) {
+              handleCancelCreate();
+            }
+          }}
+        >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Tạo Tenant Mới</DialogTitle>
             <DialogDescription>Điền thông tin để tạo Tenant mới trong hệ thống</DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleCreateTenant} className="space-y-4">
+          <form onSubmit={handleCreateTenant} className="space-y-4" autoComplete="off">
             <div className="space-y-2">
               <Label>Tên Tenant</Label>
               <Input
@@ -226,6 +325,7 @@ export const TenantManagementPage: React.FC = () => {
                 placeholder="Tối thiểu 8 ký tự"
                 minLength={8}
                 value={formData.clientSecret}
+                autoComplete="new-password"
                 onChange={(e) => setFormData({ ...formData, clientSecret: e.target.value })}
               />
             </div>
@@ -240,7 +340,7 @@ export const TenantManagementPage: React.FC = () => {
               <p className="text-xs text-slate-400">Phân tách bằng dấu phẩy</p>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setShowCreateModal(false)}>
+              <Button type="button" variant="outline" onClick={handleCancelCreate}>
                 Hủy
               </Button>
               <Button type="submit">Tạo Tenant</Button>
@@ -250,7 +350,11 @@ export const TenantManagementPage: React.FC = () => {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={!!showDeleteConfirm} onOpenChange={() => setShowDeleteConfirm(null)}>
+      <Dialog open={!!showDeleteConfirm} onOpenChange={(open) => {
+        if (!open) {
+          handleCancelDelete();
+        }
+      }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Xác nhận xóa Tenant</DialogTitle>
@@ -260,7 +364,7 @@ export const TenantManagementPage: React.FC = () => {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDeleteConfirm(null)}>
+            <Button variant="outline" onClick={handleCancelDelete}>
               Hủy
             </Button>
             <Button variant="destructive" onClick={handleDelete}>

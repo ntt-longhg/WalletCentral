@@ -1,3 +1,4 @@
+import type { KeyboardEvent } from 'react';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -79,6 +80,91 @@ export const statusConfig: Record<EntityStatus, { label: string; variant: 'succe
 export function getStatusConfig(status: EntityStatus) {
   return statusConfig[status] || { label: status, variant: 'secondary' as const };
 }
+
+export type NumericField = 'price' | 'bonusValue' | 'creditLimitValue' | 'initialFee' | 'subsequentFee' | 'basicFee' | 'extendedSize' | 'extendedFee';
+
+export const sanitizePercentageInput = (value: string) => {
+  const cleaned = value.replace(/\D/g, '');
+  if (!cleaned) return '';
+
+  const normalized = cleaned.slice(0, 3);
+  const parsed = Number(normalized || 0);
+
+  return parsed > 100 ? '100' : normalized;
+};
+
+export const parseNumberInput = (
+  value: string,
+  options: { min?: number; max?: number; maxDigits?: number; allowDecimal?: boolean } = {},
+) => {
+  const { min = 0, max, maxDigits = 11, allowDecimal = false } = options;
+
+  if (value.trim() === '') return 0;
+
+  if (allowDecimal) {
+    const sanitizedValue = value
+      .replace(',', '.')
+      .replace(/[^\d.]/g, '')
+      .replace(/\.(?=.*\.)/g, '');
+
+    const normalizedValue = sanitizedValue === '' ? '0' : sanitizedValue;
+    const parsedValue = Number(normalizedValue);
+
+    if (!Number.isFinite(parsedValue)) return min;
+    if (parsedValue < min) return min;
+    if (typeof max === 'number' && parsedValue > max) return max;
+    return parsedValue;
+  }
+
+  const normalizedValue = value.replace(/\D/g, '').slice(0, maxDigits);
+  const parsedValue = Number(normalizedValue);
+
+  if (!Number.isFinite(parsedValue)) return min;
+  if (parsedValue < min) return min;
+  if (typeof max === 'number' && parsedValue > max) return max;
+
+  return parsedValue;
+};
+
+export const formatNumberWithDots = (value: number) => new Intl.NumberFormat('vi-VN').format(value);
+
+export const getNumberInputValue = (
+  value: number,
+  rawValue?: string,
+  options: {
+    activeField?: NumericField | null;
+    currentField?: NumericField;
+    useDecimal?: boolean;
+  } = {},
+) => {
+  const { activeField, currentField, useDecimal = false } = options;
+
+  if (rawValue !== undefined) return rawValue;
+  if (activeField && currentField && activeField === currentField && value === 0) return '';
+  if (useDecimal) return value.toString();
+  return formatNumberWithDots(value);
+};
+
+export const handleNumberKeyDown = (
+  e: KeyboardEvent<HTMLInputElement>,
+  allowDecimal = false,
+) => {
+  if (e.ctrlKey || e.metaKey) return;
+
+  const allowedControlKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Home', 'End', 'Enter'];
+  if (allowedControlKeys.includes(e.key)) return;
+
+  if (allowDecimal && ['.', ',', 'Decimal', 'NumpadDecimal', 'Period'].includes(e.key)) {
+    if (e.currentTarget.value.includes('.') || e.currentTarget.value.includes(',')) {
+      e.preventDefault();
+    }
+    return;
+  }
+
+  if (!/^[0-9]$/.test(e.key)) {
+    e.preventDefault();
+  }
+};
 
 export type WalletType = 'PREPAID' | 'POSTPAID';
 

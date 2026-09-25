@@ -104,6 +104,31 @@ const TableCaption = React.forwardRef<
 ));
 TableCaption.displayName = 'TableCaption';
 
+interface TableSkeletonProps extends React.HTMLAttributes<HTMLTableRowElement> {
+  columns: number; // Số lượng cột của bảng
+  rows?: number;    // Số dòng skeleton muốn hiển thị (mặc định là 5)
+}
+
+const TableSkeleton = React.forwardRef<HTMLTableRowElement, TableSkeletonProps>(
+  ({ columns, rows = 5, className, ...props }, ref) => {
+    return (
+      <>
+        {Array.from({ length: rows }).map((_, rowIndex) => (
+          <TableRow ref={ref} key={rowIndex} className={cn("hover:bg-transparent", className)} {...props}>
+            {Array.from({ length: columns }).map((_, colIndex) => (
+              <TableCell key={colIndex}>
+                {/* Thanh skeleton nhấp nháy */}
+                <div className="h-4 w-full animate-pulse rounded bg-slate-200/80" />
+              </TableCell>
+            ))}
+          </TableRow>
+        ))}
+      </>
+    );
+  }
+);
+TableSkeleton.displayName = 'TableSkeleton';
+
 export {
   Table,
   TableHeader,
@@ -113,4 +138,5 @@ export {
   TableRow,
   TableCell,
   TableCaption,
+  TableSkeleton,
 };

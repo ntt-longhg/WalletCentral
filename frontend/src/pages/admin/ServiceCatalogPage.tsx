@@ -18,7 +18,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Boxes, Plus, DollarSign, Layers } from 'lucide-react';
 import { useServiceStore } from '@/stores';
 import { ServiceResponse, ServicePriceResponse } from '@/types/api';
-import { formatCurrency } from '@/lib/utils';
+import {
+  formatCurrency,
+  formatDate,
+  getNumberInputValue,
+  handleNumberKeyDown,
+  parseNumberInput,
+  type NumericField,
+} from '@/lib/utils';
 
 export const ServiceCatalogPage: React.FC = () => {
   const { addToast } = useToast();
@@ -52,12 +59,14 @@ export const ServiceCatalogPage: React.FC = () => {
     subsequentFee: 0,
     effectiveDate: new Date().toISOString(),
   });
+  const [activeNumberField, setActiveNumberField] = useState<NumericField | null>(null);
   const [newTier, setNewTier] = useState({
     tier: 'TIER_1',
     basicFee: 0,
     extendedSize: 100,
     extendedFee: 0,
   });
+  const [activeTierNumberField, setActiveTierNumberField] = useState<NumericField | null>(null);
 
   useEffect(() => {
     fetchServices();
@@ -105,6 +114,13 @@ export const ServiceCatalogPage: React.FC = () => {
       addToast({ variant: 'success', message: 'Tạo thiết lập giá thành công!' });
       setShowCreatePrice(false);
       handleSelectService(selectedService);
+      setNewPrice({
+        initialSize: 1,
+        initialFee: 0,
+        subsequentSize: 1,
+        subsequentFee: 0,
+        effectiveDate: new Date().toISOString(),
+      });
     } catch (err: any) {
       addToast({ variant: 'destructive', message: err.response?.data?.message || 'Tạo giá thất bại.' });
     }
@@ -131,8 +147,36 @@ export const ServiceCatalogPage: React.FC = () => {
       setShowCreateTier(false);
       handleSelectPrice(selectedPrice);
     } catch (err: any) {
+      console.log('Error adding tier:', err.response?.status);
       addToast({ variant: 'destructive', message: err.response?.data?.message || 'Lỗi thêm bậc giá.' });
     }
+  };
+
+  const handleCancelService = () => {
+    setShowCreateService(false);
+    setNewService({ code: '', name: '', description: '' });
+  };
+
+  const handleCancelPrice = () => {
+    setShowCreatePrice(false);
+    setNewPrice({
+      initialSize: 1,
+      initialFee: 0,
+      subsequentSize: 1,
+      subsequentFee: 0,
+      effectiveDate: new Date().toISOString(),
+    });
+  };
+
+  const handleCancelTier = () => {
+    setShowCreateTier(false);
+    setActiveTierNumberField(null);
+    setNewTier({
+      tier: 'TIER_1',
+      basicFee: 0,
+      extendedSize: 100,
+      extendedFee: 0,
+    });
   };
 
   return (
@@ -225,6 +269,7 @@ export const ServiceCatalogPage: React.FC = () => {
                           <TableHead>Initial (Size / Fee)</TableHead>
                           <TableHead>Subsequent (Size / Fee)</TableHead>
                           <TableHead>Trạng thái</TableHead>
+                          <TableHead>Ngày có hiệu lực</TableHead>
                           <TableHead>Thao tác</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -244,6 +289,9 @@ export const ServiceCatalogPage: React.FC = () => {
                               <Badge variant={pr.active ? 'success' : 'secondary'}>
                                 {pr.active ? 'Kích hoạt' : 'Chưa active'}
                               </Badge>
+                            </TableCell>
+                            <TableCell className="text-sm">
+                              {pr.effectiveDate ? formatDate(pr.effectiveDate) : '-'}
                             </TableCell>
                             <TableCell className="flex items-center gap-2">
                               {!pr.active && (
@@ -318,7 +366,10 @@ export const ServiceCatalogPage: React.FC = () => {
       </div>
 
       {/* Create Service Dialog */}
-      <Dialog open={showCreateService} onOpenChange={setShowCreateService}>
+      <Dialog open={showCreateService} onOpenChange={(open) => {
+          setShowCreateService(open);
+          if (!open) handleCancelService();
+        }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Tạo Dịch vụ Mới</DialogTitle>
@@ -352,7 +403,7 @@ export const ServiceCatalogPage: React.FC = () => {
               />
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setShowCreateService(false)}>
+              <Button type="button" variant="outline" onClick={handleCancelService}>
                 Hủy
               </Button>
               <Button type="submit">Lưu Dịch Vụ</Button>
@@ -362,7 +413,12 @@ export const ServiceCatalogPage: React.FC = () => {
       </Dialog>
 
       {/* Create Price Dialog */}
-      <Dialog open={showCreatePrice} onOpenChange={setShowCreatePrice}>
+      <Dialog open={showCreatePrice} 
+        onOpenChange={(open) => {
+          setShowCreatePrice(open);
+          if (!open) handleCancelPrice();
+        }}
+        >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Thêm Thiết lập Giá mới</DialogTitle>
@@ -383,11 +439,22 @@ export const ServiceCatalogPage: React.FC = () => {
               <div className="space-y-2">
                 <Label>Initial Fee (VNĐ)</Label>
                 <Input
-                  type="number"
-                  required
-                  min={0}
-                  value={newPrice.initialFee}
-                  onChange={(e) => setNewPrice({ ...newPrice, initialFee: Number(e.target.value) })}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={getNumberInputValue(newPrice.initialFee, undefined, {
+                    activeField: activeNumberField,
+                    currentField: 'initialFee',
+                  })}
+                  onFocus={() => setActiveNumberField('initialFee')}
+                  onBlur={() => setActiveNumberField(null)}
+                  onKeyDown={handleNumberKeyDown}
+                  onChange={(e) =>
+                    setNewPrice({
+                      ...newPrice,
+                      initialFee: parseNumberInput(e.target.value, { min: 0, maxDigits: 11 }),
+                    })
+                  }
                 />
               </div>
             </div>
@@ -405,16 +472,27 @@ export const ServiceCatalogPage: React.FC = () => {
               <div className="space-y-2">
                 <Label>Subsequent Fee (VNĐ)</Label>
                 <Input
-                  type="number"
-                  required
-                  min={0}
-                  value={newPrice.subsequentFee}
-                  onChange={(e) => setNewPrice({ ...newPrice, subsequentFee: Number(e.target.value) })}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={getNumberInputValue(newPrice.subsequentFee, undefined, {
+                    activeField: activeNumberField,
+                    currentField: 'subsequentFee',
+                  })}
+                  onFocus={() => setActiveNumberField('subsequentFee')}
+                  onBlur={() => setActiveNumberField(null)}
+                  onKeyDown={handleNumberKeyDown}
+                  onChange={(e) =>
+                    setNewPrice({
+                      ...newPrice,
+                      subsequentFee: parseNumberInput(e.target.value, { min: 0, maxDigits: 11 }),
+                    })
+                  }
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setShowCreatePrice(false)}>
+              <Button type="button" variant="outline" onClick={handleCancelPrice}>
                 Hủy
               </Button>
               <Button type="submit">Lưu Thiết Lập Giá</Button>
@@ -424,7 +502,10 @@ export const ServiceCatalogPage: React.FC = () => {
       </Dialog>
 
       {/* Create Tier Dialog */}
-      <Dialog open={showCreateTier} onOpenChange={setShowCreateTier}>
+      <Dialog open={showCreateTier} onOpenChange={(open) => {
+          setShowCreateTier(open);
+          if (!open) handleCancelTier();
+        }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Thêm Bậc Giá (Price Tier)</DialogTitle>
@@ -443,11 +524,23 @@ export const ServiceCatalogPage: React.FC = () => {
             <div className="space-y-2">
               <Label>Basic Fee (VNĐ)</Label>
               <Input
-                type="number"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 required
-                min={0}
-                value={newTier.basicFee}
-                onChange={(e) => setNewTier({ ...newTier, basicFee: Number(e.target.value) })}
+                value={getNumberInputValue(newTier.basicFee, undefined, {
+                  activeField: activeTierNumberField,
+                  currentField: 'basicFee',
+                })}
+                onFocus={() => setActiveTierNumberField('basicFee')}
+                onBlur={() => setActiveTierNumberField(null)}
+                onKeyDown={handleNumberKeyDown}
+                onChange={(e) =>
+                  setNewTier({
+                    ...newTier,
+                    basicFee: parseNumberInput(e.target.value, { min: 0, maxDigits: 11 }),
+                  })
+                }
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -464,11 +557,23 @@ export const ServiceCatalogPage: React.FC = () => {
               <div className="space-y-2">
                 <Label>Extended Fee (VNĐ)</Label>
                 <Input
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   required
-                  min={0}
-                  value={newTier.extendedFee}
-                  onChange={(e) => setNewTier({ ...newTier, extendedFee: Number(e.target.value) })}
+                  value={getNumberInputValue(newTier.extendedFee, undefined, {
+                    activeField: activeTierNumberField,
+                    currentField: 'extendedFee',
+                  })}
+                  onFocus={() => setActiveTierNumberField('extendedFee')}
+                  onBlur={() => setActiveTierNumberField(null)}
+                  onKeyDown={handleNumberKeyDown}
+                  onChange={(e) =>
+                    setNewTier({
+                      ...newTier,
+                      extendedFee: parseNumberInput(e.target.value, { min: 0, maxDigits: 11 }),
+                    })
+                  }
                 />
               </div>
             </div>

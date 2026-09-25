@@ -96,7 +96,10 @@ export const tenantService = {
 // 3. Pricing Plan Service
 export const pricingPlanService = {
   create: (data: PricingPlanCreateRequest) => api.post<ApiResponse<PricingPlanResponse>>('/pricing-plans', data),
-  getAll: () => api.get<ApiResponse<PaginatedResponse<PricingPlanResponse>>>('/pricing-plans'),
+  getAll: (cursor?: string, size?: number) =>
+    api.get<ApiResponse<PaginatedResponse<PricingPlanResponse>>>('/pricing-plans', {
+      params: { cursor, size },
+    }),
   getById: (id: string) => api.get<ApiResponse<PricingPlanResponse>>(`/pricing-plans/${id}`),
   update: (id: string, data: PricingPlanUpdateRequest) =>
     api.put<ApiResponse<PricingPlanResponse>>(`/pricing-plans/${id}`, data),

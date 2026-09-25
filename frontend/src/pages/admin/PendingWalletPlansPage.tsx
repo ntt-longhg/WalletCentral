@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/toast';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableSkeleton } from '@/components/ui/table';
+import { TablePagination } from '@/components/ui/pagination';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Clock, CheckCircle2, XCircle, RefreshCw, Loader2 } from 'lucide-react';
 import { formatCurrency, formatDate, getStatusConfig } from '@/lib/utils';
@@ -14,6 +15,17 @@ import { useBillingStore } from '@/stores';
 export const PendingWalletPlansPage: React.FC = () => {
   const { addToast } = useToast();
   const { pendingPlans, plansLoading: loading, fetchPendingWalletPlans, approveWalletPlan, rejectWalletPlan } = useBillingStore();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
+
+  const totalPages = Math.max(1, Math.ceil(pendingPlans.length / pageSize));
+  const hasPrevious = currentPage > 1;
+  const hasNext = currentPage < totalPages;
+
+  const paginatedPendingPlans = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return pendingPlans.slice(startIndex, startIndex + pageSize);
+  }, [pendingPlans, currentPage, pageSize]);
 
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -23,6 +35,16 @@ export const PendingWalletPlansPage: React.FC = () => {
   useEffect(() => {
     fetchPendingWalletPlans();
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [pendingPlans.length, pageSize]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   const handleApprove = async (id: string) => {
     try {
@@ -59,6 +81,55 @@ export const PendingWalletPlansPage: React.FC = () => {
     }
   };
 
+    const columns = [
+    {
+      header: 'Tenant',
+      accessor: 'tenantName',
+      widthClass: 'w-[140px]',
+    },
+    {
+      header: 'Gói cước',
+      accessor: 'planName',
+      widthClass: 'w-[140px]',
+    },
+    {
+      header: 'Giá',
+      accessor: 'price',
+      widthClass: 'w-[100px]',
+    },
+    {
+      header: 'Số tiền nạp',
+      accessor: 'topUpAmount',
+      widthClass: 'w-[120px]',
+    },
+    // {
+    //   header: 'Dư trước &rarr; sau',
+    //   accessor: 'balanceChange',
+    //   widthClass: 'w-[140px]',
+    // },
+    // {
+    //   header: 'Hạn mức trước &rarr; sau',
+    //   accessor: 'creditLimitChange',
+    //   widthClass: 'w-[160px]',
+    // },
+    {
+      header: 'Trạng thái',
+      accessor: 'status',
+      widthClass: 'w-[100px]',
+    },
+    {
+      header: 'Thời gian',
+      accessor: 'createdAt',
+      widthClass: 'w-[140px]',
+    },
+    {
+      header: 'Thao tác',
+      accessor: 'actions',
+      widthClass: 'w-[140px]',
+    },
+
+  ];
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -93,63 +164,83 @@ export const PendingWalletPlansPage: React.FC = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Tenant</TableHead>
-                  <TableHead>Gói cước</TableHead>
-                  <TableHead>Giá</TableHead>
-                  <TableHead>Số tiền nạp</TableHead>
-                  <TableHead>Dư trước &rarr; sau</TableHead>
-                  <TableHead>Hạn mức trước &rarr; sau</TableHead>
-                  <TableHead>Trạng thái</TableHead>
-                  <TableHead>Thời gian</TableHead>
-                  <TableHead>Thao tác</TableHead>
+                  {columns.map((col) => (
+                    <TableCell key={col.accessor} className={col.widthClass}>
+                      {col.header}
+                    </TableCell>
+                  ))}
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {pendingPlans.map((wp) => (
-                  <TableRow key={wp.id}>
-                    <TableCell className="font-medium text-slate-900">{wp.tenantName}</TableCell>
-                    <TableCell>
-                      <div className="font-semibold text-slate-800">{wp.pricingPlanName}</div>
-                    </TableCell>
-                    <TableCell className="font-semibold">{formatCurrency(wp.price)}</TableCell>
-                    <TableCell className="text-emerald-600 font-semibold">
-                      +{formatCurrency(wp.creditedAmount)}
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      {formatCurrency(wp.balanceBefore)} &rarr;{' '}
-                      <span className="font-semibold text-slate-800">{formatCurrency(wp.balanceAfter)}</span>
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      {formatCurrency(wp.creditLimitBefore)} &rarr;{' '}
-                      <span className="font-semibold text-slate-800">{formatCurrency(wp.creditLimitAfter)}</span>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="warning">{wp.status}</Badge>
-                    </TableCell>
-                    <TableCell className="text-xs text-slate-500">{formatDate(wp.createdAt)}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          size="sm"
-                          className="bg-emerald-600 hover:bg-emerald-700 h-7 text-xs gap-1"
-                          onClick={() => handleApprove(wp.id)}
-                        >
-                          <CheckCircle2 className="h-3.5 w-3.5" /> Duyệt
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          className="h-7 text-xs gap-1"
-                          onClick={() => openRejectDialog(wp.id)}
-                        >
-                          <XCircle className="h-3.5 w-3.5" /> Từ chối
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {
+                  loading ? (
+                    <TableSkeleton columns={columns.length} rows={pageSize} />
+                  ) : (
+                    <>
+                      {paginatedPendingPlans.map((wp) => (
+                        <TableRow key={wp.id}>
+                          <TableCell className="font-medium text-slate-900">{wp.tenantName}</TableCell>
+                          <TableCell>
+                            <div className="font-semibold text-slate-800">{wp.pricingPlanName}</div>
+                          </TableCell>
+                          <TableCell className="font-semibold">{formatCurrency(wp.price)}</TableCell>
+                          <TableCell className="text-emerald-600 font-semibold">
+                            +{formatCurrency(wp.creditedAmount)}
+                          </TableCell>
+                          {/* <TableCell className="text-sm">
+                            {formatCurrency(wp.balanceBefore)} &rarr;{' '}
+                            <span className="font-semibold text-slate-800">{formatCurrency(wp.balanceAfter)}</span>
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            {formatCurrency(wp.creditLimitBefore)} &rarr;{' '}
+                            <span className="font-semibold text-slate-800">{formatCurrency(wp.creditLimitAfter)}</span>
+                          </TableCell> */}
+                          <TableCell>
+                            <Badge variant="warning">{wp.status}</Badge>
+                          </TableCell>
+                          <TableCell className="text-xs text-slate-500">{formatDate(wp.createdAt)}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                size="sm"
+                                className="bg-emerald-600 hover:bg-emerald-700 h-7 text-xs gap-1"
+                                onClick={() => handleApprove(wp.id)}
+                              >
+                                <CheckCircle2 className="h-3.5 w-3.5" /> Duyệt
+                              </Button>
+                           <Button
+                              size="sm"
+                              variant="destructive"
+                              className="h-7 text-xs gap-1"
+                              onClick={() => openRejectDialog(wp.id)}
+                            >
+                              <XCircle className="h-3.5 w-3.5" /> Từ chối
+                            </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </>
+                  )
+                }
               </TableBody>
             </Table>
+          )}
+
+          {pendingPlans.length > 0 && (
+            <TablePagination
+              pageSize={pageSize}
+              onPageSizeChange={(nextSize) => {
+                setPageSize(nextSize);
+                setCurrentPage(1);
+              }}
+              onPrevious={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              onNext={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+              hasPrevious={hasPrevious}
+              hasNext={hasNext}
+              summaryText={`${pendingPlans.length} yêu cầu đang chờ duyệt`}
+              pageSizeOptions={[5, 10, 20, 50]}
+            />
           )}
         </CardContent>
       </Card>
