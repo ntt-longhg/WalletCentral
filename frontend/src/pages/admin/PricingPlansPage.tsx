@@ -63,7 +63,7 @@ export const PricingPlansPage: React.FC = () => {
     goPrevious,
     refresh,
   } = useCursorPagination({
-    initialPageSize: 2,
+    initialPageSize: 5,
     onFetchPage: handleFetchPage,
   });
 

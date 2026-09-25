@@ -15,7 +15,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/toast';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableSkeleton } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   FileText,
@@ -262,48 +262,55 @@ export const AdminInvoicePage: React.FC = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Tenant</TableHead>
-                  <TableHead>Kỳ hóa đơn</TableHead>
-                  <TableHead>Tổng tiền</TableHead>
-                  <TableHead>Trạng thái</TableHead>
-                  <TableHead>Hạn thanh toán</TableHead>
-                  <TableHead>Thao tác</TableHead>
+                  {
+                    columns.map((column) => (
+                      <TableHead key={column.accessor} className={column.widthClass}>{column.header}</TableHead>
+                    ))
+                  }
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginatedInvoices.map((invoice) => (
-                  <TableRow key={invoice.id}>
-                    <TableCell>
-                      <div className="font-medium text-slate-900">{getTenantName(invoice.tenantId)}</div>
-                    </TableCell>
-                    <TableCell className="font-mono text-sm font-semibold">{invoice.billingPeriod}</TableCell>
-                    <TableCell className="font-semibold">{formatCurrency(invoice.totalAmount)}</TableCell>
-                    <TableCell>{getStatusBadge(invoice.status)}</TableCell>
-                    <TableCell className="text-xs text-slate-500">{formatDate(invoice.dueDate)}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1.5">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-xs h-7"
-                          onClick={() => setShowDetailDialog(invoice)}
-                        >
-                          <Eye className="h-3.5 w-3.5" />
-                        </Button>
-                        {invoice.status === 'ISSUED' && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-xs h-7 text-emerald-600 hover:text-emerald-700"
-                            onClick={() => handleMarkAsPaid(invoice)}
-                          >
-                            <CreditCard className="h-3.5 w-3.5 mr-1" /> Đã TT
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {
+                  loading ? (
+                    <TableSkeleton columns={columns.length} rows={pageSize} />
+                  ) : (
+                    <>
+                      {paginatedInvoices.map((invoice) => (
+                        <TableRow key={invoice.id}>
+                          <TableCell>
+                            <div className="font-medium text-slate-900">{getTenantName(invoice.tenantId)}</div>
+                          </TableCell>
+                          <TableCell className="font-mono text-sm font-semibold">{invoice.billingPeriod}</TableCell>
+                          <TableCell className="font-semibold">{formatCurrency(invoice.totalAmount)}</TableCell>
+                          <TableCell>{getStatusBadge(invoice.status)}</TableCell>
+                          <TableCell className="text-xs text-slate-500">{formatDate(invoice.dueDate)}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1.5">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-xs h-7"
+                                onClick={() => setShowDetailDialog(invoice)}
+                              >
+                                <Eye className="h-3.5 w-3.5" />
+                              </Button>
+                              {invoice.status === 'ISSUED' && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-xs h-7 text-emerald-600 hover:text-emerald-700"
+                                  onClick={() => handleMarkAsPaid(invoice)}
+                                >
+                                  <CreditCard className="h-3.5 w-3.5 mr-1" /> Đã TT
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </>
+                  )
+                }
               </TableBody>
             </Table>
           )}

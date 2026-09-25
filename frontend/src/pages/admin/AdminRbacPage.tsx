@@ -1,9 +1,10 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { TablePagination } from '@/components/ui/pagination';
 import {
   Dialog,
   DialogContent,
@@ -13,8 +14,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/toast';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableSkeleton } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import type { RoleResponse, PermissionResponse } from '@/types/api';
 import {
   Shield,
   Users,
@@ -51,6 +53,8 @@ export const AdminRbacPage: React.FC = () => {
   } = useAuthStore();
   const [activeTab, setActiveTab] = useState('users');
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
 
   // Role dialog
   const [showRoleDialog, setShowRoleDialog] = useState(false);
@@ -73,9 +77,30 @@ export const AdminRbacPage: React.FC = () => {
     fetchData();
   }, [fetchData]);
 
-  const filteredUsers = users.filter(u =>
-    !searchTerm || u.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredUsers = useMemo(() => {
+    return users.filter(u =>
+      !searchTerm || u.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [users, searchTerm]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / pageSize));
+  const hasPrevious = currentPage > 1;
+  const hasNext = currentPage < totalPages;
+
+  const paginatedUsers = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return filteredUsers.slice(startIndex, startIndex + pageSize);
+  }, [filteredUsers, currentPage, pageSize]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, pageSize]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   // ====================== ROLE CRUD ======================
 
@@ -171,11 +196,44 @@ export const AdminRbacPage: React.FC = () => {
   };
 
   // Group permissions by module
-  const groupedPerms = permissions.reduce((acc, p: { module: string; id: string; name: string; description?: string }) => {
+  const groupedPerms = permissions.reduce<Record<string, PermissionResponse[]>>((acc, p) => {
     if (!acc[p.module]) acc[p.module] = [];
     acc[p.module].push(p);
     return acc;
-  }, {} as Record<string, typeof permissions>);
+  }, {});
+
+  const columns = [
+    {
+      header: 'Email',
+      accessor: 'email',
+      widthClass: 'w-[200px]',
+    },
+    {
+      header: 'Tên',
+      accessor: 'name',
+      widthClass: 'w-[140px]',
+    },
+    {
+      header: 'Role',
+      accessor: 'role',
+      widthClass: 'w-[140px]',
+    },
+    {
+      header: 'Trạng thái',
+      accessor: 'status',
+      widthClass: 'w-[140px]',
+    },
+    {
+      header: 'Đăng nhập cuối',
+      accessor: 'lastLogin',
+      widthClass: 'w-[160px]',
+    },
+    {
+      header: 'Thao tác',
+      accessor: 'actions',
+      widthClass: 'w-[140px]',
+    },
+  ]
 
   return (
     <div className="space-y-6">
@@ -227,63 +285,88 @@ export const AdminRbacPage: React.FC = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Tên</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Trạng thái</TableHead>
-                      <TableHead>Đăng nhập cuối</TableHead>
-                      <TableHead>Thao tác</TableHead>
+                      {
+                        columns.map((column) => (
+                          <TableHead key={column.accessor} className={column.widthClass}>
+                            {column.header}
+                          </TableHead>
+                        ))
+                      }
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredUsers.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell className="font-mono text-sm font-medium">{user.email}</TableCell>
-                        <TableCell className="text-sm">{user.displayName || '-'}</TableCell>
-                        <TableCell>
-                          {user.roleName ? (
-                            <Badge variant={user.roleName === 'SUPER_ADMIN' ? 'destructive' : 'default'}>
-                              {user.roleName}
-                            </Badge>
-                          ) : (
-                            <Badge variant="outline">Chưa gán</Badge>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={user.isActive ? 'default' : 'secondary'}>
-                            {user.isActive ? 'Active' : 'Inactive'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-xs text-slate-500">
-                          {user.lastLoginAt ? formatDate(user.lastLoginAt) : 'Chưa đăng nhập'}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1.5">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="text-xs h-7"
-                              onClick={() => {
-                                setShowAssignDialog(user);
-                                setSelectedRoleId(user.roleId || '');
-                              }}
-                            >
-                              <UserCheck className="h-3.5 w-3.5 mr-1" /> Role
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="text-xs h-7"
-                              onClick={() => setShowPermDialog(user)}
-                            >
-                              <Key className="h-3.5 w-3.5 mr-1" /> Quyền
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {
+                      loading ? (
+                        <TableSkeleton columns={columns.length} rows={pageSize} />
+                      ) : (
+                        <>
+                          {paginatedUsers.map((user) => (
+                            <TableRow key={user.id}>
+                              <TableCell className="font-mono text-sm font-medium">{user.email}</TableCell>
+                              <TableCell className="text-sm">{user.displayName || '-'}</TableCell>
+                              <TableCell>
+                                {user.roleName ? (
+                                  <Badge variant={user.roleName === 'SUPER_ADMIN' ? 'destructive' : 'default'}>
+                                    {user.roleName}
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="outline">Chưa gán</Badge>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant={user.isActive ? 'default' : 'secondary'}>
+                                  {user.isActive ? 'Active' : 'Inactive'}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-xs text-slate-500">
+                                {user.lastLoginAt ? formatDate(user.lastLoginAt) : 'Chưa đăng nhập'}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-1.5">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="text-xs h-7"
+                                    onClick={() => {
+                                      setShowAssignDialog(user);
+                                      setSelectedRoleId(user.roleId || '');
+                                    }}
+                                  >
+                                    <UserCheck className="h-3.5 w-3.5 mr-1" /> Role
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="text-xs h-7"
+                                    onClick={() => setShowPermDialog(user)}
+                                  >
+                                    <Key className="h-3.5 w-3.5 mr-1" /> Quyền
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </>
+                      )
+                    }
                   </TableBody>
                 </Table>
+              )}
+
+              {filteredUsers.length > 0 && (
+                <TablePagination
+                  pageSize={pageSize}
+                  onPageSizeChange={(nextSize) => {
+                    setPageSize(nextSize);
+                    setCurrentPage(1);
+                  }}
+                  onPrevious={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  onNext={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                  hasPrevious={hasPrevious}
+                  hasNext={hasNext}
+                  summaryText={`${filteredUsers.length} user trong hệ thống`}
+                  pageSizeOptions={[5, 10, 20, 50]}
+                />
               )}
             </CardContent>
           </Card>
@@ -355,7 +438,7 @@ export const AdminRbacPage: React.FC = () => {
                 <div key={module} className="mb-4">
                   <h4 className="text-sm font-semibold text-slate-700 mb-2 uppercase tracking-wide">{module}</h4>
                   <div className="flex flex-wrap gap-2">
-                    {perms.map(p => (
+                    {perms.map((p: PermissionResponse) => (
                       <Badge key={p.id} variant="secondary" className="text-xs">
                         {p.code}
                       </Badge>
@@ -438,12 +521,12 @@ export const AdminRbacPage: React.FC = () => {
                     <div className="flex items-center gap-2 mb-1">
                       <input
                         type="checkbox"
-                        checked={perms.every(p => roleForm.permissionIds.includes(p.id))}
+                        checked={perms.every((p: PermissionResponse) => roleForm.permissionIds.includes(p.id))}
                         onChange={() => {
-                          const allSelected = perms.every(p => roleForm.permissionIds.includes(p.id));
+                          const allSelected = perms.every((p: PermissionResponse) => roleForm.permissionIds.includes(p.id));
                           const newIds = allSelected
-                            ? roleForm.permissionIds.filter(id => !perms.some(p => p.id === id))
-                            : [...roleForm.permissionIds, ...perms.map(p => p.id)];
+                            ? roleForm.permissionIds.filter(id => !perms.some((p: PermissionResponse) => p.id === id))
+                            : [...roleForm.permissionIds, ...perms.map((p: PermissionResponse) => p.id)];
                           setRoleForm({ ...roleForm, permissionIds: newIds });
                         }}
                         className="accent-blue-600"
@@ -451,7 +534,7 @@ export const AdminRbacPage: React.FC = () => {
                       <span className="text-xs font-semibold text-slate-600 uppercase">{module}</span>
                     </div>
                     <div className="flex flex-wrap gap-1.5 ml-5">
-                      {perms.map(p => (
+                      {perms.map((p: PermissionResponse) => (
                         <label key={p.id} className="flex items-center gap-1 cursor-pointer">
                           <input
                             type="checkbox"
@@ -492,7 +575,7 @@ export const AdminRbacPage: React.FC = () => {
               {Object.entries(groupedPerms).map(([module, perms]) => (
                 <div key={module}>
                   <div className="text-xs font-semibold text-slate-500 uppercase mb-1">{module}</div>
-                  {perms.map(p => (
+                  {perms.map((p: PermissionResponse) => (
                     <label key={p.id} className="flex items-center gap-2 cursor-pointer py-0.5">
                       <input
                         type="radio"
