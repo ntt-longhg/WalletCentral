@@ -28,10 +28,13 @@ public interface WalletPlanRepository extends JpaRepository<WalletPlan, UUID> {
     @Query("SELECT wp FROM WalletPlan wp JOIN FETCH wp.pricingPlan JOIN FETCH wp.tenant WHERE wp.id = :id")
     Optional<WalletPlan> findByIdWithRelations(@Param("id") UUID id);
 
-    @Query("SELECT wp FROM WalletPlan wp JOIN FETCH wp.pricingPlan JOIN FETCH wp.tenant WHERE wp.status = :status AND wp.deletedAt IS NULL ORDER BY wp.createdAt ASC")
-    List<WalletPlan> findByStatusOrderByCreatedAtAsc(@Param("status") WalletPlanStatus status);
+    @Query("SELECT wp FROM WalletPlan wp JOIN FETCH wp.pricingPlan JOIN FETCH wp.tenant WHERE wp.deletedAt IS NULL AND (:cursor IS NULL OR wp.id > :cursor) AND (:status IS NULL OR wp.status = :status) ORDER BY wp.createdAt ASC")
+    List<WalletPlan> findByStatusOrderByCreatedAtAsc(@Param("cursor") UUID cursor,
+            @Param("status") WalletPlanStatus status, org.springframework.data.domain.Pageable pageable);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT wp FROM WalletPlan wp WHERE wp.id = :id")
     Optional<WalletPlan> findByIdForUpdate(@Param("id") UUID id);
+
+    long countByStatusAndDeletedAtIsNull(WalletPlanStatus status);
 }

@@ -38,6 +38,9 @@ public class InvoiceResponse {
     @Schema(description = "Invoice status", example = "ISSUED")
     private String status;
 
+    @Schema(description = "Note (e.g. zero-amount auto-payment reason)")
+    private String note;
+
     @Schema(description = "Invoice due date")
     private LocalDateTime dueDate;
 

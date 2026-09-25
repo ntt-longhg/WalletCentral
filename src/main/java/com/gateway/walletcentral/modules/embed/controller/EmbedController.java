@@ -6,6 +6,7 @@ import com.gateway.walletcentral.core.response.ApiResponse;
 import com.gateway.walletcentral.modules.creditadjustment.dto.CreditAdjustmentResponse;
 import com.gateway.walletcentral.modules.creditadjustment.model.CreditAdjustmentType;
 import com.gateway.walletcentral.modules.creditadjustment.service.CreditAdjustmentService;
+import com.gateway.walletcentral.modules.invoice.dto.InvoiceItemResponse;
 import com.gateway.walletcentral.modules.invoice.dto.InvoiceResponse;
 import com.gateway.walletcentral.modules.invoice.model.InvoiceStatus;
 import com.gateway.walletcentral.modules.invoice.service.InvoiceService;
@@ -125,6 +126,17 @@ public class EmbedController {
         Tenant tenant = extractTenant(request);
         CursorPage<InvoiceResponse> response = invoiceService.list(tenant.getId(), status, params);
         return ResponseEntity.ok(ApiResponse.ok(response));
+    }
+
+    @GetMapping("/invoices/{id}/items")
+    @Operation(summary = "List billable usage lines of a tenant invoice with cursor pagination")
+    public ResponseEntity<ApiResponse<CursorPage<InvoiceItemResponse>>> getInvoiceItems(
+            HttpServletRequest request,
+            @PathVariable UUID id,
+            @ModelAttribute CursorParams params) {
+        Tenant tenant = extractTenant(request);
+        return ResponseEntity.ok(
+                ApiResponse.ok(invoiceService.getInvoiceItemsForTenant(id, tenant.getId(), params)));
     }
 
     @GetMapping("/usage-logs")

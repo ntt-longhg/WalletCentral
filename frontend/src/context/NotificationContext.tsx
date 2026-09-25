@@ -27,7 +27,7 @@ interface NotificationContextType {
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   clearNotifications: () => void;
-  // refreshPendingCount: () => void;
+  refreshPendingCount: () => void;
 }
 
 const NotificationContext = createContext<NotificationContextType>({
@@ -40,7 +40,7 @@ const NotificationContext = createContext<NotificationContextType>({
   markAsRead: () => { },
   markAllAsRead: () => { },
   clearNotifications: () => { },
-  // refreshPendingCount: () => { },
+  refreshPendingCount: () => { },
 });
 
 export const NotificationProvider: React.FC<{ children: React.ReactNode; tenantId?: string; admin?: boolean }> = ({ children, tenantId, admin }) => {

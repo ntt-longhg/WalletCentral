@@ -35,6 +35,8 @@ import {
   InvoiceResponse,
   InvoiceCreateRequest,
   InvoicePayRequest,
+  InvoiceItemResponse,
+  DashboardSummaryResponse,
   UsageLogResponse,
   UsageLogCreateRequest,
   CreditAdjustmentResponse,
@@ -160,6 +162,14 @@ export const invoiceService = {
     api.post<ApiResponse<{ generatedCount: number; billingPeriod: string }>>('/invoices/generate-all', null, {
       params: { billingPeriod, updatedBy },
     }),
+  getItems: (id: string) =>
+    api.get<ApiResponse<PaginatedResponse<InvoiceItemResponse>>>(`/invoices/${id}/items`),
+};
+
+// 7b. Dashboard Service (counters only, no pagination)
+export const dashboardService = {
+  getSummary: () =>
+    api.get<ApiResponse<DashboardSummaryResponse>>('/dashboard/summary'),
 };
 
 // 8. Usage Log Service
@@ -228,6 +238,8 @@ export const embedService = {
     api.get<ApiResponse<PaginatedResponse<RefundResponse>>>('/embed/refund-requests'),
   getPendingRefundRequests: () =>
     api.get<ApiResponse<PaginatedResponse<RefundResponse>>>('/embed/refund-requests/pending'),
+  getInvoiceItems: (id: string) =>
+    api.get<ApiResponse<PaginatedResponse<InvoiceItemResponse>>>(`/embed/invoices/${id}/items`),
 };
 
 // 13. RBAC Service (admin only)

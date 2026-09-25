@@ -31,6 +31,8 @@ import {
   XCircle,
 } from 'lucide-react';
 import { useBillingStore, useTransactionStore } from '@/stores';
+import { invoiceService } from '@/services/billingServices';
+import type { InvoiceItemResponse } from '@/types/api';
 import { formatCurrency, formatDate, getStatusConfig } from '@/lib/utils';
 
 export const AdminInvoicePage: React.FC = () => {
@@ -42,7 +44,9 @@ export const AdminInvoicePage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [showGenerateDialog, setShowGenerateDialog] = useState(false);
-  const [showDetailDialog, setShowDetailDialog] = useState<{ id: string; billingPeriod: string; status: string; totalAmount: number; dueDate?: string; tenantId: string; createdAt: string; updatedBy?: string } | null>(null);
+  const [showDetailDialog, setShowDetailDialog] = useState<{ id: string; billingPeriod: string; status: string; totalAmount: number; dueDate?: string; tenantId: string; createdAt: string; updatedBy?: string; note?: string } | null>(null);
+  const [detailItems, setDetailItems] = useState<InvoiceItemResponse[]>([]);
+  const [detailItemsLoading, setDetailItemsLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
 
   const [generateForm, setGenerateForm] = useState({
@@ -112,6 +116,22 @@ export const AdminInvoicePage: React.FC = () => {
       addToast({ variant: 'success', message: `Hóa đơn ${invoice.billingPeriod} đã được đánh dấu thanh toán.` });
     } catch (err: any) {
       addToast({ variant: 'destructive', message: err.response?.data?.message || 'Không thể cập nhật.' });
+    }
+  };
+
+  const handleOpenDetail = async (invoice: NonNullable<typeof showDetailDialog>) => {
+    setShowDetailDialog(invoice);
+    setDetailItems([]);
+    setDetailItemsLoading(true);
+    try {
+      const res = await invoiceService.getItems(invoice.id);
+      if (res.data?.success && res.data?.data?.items) {
+        setDetailItems(res.data?.data?.items);
+      }
+    } catch (err: any) {
+      addToast({ variant: 'destructive', message: err.response?.data?.message || 'Không thể tải chi tiết hóa đơn.' });
+    } finally {
+      setDetailItemsLoading(false);
     }
   };
 
@@ -290,7 +310,7 @@ export const AdminInvoicePage: React.FC = () => {
                                 size="sm"
                                 variant="outline"
                                 className="text-xs h-7"
-                                onClick={() => setShowDetailDialog(invoice)}
+                                onClick={() => handleOpenDetail(invoice)}
                               >
                                 <Eye className="h-3.5 w-3.5" />
                               </Button>
@@ -369,13 +389,13 @@ export const AdminInvoicePage: React.FC = () => {
 
       {/* Detail Dialog */}
       <Dialog open={!!showDetailDialog} onOpenChange={() => setShowDetailDialog(null)}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-3xl">
           <DialogHeader>
             <DialogTitle>Chi tiết Hóa đơn</DialogTitle>
           </DialogHeader>
           {showDetailDialog && (
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
                 <div>
                   <span className="text-slate-500">Tenant:</span>
                   <p className="font-medium">{getTenantName(showDetailDialog.tenantId)}</p>
@@ -400,6 +420,62 @@ export const AdminInvoicePage: React.FC = () => {
                   <span className="text-slate-500">Cập nhật bởi:</span>
                   <p>{showDetailDialog.updatedBy || 'N/A'}</p>
                 </div>
+              </div>
+              {showDetailDialog.note && (
+                <div className="rounded-md bg-slate-50 border border-slate-200 px-3 py-2 text-xs text-slate-600">
+                  <span className="font-medium">Ghi chú:</span> {showDetailDialog.note}
+                </div>
+              )}
+              <div>
+                <p className="text-sm font-medium text-slate-700 mb-2">Giao dịch trong hóa đơn ({detailItems.length})</p>
+                {detailItemsLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-5 w-5 text-blue-600 animate-spin mr-2" />
+                    <span className="text-sm text-slate-500">Đang tải...</span>
+                  </div>
+                ) : detailItems.length === 0 ? (
+                  <div className="text-center py-8 text-slate-400 text-sm">
+                    Không có phát sinh giao dịch trong kỳ này.
+                  </div>
+                ) : (
+                  <div className="max-h-80 overflow-y-auto rounded-md border border-slate-100">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Dịch vụ</TableHead>
+                          <TableHead>Sản lượng</TableHead>
+                          <TableHead>Cước phí</TableHead>
+                          <TableHead>Hoàn tiền</TableHead>
+                          <TableHead>Trạng thái GD</TableHead>
+                          <TableHead>Thời gian</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {detailItems.map((item) => (
+                          <TableRow key={item.usageLogId}>
+                            <TableCell>
+                              <div className="font-medium text-slate-800 text-xs">{item.serviceName || '—'}</div>
+                              <div className="text-[11px] font-mono text-slate-400">{item.serviceCode || ''}</div>
+                            </TableCell>
+                            <TableCell className="text-xs">{item.totalUsage}</TableCell>
+                            <TableCell className="text-xs font-semibold">{formatCurrency(item.totalCharged)}</TableCell>
+                            <TableCell>
+                              {item.refunded ? (
+                                <Badge variant="destructive" className="text-[11px]">Đã hoàn</Badge>
+                              ) : (
+                                <span className="text-xs text-slate-400">—</span>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-xs text-slate-600">
+                              {item.transactionStatus || <span className="text-slate-400">—</span>}
+                            </TableCell>
+                            <TableCell className="text-xs text-slate-500">{formatDate(item.createdAt)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
               </div>
             </div>
           )}

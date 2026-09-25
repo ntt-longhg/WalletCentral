@@ -64,6 +64,10 @@ public class Invoice {
     @Column(name = "status", nullable = false, length = 10, comment = "Invoice status: ISSUED (awaiting payment), PAID (payment received)")
     private InvoiceStatus status = InvoiceStatus.ISSUED;
 
+    /** Note (e.g. auto-PAID reason for zero-amount invoices) */
+    @Column(name = "note", columnDefinition = "TEXT", comment = "Note, e.g. reason for automatic payment of zero-amount invoices")
+    private String note = null;
+
     /** Payment due date */
     @Column(name = "due_date", updatable = false, comment = "Payment due date")
     private LocalDateTime dueDate = LocalDateTime.now();
